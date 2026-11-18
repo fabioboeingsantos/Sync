@@ -1,0 +1,12 @@
+# Credenciais e configurações locais
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Dependências e arquivos temporários
+node_modules/
+.venv/
+__pycache__/
+.DS_Store
+Thumbs.db

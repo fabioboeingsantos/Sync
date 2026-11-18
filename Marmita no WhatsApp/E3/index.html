@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pedidos de marmitas</title>
+  <style>
+    :root { color-scheme: light; font: 100%/1.55 system-ui, sans-serif; color: #20362e; background: #f6f4ed; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { background: #163d31; color: #fff; padding: 2.2rem max(1rem, calc((100% - 65rem) / 2)); }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(1.8rem, 5vw, 3rem); line-height: 1.08; margin: .3rem 0 .7rem; }
+    header p { color: #e4efe5; }
+    header a { display: inline-block; color: #fff; margin-top: .75rem; }
+    .tag { font-size: .84rem; font-weight: 700; }
+    main { max-width: 67rem; margin: 0 auto; padding: 1.4rem 1rem 3rem; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; }
+    section { background: #fffdf8; border: 1px solid #dedfd4; border-radius: 1rem; padding: clamp(1rem, 3vw, 1.6rem); }
+    h2 { font-size: 1.25rem; margin-bottom: .9rem; }
+    label { display: block; font-weight: 650; margin-top: .75rem; }
+    input, button { font: inherit; border-radius: .55rem; min-height: 2.75rem; }
+    input { display: block; width: 100%; min-width: 0; border: 1px solid #929c90; padding: .45rem .65rem; color: inherit; background: #fff; }
+    button { cursor: pointer; background: #175641; color: #fff; border: 1px solid #175641; padding: .45rem .9rem; font-weight: 700; }
+    button.secondary { background: #fff; color: #175641; }
+    :focus-visible { outline: 3px solid #a65727; outline-offset: 3px; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    .total { background: #e1efe3; border-radius: .7rem; padding: .75rem 1rem; margin: 1rem 0; }
+    .total output { font-size: 1.65rem; font-weight: 800; margin-right: .25rem; }
+    ol { margin: 0; padding: 0; list-style: none; }
+    li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; border-top: 1px solid #dedfd4; padding: .65rem 0; }
+    .hint { color: #46574d; font-size: .9rem; margin-top: .7rem; }
+    #feedback { margin-top: .7rem; }
+    #feedback[data-error="true"] { color: #972a21; }
+    [hidden] { display: none !important; }
+    /* No celular, os cartões passam para uma coluna para evitar rolagem horizontal. */
+    @media (max-width: 44rem) { .grid { grid-template-columns: minmax(0, 1fr); } }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="tag">Marmita no WhatsApp · E3</p>
+    <h1>Pedidos de marmitas</h1>
+    <p>Registre os pedidos confirmados e confira quanto preparar em cada dia.</p>
+    <a href="../E2/index.html">Ver a situação que motivou o protótipo na E2</a>
+  </header>
+  <main>
+    <div class="grid">
+      <section aria-labelledby="form-title">
+        <h2 id="form-title">Registrar pedido</h2>
+        <form id="order-form">
+          <label for="prep-date">Data de preparo</label>
+          <input id="prep-date" type="date" required>
+          <label for="quantity">Quantidade de marmitas</label>
+          <input id="quantity" type="number" inputmode="numeric" min="1" step="1" required>
+          <div class="actions">
+            <button id="save" type="submit">Registrar pedido</button>
+            <button id="cancel" class="secondary" type="button" hidden>Cancelar edição</button>
+          </div>
+          <p id="feedback" role="status"></p>
+        </form>
+      </section>
+      <section aria-labelledby="plan-title">
+        <h2 id="plan-title">Consultar produção</h2>
+        <label for="filter-date">Consultar por data</label>
+        <input id="filter-date" type="date" required>
+        <p class="total" aria-live="polite"><output id="total">0</output> marmitas para preparar</p>
+        <p id="empty" class="hint">Nenhum pedido registrado para esta data.</p>
+        <ol id="orders" aria-label="Pedidos da data selecionada"></ol>
+      </section>
+    </div>
+    <p id="storage-note" class="hint">Simulação da E3. Os pedidos ficam neste navegador.</p>
+  </main>
+  <script>
+    // O HTML funciona sozinho. Guardamos os registros localmente quando o navegador permite.
+    const key = 'marmita-e3-pedidos-v1';
+    const el = id => document.getElementById(id);
+    const form = el('order-form');
+    const prepDate = el('prep-date');
+    const quantity = el('quantity');
+    const filterDate = el('filter-date');
+    let orders = [];
+    let editingId = null;
+
+    function warnStorage() {
+      el('storage-note').textContent = 'O navegador não permitiu salvar os pedidos. Eles ficam disponíveis até fechar ou recarregar a página.';
+    }
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) || '[]');
+      if (Array.isArray(saved)) {
+        orders = saved.filter(order => order && Number.isSafeInteger(order.id)
+          && /^\d{4,}-\d{2}-\d{2}$/.test(order.date)
+          && Number.isSafeInteger(order.quantity) && order.quantity > 0);
+      }
+    } catch {
+      warnStorage();
+    }
+
+    // Use a data local para não mudar o dia perto da meia-noite por causa do fuso UTC.
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const initialDate = [
+      tomorrow.getFullYear(),
+      String(tomorrow.getMonth() + 1).padStart(2, '0'),
+      String(tomorrow.getDate()).padStart(2, '0')
+    ].join('-');
+    prepDate.value = filterDate.value = initialDate;
+
+    function showFeedback(message, error = false) {
+      el('feedback').textContent = message;
+      el('feedback').dataset.error = String(error);
+    }
+
+    function resetEditor(date) {
+      editingId = null;
+      prepDate.value = date;
+      quantity.value = '';
+      el('form-title').textContent = 'Registrar pedido';
+      el('save').textContent = 'Registrar pedido';
+      el('cancel').hidden = true;
+    }
+
+    function editOrder(order) {
+      editingId = order.id;
+      prepDate.value = order.date;
+      quantity.value = order.quantity;
+      el('form-title').textContent = 'Corrigir pedido ' + order.id;
+      el('save').textContent = 'Salvar correção';
+      el('cancel').hidden = false;
+      showFeedback('');
+      quantity.focus();
+    }
+
+    function renderOrders() {
+      // Só os pedidos confirmados para a data consultada entram na soma.
+      const visibleOrders = orders.filter(order => order.date === filterDate.value);
+      const sum = visibleOrders.reduce((total, order) => total + BigInt(order.quantity), 0n);
+      el('total').value = sum.toLocaleString('pt-BR');
+      el('empty').hidden = visibleOrders.length > 0;
+      el('empty').textContent = filterDate.value
+        ? 'Nenhum pedido registrado para esta data.'
+        : 'Escolha uma data para consultar os pedidos.';
+      el('orders').replaceChildren();
+      for (const order of visibleOrders) {
+        const row = document.createElement('li');
+        const description = document.createElement('span');
+        description.textContent = 'Pedido ' + order.id + ' · ' + order.quantity
+          + (order.quantity === 1 ? ' marmita' : ' marmitas');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'secondary';
+        button.textContent = 'Corrigir';
+        button.setAttribute('aria-label', 'Corrigir pedido ' + order.id);
+        button.addEventListener('click', () => editOrder(order));
+        row.append(description, button);
+        el('orders').append(row);
+      }
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const count = quantity.valueAsNumber;
+      if (!Number.isSafeInteger(count) || count < 1) {
+        showFeedback('Informe uma quantidade inteira maior que zero.', true);
+        quantity.focus();
+        return;
+      }
+      const date = prepDate.value;
+      const isEditing = editingId !== null;
+      if (isEditing) {
+        // Uma correção substitui o registro existente e pode mudar o total de dois dias.
+        orders = orders.map(order => order.id === editingId ? { ...order, date, quantity: count } : order);
+      } else {
+        const id = orders.reduce((lastId, order) => Math.max(lastId, order.id), 0) + 1;
+        orders.push({ id, date, quantity: count });
+      }
+      try {
+        localStorage.setItem(key, JSON.stringify(orders));
+      } catch {
+        warnStorage();
+      }
+      filterDate.value = date;
+      resetEditor(date);
+      renderOrders();
+      showFeedback(isEditing ? 'Pedido corrigido.' : 'Pedido registrado.');
+      quantity.focus();
+    });
+
+    filterDate.addEventListener('change', renderOrders);
+    el('cancel').addEventListener('click', () => {
+      resetEditor(filterDate.value || initialDate);
+      showFeedback('Edição cancelada.');
+      quantity.focus();
+    });
+    renderOrders();
+  </script>
+</body>
+</html>
