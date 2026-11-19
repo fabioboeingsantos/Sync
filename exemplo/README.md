@@ -4,7 +4,7 @@ Copie a pasta inteira para uma pasta com o nome do novo desafio. Preencha os cam
 
 | Arquivo | Quando usar |
 | --- | --- |
-| [E1](E1.md), [CSD](Matriz-CSD.md) e [persona](persona.md) | Definir problema, público e desafio. |
+| [E1](E1.md), [CSD](Matriz-CSD.md) e [persona](persona.md) | Entregar tema, motivo, Matriz CSD completa e desafio em uma frase na E1. O arquivo separado e a persona servem de apoio. |
 | [E2](E2.md) | Entrevistar e registrar a revisão da CSD. |
 | [E3](E3.md) | Planejar, demonstrar e testar o MVP. |
 | [E4](E4.md) e [roteiro](E4/roteiro.md) | Preparar e ensaiar o pitch. |

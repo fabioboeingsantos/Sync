@@ -10,13 +10,13 @@ Este projeto é um treino antecipado para o hackathon do início de dezembro. As
 - [Roteiro do Simulado UC6](https://dannbeckersenac.github.io/SlidesPJP/hackathon/simulado.html)
 - Teams da turma para confirmar prazos, canal e identificação das entregas.
 
-As páginas do professor não carregaram nesta consulta. O roteiro abaixo usa o contexto compartilhado pela equipe. Quando o material estiver acessível, compare as exigências e ajuste este guia. Registre divergências antes de avançar.
+As entregas abaixo foram conferidas com o roteiro do simulado e a [página do Hackathon Jovem Programador 2026](https://dannbeckersenac.github.io/SlidesPJP/hackathon/index.html). Para a turma, confirme no Teams os prazos e o envio. O treino local usa os mesmos entregáveis.
 
 ## Áreas de referência
 
 | Área | Situação no nosso simulado |
 | --- | --- |
-| Gastronomia | Em andamento com [Marmita no WhatsApp](<Marmita no WhatsApp/E1.md>). |
+| Gastronomia | Temas de treino: [Marmita no WhatsApp](<Marmita no WhatsApp/E1.md>) e [Insumo vencendo na cozinha](<Insumo vencendo na cozinha/E1.md>). |
 | Beleza | Referência para futuros desafios. |
 | Saúde | Referência para futuros desafios. |
 | Turismo | Referência para futuros desafios. |
@@ -29,10 +29,10 @@ A dor e a persona de cada novo desafio serão registradas na pasta do tema quand
 
 | Etapa | O que preparar | Como conferir |
 | --- | --- | --- |
-| E1 — Definição do desafio | Tema, motivo da escolha, CSD e desafio em uma frase. | Identifique a fonte das certezas. Separe hipóteses e dúvidas. A frase descreve quem, o que precisa fazer e o que atrapalha. |
+| E1 — Definição do desafio | Tema, motivo da escolha, Matriz CSD completa no corpo da E1 e desafio em uma frase. | Identifique a fonte das certezas. Separe hipóteses e dúvidas. A frase descreve quem, o que precisa fazer e o que atrapalha. |
 | E2 — Validação do problema | Roteiro, participantes sem nomes, respostas e mudanças na CSD. | Identifique pesquisa documental, entrevista simulada ou relato do público real. Vincule cada mudança na CSD à sua evidência. |
 | E3 — Modelo e MVP | Lean Canvas, link ou imagens do MVP e feedback do teste com o outro grupo. | Relacione a escolha da solução à E2. Registre o fluxo que funciona, o resultado observado e os ajustes. |
-| E4 — Pitch | Apresentação individual ao vivo de até três minutos, conforme o contexto compartilhado. | Explique a dor, as evidências, a solução, o que foi demonstrado e os resultados do teste. Confirme o horário com a turma. |
+| E4 — Pitch | Apresentação individual ao vivo em 25/11, com três minutos por aluno e cronômetro na tela. | Explique a dor, as evidências, a solução, o que foi demonstrado e os resultados do teste. Confirme o horário com a turma. |
 | E5 — Arquivos da solução | Slides em PDF, link do MVP e evidências de validação e testes. | Confira se os arquivos abrem e se o link funciona. Confirme com o professor a ordem e o prazo de envio. |
 
 ## Como usar no nosso simulado

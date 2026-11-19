@@ -6,7 +6,7 @@ Copie a pasta exemplo para um novo desafio e use o README como índice. Substitu
 
 ## Evidências e sequência
 
-1. **E1:** construa a CSD e formule um desafio aberto. Certezas do exercício têm o enunciado como fonte. Suposições são hipóteses. Dúvidas orientam a entrevista. Persona fictícia deve ser identificada.
+1. **E1:** inclua o tema, o motivo, a Matriz CSD completa no corpo da E1 e o desafio em uma frase. Certezas do exercício têm o enunciado como fonte. Suposições são hipóteses. Dúvidas orientam a entrevista. Persona fictícia deve ser identificada.
 2. **E2:** use perguntas abertas sobre situações concretas. Registre participantes sem nomes, identifique simulação ou público real e vincule cada mudança na CSD à resposta correspondente.
 3. **E3:** analise a E2 antes de escolher a solução. Preencha o Lean Canvas, implemente o menor fluxo completo e registre testes do fluxo principal e casos de erro. Anote resultado observado, feedback e ajustes.
 4. **E4:** use evidências da E2 e E3. Demonstre o MVP funcionando e cronometre o pitch de até três minutos. O apresentador aparece e narra com a própria voz.
@@ -20,14 +20,14 @@ Inspecione a estrutura antes de editar. Em cada código criado, deixe comentári
 
 ## Simulado UC6
 
-No simulado, o outro grupo representa o público para entrevistas e testes. O pitch é individual e ao vivo. O material informado indica 25/11/2026 para o pitch e 19h25 do encontro seguinte como referência para as entregas. Confirme cada prazo no Teams. Identifique o envio com o time e a etapa, por exemplo: Time T1 - Entrega E1.
+No simulado, o outro grupo representa o público para entrevistas e testes. O pitch é individual, ao vivo, em 25/11/2026, com três minutos por aluno e cronômetro na tela. A postagem é no Teams e vale a primeira. O cronograma do simulado indica E1 em 18/11, E2 em 23/11, E3 em 25/11 e E5 em 26/11, todas às 19h25. Nas E1 a E3, o retorno mostra o desconto que o atraso custaria no evento. Confirme cada prazo no Teams. Identifique o envio com o time e a etapa, por exemplo: Time T1 - Entrega E1.
 
 ## Hackathon oficial
 
-Conforme o contexto repassado, as entregas oficiais são E1 em 30/11 às 19h25, E2 em 01/12 às 19h25, E3 em 02/12 às 19h25, E4 em 03/12 às 22h e E5 em 04/12 às 22h, em 2026. Confirme as regras no regulamento antes de enviar. O contexto indica desconto de dois pontos por atraso em E1, E2 e E3 e consideração do primeiro envio. Defina um responsável. Prepare o vídeo de até três minutos e, em caso de classificação, a apresentação ao vivo. Os cinco critérios são validação do problema, execução e feedback do MVP, viabilidade, impacto e clareza do pitch.
+Segundo o cronograma do evento, as entregas oficiais são E1 em 30/11 às 19h25, E2 em 01/12 às 19h25, E3 em 02/12 às 19h25, E4 em 03/12 às 22h e E5 em 04/12 às 22h, em 2026. Confirme as regras no regulamento antes de enviar. O evento considera o primeiro envio e usa o horário registrado pelo Forms. Cada atraso em E1, E2 ou E3 desconta dois pontos da média, e essas entregas só são aceitas até as 23h59 do dia previsto. E4 e E5 têm prazo às 22h. Defina um responsável. Prepare o vídeo de até três minutos e, em caso de classificação, a apresentação ao vivo. Os cinco critérios são validação do problema, execução e feedback do MVP, viabilidade, impacto e clareza do pitch.
 
 - [Material do simulado UC6](https://dannbeckersenac.github.io/SlidesPJP/hackathon/simulado.html)
-- [Programa Jovem Programador](https://www.jovemprogramador.com.br/hackathon)
+- [Página oficial do hackathon e cronograma de entregas](https://dannbeckersenac.github.io/SlidesPJP/hackathon/index.html)
 
 
 ## Padrão profissional para todas as etapas
