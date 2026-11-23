@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Controle de Validade — Insumo vencendo na cozinha (E3)</title>
   <style>
-    /* Paleta limpa e de alto contraste para uso rápido no celular da cozinha */
+    /* =========================================================================
+       ESTILOS GERAIS DO MVP MANUAL (E3)
+       - Paleta de alto contraste com fonte Arial para uso rápido no celular.
+       ========================================================================= */
     :root {
       color-scheme: light;
       font: 100%/1.5 Arial, Helvetica, sans-serif;
@@ -22,7 +25,7 @@
       padding: 1.8rem max(1rem, calc((100% - 66rem) / 2));
     }
 
-    h1, h2, p { margin: 0; }
+    h1, h2, h3, p { margin: 0; }
     h1 { font-size: clamp(1.6rem, 4.5vw, 2.5rem); line-height: 1.1; margin: .3rem 0 .5rem; }
     header p { color: #e4efe5; }
     .tag { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
@@ -33,6 +36,7 @@
       padding: 1.3rem 1rem 3rem;
     }
 
+    /* Grade responsiva: 2 colunas no desktop e 1 coluna no celular */
     .grid {
       display: grid;
       gap: 1.1rem;
@@ -48,7 +52,6 @@
     }
 
     h2 { font-size: 1.25rem; margin-bottom: .8rem; color: #163d31; }
-
     label { display: block; font-weight: 700; margin-top: .75rem; font-size: .95rem; }
 
     input, button {
@@ -77,33 +80,14 @@
       font-weight: 700;
     }
 
-    button.secondary {
-      background: #ffffff;
-      color: #175641;
-    }
-
-    button.danger {
-      background: #ffffff;
-      color: #b91c1c;
-      border-color: #fca5a5;
-    }
-
-    button.small {
-      min-height: 2.1rem;
-      padding: .25rem .65rem;
-      font-size: .85rem;
-    }
+    button.secondary { background: #ffffff; color: #175641; }
+    button.danger { background: #ffffff; color: #b91c1c; border-color: #fca5a5; }
+    button.small { min-height: 2.1rem; padding: .25rem .65rem; font-size: .85rem; }
 
     :focus-visible { outline: 3px solid #d97706; outline-offset: 2px; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
 
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .5rem;
-      margin-top: 1rem;
-    }
-
-    /* Resumo rápido no topo da lista para o cozinheiro e o dono */
+    /* Resumo rápido para o cozinheiro e o dono */
     .summary-bar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -119,21 +103,12 @@
       border: 1px solid #e2e8f0;
     }
 
-    .metric strong {
-      display: block;
-      font-size: 1.45rem;
-      line-height: 1.1;
-    }
-
-    .metric span {
-      font-size: .8rem;
-      color: #475569;
-    }
-
+    .metric strong { display: block; font-size: 1.45rem; line-height: 1.1; }
+    .metric span { font-size: .8rem; color: #475569; }
     .metric.alert { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
     .metric.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
 
-    /* Relógio de teste explícito para validar cenários da E3 */
+    /* Relógio de teste explícito para validar os cenários da E3 */
     .clock-box {
       display: flex;
       flex-wrap: wrap;
@@ -190,24 +165,14 @@
     .badge-soon { background: #fef3c7; color: #92400e; }
     .badge-ok { background: #d1fae5; color: #065f46; }
 
-    .lot-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .4rem;
-    }
-
+    .lot-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
     .hint { color: #475569; font-size: .9rem; margin-top: .7rem; }
 
     #feedback { margin-top: .75rem; font-weight: 700; min-height: 1.4rem; }
     #feedback[data-error="true"] { color: #b91c1c; }
     #feedback[data-error="false"] { color: #047857; }
 
-    .discard-log {
-      margin-top: 1rem;
-      padding-top: .8rem;
-      border-top: 1px solid #dedfd4;
-    }
-
+    .discard-log { margin-top: 1rem; padding-top: .8rem; border-top: 1px solid #dedfd4; }
     .discard-log h3 { font-size: 1rem; margin: 0 0 .45rem; color: #991b1b; }
     .discard-item { font-size: .88rem; color: #475569; padding: .25rem 0; }
 
@@ -221,17 +186,17 @@
 </head>
 <body>
   <header>
-    <p class="tag">Insumo vencendo na cozinha · MVP E3</p>
+    <p class="tag">Insumo vencendo na cozinha · MVP Manual (E3)</p>
     <h1>Controle de Validade (PVPS)</h1>
-    <p>Cadastre cada lote com sua data de validade e consulte rapidamente o que vence primeiro antes do preparo.</p>
+    <p>Cadastre cada lote manualmente e consulte o que vence primeiro. Quer testar o preenchimento por texto/voz? <a href="agente-ia-cadastro.html" style="color:#fde68a;font-weight:700;">Abrir experimento de IA ↗</a></p>
   </header>
 
   <main>
     <div class="grid">
-      <!-- COMPONENTE 1: Formulário de cadastro e correção de validade -->
+      <!-- COMPONENTE 1: Formulário manual de cadastro e correção de validade -->
       <section aria-labelledby="form-title">
         <h2 id="form-title">Cadastrar lote</h2>
-        <!-- novalidate permite exibir mensagem clara e padronizada no próprio layout em caso de erro -->
+        <!-- novalidate permite exibir mensagem padronizada de erro dentro do layout -->
         <form id="lot-form" novalidate>
           <label for="item-name">Insumo *</label>
           <input id="item-name" type="text" placeholder="Ex.: Creme de leite" required>
@@ -257,7 +222,7 @@
       <section aria-labelledby="list-title">
         <h2 id="list-title">Lista por validade (vence primeiro)</h2>
 
-        <!-- Relógio de teste: permite simular qualquer data (ex.: 18/11/2026 nos testes da E3) -->
+        <!-- Relógio de teste: permite simular a data de referência (ex.: 18/11/2026) -->
         <div class="clock-box">
           <label for="reference-date">Data de referência (relógio de teste):</label>
           <input id="reference-date" type="date">
@@ -289,20 +254,20 @@
       </section>
     </div>
 
-    <p id="storage-note" class="hint">MVP da E3 rodando localmente no navegador (sem necessidade de servidor). Os dados ficam salvos neste navegador.</p>
+    <p id="storage-note" class="hint">MVP manual da E3 rodando localmente no navegador (sem servidor). Os dados ficam salvos neste navegador.</p>
   </main>
 
   <script>
-    /*
-      ARQUITETURA DO MVP (E3):
-      - Aplicação 100% client-side em HTML + CSS + JavaScript puro para rodar em qualquer celular ou PC.
-      - Regra central de negócio (PVPS - Primeiro que Vence, Primeiro que Sai):
-        todos os lotes ativos são ordenados sempre pela menor data de validade primeiro.
-      - Regras de validação: nome do insumo e data de validade são obrigatórios;
-        entradas inválidas exibem erro claro e não entram na lista.
-      - Registro de descarte: permite ao cozinheiro marcar um item como descartado em 1 toque,
-        gerando histórico imediato para o dono acompanhar perdas antes do fim do mês.
-    */
+    /* =========================================================================
+       ARQUITETURA DO MVP MANUAL (E3):
+       - 100% client-side em HTML + CSS + JavaScript puro.
+       - Regra de negócio PVPS (Primeiro que Vence, Primeiro que Sai):
+         ordena todos os lotes pela menor data de validade no topo.
+       - Validação: exige nome do insumo e data de validade; entradas inválidas
+         exibem aviso claro e não entram na lista.
+       - Descartes: permite registrar perdas em 1 toque para o dono acompanhar
+         antes do fechamento do mês.
+       ========================================================================= */
 
     const STORAGE_KEY_LOTS = 'insumo-e3-lotes-v1';
     const STORAGE_KEY_DISCARDS = 'insumo-e3-descartes-v1';
@@ -319,7 +284,7 @@
     let discards = [];
     let editingId = null;
 
-    // Retorna a data local no formato YYYY-MM-DD sem sofrer deslocamento de fuso UTC
+    // Retorna data local YYYY-MM-DD sem deslocamento de fuso UTC
     function getLocalTodayIso() {
       const now = new Date();
       return [
@@ -329,23 +294,21 @@
       ].join('-');
     }
 
-    // Formata YYYY-MM-DD para DD/MM/YYYY para leitura rápida na cozinha
+    // Formata YYYY-MM-DD para DD/MM/YYYY
     function formatDateBr(iso) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
       const [y, m, d] = iso.split('-');
       return `${d}/${m}/${y}`;
     }
 
-    // Calcula diferença em dias inteiros entre a data de validade e a data de referência
+    // Calcula diferença em dias inteiros entre validade e data de referência
     function diffDays(expiryIso, refIso) {
       const [ey, em, ed] = expiryIso.split('-').map(Number);
       const [ry, rm, rd] = refIso.split('-').map(Number);
-      const expUtc = Date.UTC(ey, em - 1, ed);
-      const refUtc = Date.UTC(ry, rm - 1, rd);
-      return Math.round((expUtc - refUtc) / 86400000);
+      return Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(ry, rm - 1, rd)) / 86400000);
     }
 
-    // Classifica o status visual do lote com base nos dias restantes
+    // Classifica o lote por nível de urgência visual
     function getLotStatus(daysLeft) {
       if (daysLeft < 0) {
         return { cls: 'status-expired', badgeCls: 'badge-expired', label: `Vencido há ${Math.abs(daysLeft)}d`, urgent: true, soon: false };
@@ -400,7 +363,7 @@
       }[ch]));
     }
 
-    // Renderiza a lista aplicando a regra PVPS (menor data de validade no topo)
+    // Renderiza a lista aplicando ordenação PVPS
     function render() {
       const refIso = refDateInput.value || getLocalTodayIso();
       const sorted = [...lots].sort((a, b) => a.expiry.localeCompare(b.expiry) || a.id - b.id);
@@ -451,7 +414,7 @@
       ).join('');
     }
 
-    // Inicia a edição do mesmo lote (sem criar duplicata)
+    // Edita o mesmo lote sem duplicar
     window.startEdit = function(id) {
       const lot = lots.find(item => item.id === id);
       if (!lot) return;
@@ -467,7 +430,6 @@
       nameInput.focus();
     };
 
-    // Remove o lote da lista quando consumido dentro do prazo
     window.markUsed = function(id) {
       const lot = lots.find(item => item.id === id);
       if (!lot) return;
@@ -478,7 +440,6 @@
       showFeedback(`Lote "${lot.name}" marcado como usado e removido da lista.`);
     };
 
-    // Registra o descarte na visão do dono e remove o lote da lista ativa
     window.markDiscarded = function(id) {
       const lot = lots.find(item => item.id === id);
       if (!lot) return;
@@ -503,7 +464,6 @@
       const qty = qtyInput.value.trim();
       const location = locInput.value.trim();
 
-      // Regra de entrada inválida (Cenário 3 de teste da E3)
       if (!name) {
         showFeedback('Informe o nome do insumo antes de salvar.', true);
         nameInput.focus();
@@ -522,13 +482,7 @@
         );
         showFeedback(`Lote "${name}" atualizado e reordenado na lista.`);
       } else {
-        lots.push({
-          id: Date.now(),
-          name,
-          expiry,
-          qty,
-          location
-        });
+        lots.push({ id: Date.now(), name, expiry, qty, location });
         showFeedback(`Lote "${name}" salvo e ordenado pela data de validade.`);
       }
 

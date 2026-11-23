@@ -1,7 +1,9 @@
 # Pauta experimental — Assistente de registro de insumos
 
-**Status:** proposta experimental  
-**Nome na interface:** Assistente de estoque — preenchimento de cadastro
+**Status:** protótipo separado pronto para discussão em sala — pendente de registro dos resultados observados  
+**Nome na interface:** Assistente de estoque — preenchimento de cadastro  
+**Onde testar (versão separada de IA):** [htmls/agente-ia-cadastro.html](../htmls/agente-ia-cadastro.html)  
+**Arquitetura completa passo a passo:** [arquitetura-passo-a-passo.md](arquitetura-passo-a-passo.md)
 
 ## Objetivo
 

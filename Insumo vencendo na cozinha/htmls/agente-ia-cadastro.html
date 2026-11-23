@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assistente de Estoque (IA) — Insumo vencendo na cozinha</title>
+  <style>
+    /* =========================================================================
+       ESTILOS GERAIS E ACESSIBILIDADE
+       - Fonte padrão Arial para leitura limpa no celular da cozinha e projetor.
+       - Cores de alto contraste (verde escuro + fundo claro quente).
+       ========================================================================= */
+    :root {
+      color-scheme: light;
+      font: 100%/1.5 Arial, Helvetica, sans-serif;
+      color: #1e293b;
+      background: #f6f4ed;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    header {
+      background: #163d31;
+      color: #ffffff;
+      padding: 1.8rem max(1rem, calc((100% - 66rem) / 2));
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(1.6rem, 4.5vw, 2.5rem); line-height: 1.1; margin: .3rem 0 .5rem; }
+    header p { color: #e4efe5; }
+    .tag { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+
+    main {
+      max-width: 68rem;
+      margin: 0 auto;
+      padding: 1.3rem 1rem 3rem;
+    }
+
+    /* Grade responsiva: 2 colunas no PC, 1 coluna automática no celular */
+    .grid {
+      display: grid;
+      gap: 1.1rem;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 2.8fr);
+      align-items: start;
+    }
+
+    section {
+      background: #fffdf8;
+      border: 1px solid #dedfd4;
+      border-radius: 1rem;
+      padding: clamp(1rem, 2.8vw, 1.5rem);
+    }
+
+    h2 { font-size: 1.25rem; margin-bottom: .75rem; color: #163d31; }
+
+    label { display: block; font-weight: 700; margin-top: .7rem; font-size: .92rem; }
+
+    input, textarea, button {
+      font: inherit;
+      border-radius: .55rem;
+      min-height: 2.65rem;
+    }
+
+    input, textarea {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #94a3b8;
+      padding: .45rem .65rem;
+      color: inherit;
+      background: #ffffff;
+      margin-top: .25rem;
+    }
+
+    textarea {
+      min-height: 4.5rem;
+      resize: vertical;
+    }
+
+    button {
+      cursor: pointer;
+      background: #175641;
+      color: #ffffff;
+      border: 1px solid #175641;
+      padding: .45rem .9rem;
+      font-weight: 700;
+    }
+
+    button.secondary {
+      background: #ffffff;
+      color: #175641;
+    }
+
+    button.danger {
+      background: #ffffff;
+      color: #b91c1c;
+      border-color: #fca5a5;
+    }
+
+    button.small {
+      min-height: 2.1rem;
+      padding: .25rem .65rem;
+      font-size: .85rem;
+    }
+
+    :focus-visible { outline: 3px solid #d97706; outline-offset: 2px; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: .85rem;
+    }
+
+    /* =========================================================================
+       COMPONENTE DO ASSISTENTE DE IA (LINGUAGEM NATURAL E VOZ)
+       - Destaque visual suave para diferenciar o preenchimento assistido do
+         formulário manual logo abaixo.
+       ========================================================================= */
+    .assistant-box {
+      background: #eef6f2;
+      border: 1.5px solid #86efac;
+      border-radius: .85rem;
+      padding: .9rem 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .assistant-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      margin-bottom: .35rem;
+    }
+
+    .assistant-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .assistant-desc {
+      font-size: .85rem;
+      color: #334155;
+      margin-bottom: .5rem;
+    }
+
+    /* Botões de exemplo rápido para demonstrar os 3 casos de teste no pitch */
+    .quick-examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      margin-top: .5rem;
+    }
+
+    .chip-btn {
+      min-height: 1.85rem;
+      padding: .2rem .55rem;
+      font-size: .78rem;
+      font-weight: 700;
+      background: #ffffff;
+      color: #065f46;
+      border: 1px solid #86efac;
+      border-radius: 999px;
+    }
+
+    .chip-btn:hover { background: #dcfce7; }
+
+    #assistant-status {
+      margin-top: .6rem;
+      font-size: .88rem;
+      font-weight: 700;
+      min-height: 1.25rem;
+    }
+
+    #assistant-status[data-state="ok"] { color: #047857; }
+    #assistant-status[data-state="warn"] { color: #b45309; }
+    #assistant-status[data-state="error"] { color: #b91c1c; }
+
+    /* Destaque temporário nos campos preenchidos pelo assistente para conferência */
+    .field-suggested {
+      background: #fefce8 !important;
+      border-color: #d97706 !important;
+    }
+
+    /* =========================================================================
+       PAINEL DA LISTA PVPS (PRIMEIRO QUE VENCE, PRIMEIRO QUE SAI)
+       ========================================================================= */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .6rem;
+      margin: .9rem 0 1rem;
+    }
+
+    .metric {
+      background: #f1f5f9;
+      border-radius: .7rem;
+      padding: .65rem .75rem;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+
+    .metric strong { display: block; font-size: 1.45rem; line-height: 1.1; }
+    .metric span { font-size: .8rem; color: #475569; }
+    .metric.alert { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+    .metric.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+
+    /* Relógio de teste para reproduzir exatamente os cenários da E3 */
+    .clock-box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      background: #eef4f1;
+      border: 1px dashed #94a3b8;
+      border-radius: .7rem;
+      padding: .55rem .8rem;
+      margin-bottom: .9rem;
+      font-size: .9rem;
+    }
+
+    .clock-box label { margin: 0; font-size: .88rem; }
+    .clock-box input { width: auto; min-height: 2.1rem; margin: 0; padding: .2rem .5rem; }
+
+    ol { margin: 0; padding: 0; list-style: none; }
+
+    li.lot-card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: .7rem;
+      border: 1px solid #e2e8f0;
+      border-left: 5px solid #10b981;
+      border-radius: .75rem;
+      padding: .75rem .9rem;
+      margin-bottom: .65rem;
+      background: #ffffff;
+    }
+
+    li.lot-card.status-expired { border-left-color: #dc2626; background: #fef2f2; }
+    li.lot-card.status-today { border-left-color: #ea580c; background: #fff7ed; }
+    li.lot-card.status-soon { border-left-color: #d97706; background: #fffbeb; }
+
+    .lot-info { flex: 1; min-width: 12rem; }
+    .lot-name { font-weight: 700; font-size: 1.05rem; }
+    .lot-meta { font-size: .88rem; color: #475569; margin-top: .15rem; }
+
+    .badge {
+      display: inline-block;
+      font-size: .78rem;
+      font-weight: 700;
+      padding: .15rem .55rem;
+      border-radius: 999px;
+      margin-left: .4rem;
+      vertical-align: middle;
+    }
+
+    .badge-expired { background: #fee2e2; color: #991b1b; }
+    .badge-today { background: #ffedd5; color: #9a3412; }
+    .badge-soon { background: #fef3c7; color: #92400e; }
+    .badge-ok { background: #d1fae5; color: #065f46; }
+
+    .lot-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .hint { color: #475569; font-size: .88rem; margin-top: .7rem; }
+
+    #feedback { margin-top: .75rem; font-weight: 700; min-height: 1.4rem; }
+    #feedback[data-error="true"] { color: #b91c1c; }
+    #feedback[data-error="false"] { color: #047857; }
+
+    .discard-log { margin-top: 1rem; padding-top: .8rem; border-top: 1px solid #dedfd4; }
+    .discard-log h3 { font-size: 1rem; margin: 0 0 .45rem; color: #991b1b; }
+    .discard-item { font-size: .88rem; color: #475569; padding: .25rem 0; }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .65rem;
+    }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 48rem) {
+      .grid { grid-template-columns: minmax(0, 1fr); }
+      .summary-bar { grid-template-columns: 1fr; }
+      .form-row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="tag">Experimento de IA · Assistente de Estoque</p>
+    <h1>Cadastro Assistido por Linguagem Natural e Voz</h1>
+    <p>Versão separada para comparar em sala com o <a href="E3-mvp-validade.html" style="color:#fde68a;font-weight:700;">MVP manual da E3</a>.</p>
+  </header>
+
+  <main>
+    <div class="grid">
+      <!-- =====================================================================
+           COLUNA ESQUERDA: ASSISTENTE DE IA + FORMULÁRIO MANUAL DE CONFERÊNCIA
+           ===================================================================== -->
+      <section aria-labelledby="form-title">
+        <!-- BLOCO A: Assistente de Estoque (pauta experimental de agente_IA.md) -->
+        <div class="assistant-box" aria-labelledby="assistant-heading">
+          <div class="assistant-header">
+            <h2 class="assistant-title" id="assistant-heading">Assistente de estoque — preenchimento de cadastro</h2>
+          </div>
+          <p class="assistant-desc">
+            Digite ou dite em linguagem natural (ex.: <em>"Creme de leite, lote A12, validade 19/11/2026"</em>). O assistente preenche o formulário abaixo para você conferir antes de salvar.
+          </p>
+
+          <textarea id="nl-input" placeholder="Ex.: Creme de leite, lote A12, 2 caixas, validade 19/11/2026, prateleira do meio"></textarea>
+
+          <div class="actions">
+            <button type="button" id="parse-btn" class="small">Interpretar e preencher</button>
+            <button type="button" id="voice-btn" class="secondary small" title="Ditar pelo microfone do celular/PC">🎤 Falar</button>
+            <button type="button" id="simulate-error-btn" class="danger small" title="Testa o caso 3 de agente_IA.md (falha do serviço)">Simular falha</button>
+          </div>
+
+          <!-- Atalhos rápidos para demonstrar os casos de teste da pauta agente_IA.md -->
+          <div class="quick-examples">
+            <button type="button" class="chip-btn" onclick="fillExample('Creme de leite, lote A12, 2 caixas, validade 19/11/2026')">Teste 1: Claro</button>
+            <button type="button" class="chip-btn" onclick="fillExample('Queijo, lote B02, vence na terça')">Teste 2: Ambíguo</button>
+          </div>
+
+          <p id="assistant-status" role="status" aria-live="polite"></p>
+        </div>
+
+        <!-- BLOCO B: Formulário manual (sempre disponível para conferência ou fallback) -->
+        <h2 id="form-title">Conferir / Cadastrar lote</h2>
+        <!-- novalidate permite controlar as mensagens de erro diretamente na interface -->
+        <form id="lot-form" novalidate>
+          <label for="item-name">Insumo *</label>
+          <input id="item-name" type="text" placeholder="Ex.: Creme de leite" required>
+
+          <div class="form-row-2">
+            <div>
+              <label for="lot-code">Lote (opcional)</label>
+              <input id="lot-code" type="text" placeholder="Ex.: A12">
+            </div>
+            <div>
+              <label for="expiry-date">Data de validade *</label>
+              <input id="expiry-date" type="date" required>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div>
+              <label for="quantity">Quantidade (opcional)</label>
+              <input id="quantity" type="text" placeholder="Ex.: 2 caixas">
+            </div>
+            <div>
+              <label for="location">Local na geladeira (opcional)</label>
+              <input id="location" type="text" placeholder="Ex.: Prateleira do meio">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="save-btn" type="submit">Confirmar e salvar lote</button>
+            <button id="cancel-btn" class="secondary" type="button" hidden>Cancelar edição</button>
+          </div>
+          <p id="feedback" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <!-- =====================================================================
+           COLUNA DIREITA: LISTA ORDENADA POR PVPS + RESUMO + DESCARTES DO DONO
+           ===================================================================== -->
+      <section aria-labelledby="list-title">
+        <h2 id="list-title">Lista por validade (vence primeiro)</h2>
+
+        <!-- Relógio de teste: permite simular a data de referência (ex.: 18/11/2026) -->
+        <div class="clock-box">
+          <label for="reference-date">Data de referência (relógio de teste):</label>
+          <input id="reference-date" type="date">
+        </div>
+
+        <div class="summary-bar" aria-live="polite">
+          <div class="metric alert">
+            <strong id="count-urgent">0</strong>
+            <span>Vencidos ou hoje</span>
+          </div>
+          <div class="metric warn">
+            <strong id="count-soon">0</strong>
+            <span>Vencem em até 3 dias</span>
+          </div>
+          <div class="metric">
+            <strong id="count-discarded">0</strong>
+            <span>Descartes registrados</span>
+          </div>
+        </div>
+
+        <p id="empty-msg" class="hint">Nenhum lote ativo cadastrado. Use o assistente ou o formulário ao lado.</p>
+        <ol id="lots-list" aria-label="Lotes ordenados pela data de validade"></ol>
+
+        <!-- Histórico de descartes para dar visibilidade semanal ao dono -->
+        <div class="discard-log" id="discard-section" hidden>
+          <h3>Descartes por vencimento (visão do dono)</h3>
+          <div id="discard-list"></div>
+        </div>
+      </section>
+    </div>
+
+    <p id="storage-note" class="hint">
+      MVP da E3 com Assistente de Preenchimento (linguagem natural e voz). Roda localmente no navegador com salvamento em localStorage.
+    </p>
+  </main>
+
+  <script>
+    /* =========================================================================
+       ARQUITETURA E REGRAS DE NEGÓCIO DO MVP (E3 + AGENTE DE IA)
+       -------------------------------------------------------------------------
+       1. REGRA PRINCIPAL (PVPS - Primeiro que Vence, Primeiro que Sai):
+          - Toda lista ativa é ordenada pela menor data de validade no topo.
+       2. ASSISTENTE DE ESTOQUE (pauta agente_IA/agente_IA.md):
+          - Interpreta frases em português natural (digitadas ou faladas via
+            Web Speech API) e sugere os campos no formulário para CONFERÊNCIA.
+          - LIMITE DE SEGURANÇA: o assistente NUNCA salva sozinho; o cozinheiro
+            sempre confere e clica em "Confirmar e salvar lote".
+          - TRATAMENTO DE AMBIGUIDADE: se detectar dias relativos ambíguos
+            (ex.: "vence na terça", "semana que vem") ou ausência de data, pede
+            esclarecimento explícito da data completa (DD/MM/AAAA).
+          - TRATAMENTO DE FALHA: se o serviço falhar, o texto digitado é
+            preservado e o formulário manual permanece 100% utilizável.
+       3. VISIBILIDADE DE PERDAS PARA O DONO:
+          - Botão "Descartado" registra imediatamente o item no bloco de
+            descartes, evitando que o prejuízo apareça só no fim do mês.
+       ========================================================================= */
+
+    // Chaves de persistência no navegador (localStorage)
+    const STORAGE_KEY_LOTS = 'insumo-e3-lotes-v2';
+    const STORAGE_KEY_DISCARDS = 'insumo-e3-descartes-v2';
+
+    // Atalho para selecionar elementos pelo ID
+    const el = id => document.getElementById(id);
+
+    // Referências aos campos do formulário e do assistente
+    const form = el('lot-form');
+    const nlInput = el('nl-input');
+    const nameInput = el('item-name');
+    const lotCodeInput = el('lot-code');
+    const expiryInput = el('expiry-date');
+    const qtyInput = el('quantity');
+    const locInput = el('location');
+    const refDateInput = el('reference-date');
+
+    // Estado em memória
+    let lots = [];
+    let discards = [];
+    let editingId = null;
+
+    /* -------------------------------------------------------------------------
+       FUNÇÕES AUXILIARES DE DATA E FORMATAÇÃO
+       ------------------------------------------------------------------------- */
+
+    // Retorna a data local (YYYY-MM-DD) evitando erro de fuso horário UTC à noite
+    function getLocalTodayIso() {
+      const now = new Date();
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')
+      ].join('-');
+    }
+
+    // Converte YYYY-MM-DD para DD/MM/YYYY para facilitar leitura na cozinha
+    function formatDateBr(iso) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    // Valida se dia/mês/ano formam uma data real no calendário (ex.: rejeita 31/02)
+    function toValidIsoDate(day, month, year) {
+      const y = Number(year);
+      const m = Number(month);
+      const d = Number(day);
+      const test = new Date(Date.UTC(y, m - 1, d));
+      if (
+        test.getUTCFullYear() !== y ||
+        test.getUTCMonth() !== m - 1 ||
+        test.getUTCDate() !== d
+      ) {
+        return null;
+      }
+      return `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+
+    // Calcula diferença exata em dias entre a validade e a data de referência
+    function diffDays(expiryIso, refIso) {
+      const [ey, em, ed] = expiryIso.split('-').map(Number);
+      const [ry, rm, rd] = refIso.split('-').map(Number);
+      return Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(ry, rm - 1, rd)) / 86400000);
+    }
+
+    // Define cor e etiqueta visual do cartão conforme proximidade do vencimento
+    function getLotStatus(daysLeft) {
+      if (daysLeft < 0) {
+        return { cls: 'status-expired', badgeCls: 'badge-expired', label: `Vencido há ${Math.abs(daysLeft)}d`, urgent: true, soon: false };
+      }
+      if (daysLeft === 0) {
+        return { cls: 'status-today', badgeCls: 'badge-today', label: 'Vence hoje', urgent: true, soon: false };
+      }
+      if (daysLeft <= 3) {
+        return { cls: 'status-soon', badgeCls: 'badge-soon', label: `Vence em ${daysLeft}d`, urgent: false, soon: true };
+      }
+      return { cls: '', badgeCls: 'badge-ok', label: `Faltam ${daysLeft}d`, urgent: false, soon: false };
+    }
+
+    // Escapa caracteres HTML para evitar quebra de layout ou XSS
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    /* -------------------------------------------------------------------------
+       MOTOR DO ASSISTENTE DE PREENCHIMENTO (LINGUAGEM NATURAL)
+       - Extrai insumo, código do lote, quantidade, local e data de validade.
+       - Em produção, este módulo pode ser trocado por uma chamada a uma API de
+         LLM mantendo exatamente o mesmo contrato de entrada/saída e validação.
+       ------------------------------------------------------------------------- */
+    function interpretNaturalText(rawText) {
+      const text = rawText.trim();
+      const result = {
+        name: '',
+        lotCode: '',
+        expiry: '',
+        qty: '',
+        location: '',
+        ambiguousDateTerm: ''
+      };
+
+      // 1) Extrai data completa no formato DD/MM/AAAA ou DD-MM-AAAA
+      const fullDateMatch = text.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/);
+      if (fullDateMatch) {
+        const validIso = toValidIsoDate(fullDateMatch[1], fullDateMatch[2], fullDateMatch[3]);
+        if (validIso) result.expiry = validIso;
+      }
+
+      // 2) Se não houver data completa, verifica termos relativos/ambíguos (Caso 2 de agente_IA.md)
+      if (!result.expiry) {
+        const ambiguousMatch = text.match(
+          /\b(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo|amanhã|amanha|semana que vem|mês que vem|mes que vem|breve|logo)\b/i
+        );
+        if (ambiguousMatch) {
+          result.ambiguousDateTerm = ambiguousMatch[0];
+        }
+      }
+
+      // 3) Extrai código de lote (ex.: "lote A12", "lote B02")
+      const lotMatch = text.match(/\blote\s*[:#-]?\s*([a-z0-9\-]+)/i);
+      if (lotMatch) {
+        result.lotCode = lotMatch[1].toUpperCase();
+      }
+
+      // 4) Extrai quantidade com unidade comum de cozinha (ex.: "2 caixas", "500g", "3 potes")
+      const qtyMatch = text.match(
+        /\b(\d+(?:[.,]\d+)?\s*(?:caixas?|cx|potes?|pacotes?|pct|unidades?|un|kg|g|l|litros?|ml|bandejas?|sacos?))\b/i
+      );
+      if (qtyMatch) {
+        result.qty = qtyMatch[1].trim();
+      }
+
+      // 5) Extrai local na geladeira (ex.: "prateleira do meio", "fundo da geladeira", "freezer")
+      const locMatch = text.match(/\b((?:prateleira|gaveta|freezer|congelador|porta|fundo)[^,.;]*)/i);
+      if (locMatch) {
+        result.location = locMatch[1].trim();
+      }
+
+      // 6) Extrai o nome do insumo pegando o primeiro segmento limpo antes dos metadados
+      let cleanedName = text.split(/[,;.\n]/)[0] || '';
+      cleanedName = cleanedName
+        .replace(/\blote\s*[:#-]?\s*[a-z0-9\-]+/gi, '')
+        .replace(/\b(validade|vence|vencimento|val)\b.*$/gi, '')
+        .replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}\b/g, '')
+        .replace(/\b\d+(?:[.,]\d+)?\s*(?:caixas?|cx|potes?|pacotes?|pct|unidades?|un|kg|g|l|litros?|ml|bandejas?|sacos?)\b/gi, '')
+        .replace(/^(chegou|chegaram|cadastrar|registrar|anotar|colocar)\s+/i, '')
+        .trim();
+
+      if (cleanedName) {
+        // Capitaliza a primeira letra para manter padrão visual
+        result.name = cleanedName.charAt(0).toUpperCase() + cleanedName.slice(1);
+      }
+
+      return result;
+    }
+
+    // Limpa o destaque amarelo dos campos sugeridos
+    function clearSuggestionHighlights() {
+      [nameInput, lotCodeInput, expiryInput, qtyInput, locInput].forEach(input => {
+        input.classList.remove('field-suggested');
+      });
+    }
+
+    // Atualiza a mensagem de status do assistente
+    function setAssistantStatus(message, state = 'ok') {
+      const statusEl = el('assistant-status');
+      statusEl.textContent = message;
+      statusEl.dataset.state = state;
+    }
+
+    // Executa a interpretação da frase e preenche os campos para conferência humana
+    function runAssistantParse() {
+      const text = nlInput.value.trim();
+      clearSuggestionHighlights();
+
+      if (!text) {
+        setAssistantStatus('Digite ou dite uma descrição do lote antes de interpretar.', 'warn');
+        nlInput.focus();
+        return;
+      }
+
+      const parsed = interpretNaturalText(text);
+
+      // Preenche somente os campos reconhecidos e destaca em amarelo para conferência
+      if (parsed.name) { nameInput.value = parsed.name; nameInput.classList.add('field-suggested'); }
+      if (parsed.lotCode) { lotCodeInput.value = parsed.lotCode; lotCodeInput.classList.add('field-suggested'); }
+      if (parsed.expiry) { expiryInput.value = parsed.expiry; expiryInput.classList.add('field-suggested'); }
+      if (parsed.qty) { qtyInput.value = parsed.qty; qtyInput.classList.add('field-suggested'); }
+      if (parsed.location) { locInput.value = parsed.location; locInput.classList.add('field-suggested'); }
+
+      // Verifica se faltou algum campo obrigatório (insumo ou data completa)
+      const missing = [];
+      if (!parsed.name) missing.push('nome do insumo');
+      if (!parsed.expiry) missing.push('data de validade completa (DD/MM/AAAA)');
+
+      if (missing.length > 0) {
+        const extra = parsed.ambiguousDateTerm
+          ? ` O termo "${parsed.ambiguousDateTerm}" é ambíguo — informe a data exata.`
+          : '';
+        setAssistantStatus(
+          `Campos parciais preenchidos. Falta informar: ${missing.join(' e ')}.${extra}`,
+          'warn'
+        );
+        if (!parsed.name) nameInput.focus();
+        else expiryInput.focus();
+        return;
+      }
+
+      setAssistantStatus(
+        'Campos preenchidos automaticamente! Confira os dados destacados abaixo e clique em "Confirmar e salvar lote".',
+        'ok'
+      );
+      el('save-btn').focus();
+    }
+
+    // Simula indisponibilidade do serviço de IA (Caso 3 de agente_IA.md)
+    // Regra: preserva o texto digitado e libera o formulário manual sem perder dados.
+    function simulateAssistantFailure() {
+      clearSuggestionHighlights();
+      setAssistantStatus(
+        'Assistente temporariamente indisponível. Seu texto foi preservado acima — preencha o formulário manual abaixo para continuar sem travar.',
+        'error'
+      );
+      nameInput.focus();
+    }
+
+    // Preenche rapidamente os exemplos da pauta agente_IA.md para demonstração
+    window.fillExample = function(exampleText) {
+      nlInput.value = exampleText;
+      runAssistantParse();
+    };
+
+    /* -------------------------------------------------------------------------
+       DITADO POR VOZ (WEB SPEECH API NATIVA DO NAVEGADOR)
+       - Permite falar com a mão ocupada na cozinha (funciona no Chrome/Edge).
+       - Se o navegador não suportar voz, informa e mantém o campo de texto.
+       ------------------------------------------------------------------------- */
+    function startVoiceCapture() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        setAssistantStatus('Seu navegador não suporta ditado por voz. Digite a frase no campo acima.', 'warn');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'pt-BR';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      const voiceBtn = el('voice-btn');
+      voiceBtn.textContent = '🔴 Ouvindo...';
+      voiceBtn.disabled = true;
+      setAssistantStatus('Pode falar agora (ex.: "Creme de leite, lote A12, validade 19/11/2026")...', 'ok');
+
+      recognition.onresult = event => {
+        const transcript = event.results[0][0].transcript;
+        nlInput.value = transcript;
+        runAssistantParse();
+      };
+
+      recognition.onerror = () => {
+        setAssistantStatus('Não foi possível capturar o áudio. Verifique a permissão do microfone ou digite o texto.', 'error');
+      };
+
+      recognition.onend = () => {
+        voiceBtn.textContent = '🎤 Falar';
+        voiceBtn.disabled = false;
+      };
+
+      recognition.start();
+    }
+
+    /* -------------------------------------------------------------------------
+       PERSISTÊNCIA E FEEDBACK DO FORMULÁRIO MANUAL
+       ------------------------------------------------------------------------- */
+    function showFeedback(message, isError = false) {
+      const fb = el('feedback');
+      fb.textContent = message;
+      fb.dataset.error = String(isError);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY_LOTS, JSON.stringify(lots));
+        localStorage.setItem(STORAGE_KEY_DISCARDS, JSON.stringify(discards));
+      } catch {
+        el('storage-note').textContent = 'Aviso: o navegador bloqueou o salvamento local. Os dados ficam ativos até recarregar a página.';
+      }
+    }
+
+    function loadState() {
+      try {
+        const savedLots = JSON.parse(localStorage.getItem(STORAGE_KEY_LOTS) || '[]');
+        const savedDiscards = JSON.parse(localStorage.getItem(STORAGE_KEY_DISCARDS) || '[]');
+        if (Array.isArray(savedLots)) lots = savedLots;
+        if (Array.isArray(savedDiscards)) discards = savedDiscards;
+      } catch {
+        lots = [];
+        discards = [];
+      }
+    }
+
+    function resetForm() {
+      editingId = null;
+      form.reset();
+      clearSuggestionHighlights();
+      el('form-title').textContent = 'Conferir / Cadastrar lote';
+      el('save-btn').textContent = 'Confirmar e salvar lote';
+      el('cancel-btn').hidden = true;
+    }
+
+    /* -------------------------------------------------------------------------
+       RENDERIZAÇÃO DA LISTA PVPS E LOG DE DESCARTES
+       ------------------------------------------------------------------------- */
+    function render() {
+      const refIso = refDateInput.value || getLocalTodayIso();
+
+      // Ordenação PVPS: menor data de validade sempre aparece no topo
+      const sorted = [...lots].sort((a, b) => a.expiry.localeCompare(b.expiry) || a.id - b.id);
+
+      let urgentCount = 0;
+      let soonCount = 0;
+
+      const listEl = el('lots-list');
+      el('empty-msg').hidden = sorted.length > 0;
+
+      listEl.innerHTML = sorted.map(lot => {
+        const daysLeft = diffDays(lot.expiry, refIso);
+        const st = getLotStatus(daysLeft);
+        if (st.urgent) urgentCount++;
+        if (st.soon) soonCount++;
+
+        const extras = [
+          lot.lotCode ? `Lote ${escapeHtml(lot.lotCode)}` : '',
+          lot.qty ? escapeHtml(lot.qty) : '',
+          lot.location ? escapeHtml(lot.location) : ''
+        ].filter(Boolean).join(' • ');
+
+        return `
+          <li class="lot-card ${st.cls}">
+            <div class="lot-info">
+              <div class="lot-name">
+                ${escapeHtml(lot.name)}
+                <span class="badge ${st.badgeCls}">${st.label}</span>
+              </div>
+              <div class="lot-meta">
+                Validade: <strong>${formatDateBr(lot.expiry)}</strong>${extras ? ` • ${extras}` : ''}
+              </div>
+            </div>
+            <div class="lot-actions">
+              <button type="button" class="secondary small" onclick="startEdit(${lot.id})">Corrigir</button>
+              <button type="button" class="small" onclick="markUsed(${lot.id})">Usado</button>
+              <button type="button" class="danger small" onclick="markDiscarded(${lot.id})">Descartado</button>
+            </div>
+          </li>
+        `;
+      }).join('');
+
+      el('count-urgent').textContent = String(urgentCount);
+      el('count-soon').textContent = String(soonCount);
+      el('count-discarded').textContent = String(discards.length);
+
+      const discardSection = el('discard-section');
+      const discardList = el('discard-list');
+      discardSection.hidden = discards.length === 0;
+      discardList.innerHTML = discards.slice(0, 8).map(d =>
+        `<div class="discard-item">• <strong>${escapeHtml(d.name)}</strong>${d.lotCode ? ` (Lote ${escapeHtml(d.lotCode)})` : ''} — validade ${formatDateBr(d.expiry)}${d.qty ? ` • ${escapeHtml(d.qty)}` : ''} • registrado em ${formatDateBr(d.recordedAt)}</div>`
+      ).join('');
+    }
+
+    /* -------------------------------------------------------------------------
+       AÇÕES DOS LOTES (EDITAR, MARCAR COMO USADO, REGISTRAR DESCARTE)
+       ------------------------------------------------------------------------- */
+    window.startEdit = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot) return;
+      clearSuggestionHighlights();
+      editingId = id;
+      nameInput.value = lot.name;
+      lotCodeInput.value = lot.lotCode || '';
+      expiryInput.value = lot.expiry;
+      qtyInput.value = lot.qty || '';
+      locInput.value = lot.location || '';
+      el('form-title').textContent = 'Corrigir lote';
+      el('save-btn').textContent = 'Salvar alteração';
+      el('cancel-btn').hidden = false;
+      showFeedback('Editando lote selecionado. Altere os campos e clique em Salvar alteração.');
+      expiryInput.focus();
+    };
+
+    window.markUsed = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot) return;
+      lots = lots.filter(item => item.id !== id);
+      if (editingId === id) resetForm();
+      saveState();
+      render();
+      showFeedback(`Lote "${lot.name}" marcado como usado e removido da lista.`);
+    };
+
+    window.markDiscarded = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot) return;
+      lots = lots.filter(item => item.id !== id);
+      discards.unshift({
+        name: lot.name,
+        lotCode: lot.lotCode,
+        expiry: lot.expiry,
+        qty: lot.qty,
+        recordedAt: refDateInput.value || getLocalTodayIso()
+      });
+      if (editingId === id) resetForm();
+      saveState();
+      render();
+      showFeedback(`Descarte de "${lot.name}" registrado para o acompanhamento do dono.`);
+    };
+
+    /* -------------------------------------------------------------------------
+       EVENTOS DO FORMULÁRIO E BOTÕES
+       ------------------------------------------------------------------------- */
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+
+      const name = nameInput.value.trim();
+      const lotCode = lotCodeInput.value.trim().toUpperCase();
+      const expiry = expiryInput.value.trim();
+      const qty = qtyInput.value.trim();
+      const location = locInput.value.trim();
+
+      // Validação obrigatória: impede entradas incompletas ou inválidas (Cenário 3 da E3)
+      if (!name) {
+        showFeedback('Informe o nome do insumo antes de salvar.', true);
+        nameInput.focus();
+        return;
+      }
+
+      if (!expiry || !/^\d{4}-\d{2}-\d{2}$/.test(expiry)) {
+        showFeedback('A data de validade é obrigatória. O lote não foi adicionado à lista.', true);
+        expiryInput.focus();
+        return;
+      }
+
+      if (editingId !== null) {
+        lots = lots.map(item =>
+          item.id === editingId ? { ...item, name, lotCode, expiry, qty, location } : item
+        );
+        showFeedback(`Lote "${name}" atualizado e reordenado na lista.`);
+      } else {
+        lots.push({
+          id: Date.now(),
+          name,
+          lotCode,
+          expiry,
+          qty,
+          location
+        });
+        showFeedback(`Lote "${name}" salvo e ordenado pela data de validade.`);
+      }
+
+      nlInput.value = '';
+      setAssistantStatus('');
+      resetForm();
+      saveState();
+      render();
+    });
+
+    el('parse-btn').addEventListener('click', runAssistantParse);
+    el('voice-btn').addEventListener('click', startVoiceCapture);
+    el('simulate-error-btn').addEventListener('click', simulateAssistantFailure);
+    el('cancel-btn').addEventListener('click', () => {
+      resetForm();
+      showFeedback('Edição cancelada.');
+    });
+
+    refDateInput.addEventListener('change', render);
+
+    // Inicialização da aplicação
+    refDateInput.value = getLocalTodayIso();
+    loadState();
+    render();
+  </script>
+</body>
+</html>
