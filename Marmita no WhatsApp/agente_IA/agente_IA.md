@@ -23,7 +23,7 @@ Tela voltada ao celular, inspirada nas ações rápidas da Flora. O microfone é
 
 ## Escopo da primeira versão
 
-Uma chamada de interpretação por mensagem, seguida de regras de validação e confirmação. O fluxo pode ser representado como estados: entrada → transcrição editável → interpretação → revisão ou consulta → resultado. A confirmação é o único caminho para gravar. O [protótipo manual da E3](../E3/index.html) serve de comparação.
+Uma chamada de interpretação por mensagem, seguida de regras de validação e confirmação. O fluxo pode ser representado como estados: entrada → transcrição editável → interpretação → revisão ou consulta → resultado. A confirmação é o único caminho para gravar. O [protótipo manual da E3](../htmls/E3-mvp-marmitas.html) serve de comparação. Consulte também a [arquitetura passo a passo](arquitetura-passo-a-passo.md).
 
 Avaliar resposta em voz alta, leitura de conversas em lote e integração com WhatsApp em experimentos posteriores, se ajudarem na rotina.
 

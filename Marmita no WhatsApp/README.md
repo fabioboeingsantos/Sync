@@ -13,14 +13,14 @@ O desafio é ajudar cozinheiras autônomas a acompanhar os pedidos confirmados e
 | Etapa | Conteúdo | Situação |
 | --- | --- | --- |
 | [E1 — Definição do desafio](E1.md) | Tema, motivo da escolha, dor, desafio em uma frase, [Matriz CSD](Matriz-CSD.md) e [persona fictícia](persona.md). | Concluída para o treino. |
-| [E2 — Validação do problema](E2.md) | Dez perguntas e respostas simuladas, decisão sobre a CSD e conclusão sobre o problema. A [tela da E2](E2/index.html) mostra o episódio da contagem. | Exercício concluído. Validação com público real em aberto. |
-| [E3 — Lean Canvas e MVP](E3.md) | Nove blocos do Canvas, [protótipo](E3/index.html), dados de exemplo, testes e roteiro para coletar feedback. | MVP verificado no Chrome. Feedback de outra pessoa sem registro. |
-| [E4 — Pitch](E4.md) | [Roteiro](E4/roteiro.md) com abertura, demonstração, postura e fechamento. | Ensaio em andamento, com meta de 2min55s. |
+| [E2 — Validação do problema](E2.md) | Dez perguntas e respostas simuladas, decisão sobre a CSD e conclusão sobre o problema. A [tela da E2](htmls/E2-tela-entrevista.html) mostra o episódio da contagem. | Exercício concluído. Validação com público real em aberto. |
+| [E3 — Lean Canvas e MVP](E3.md) | Nove blocos do Canvas, [protótipo](htmls/E3-mvp-marmitas.html), dados de exemplo, testes e roteiro para coletar feedback. | MVP verificado no Chrome. Feedback de outra pessoa sem registro. |
+| [E4 — Pitch](E4.md) | [Roteiro](pitch/roteiro.md) com abertura, demonstração, postura e fechamento. | Ensaio em andamento, com meta de 2min55s. |
 | [E5 — Arquivos da solução](E5.md) | Checklist do PDF final, link do MVP e evidências das etapas anteriores. | PDFs em montagem. Link público e QR Code a preparar, se usados. |
 
 ## Como abrir e usar o MVP
 
-Abra [E3/index.html](E3/index.html) no navegador. O MVP usa HTML, CSS e JavaScript no mesmo arquivo e roda sem servidor ou instalação.
+Abra [htmls/E3-mvp-marmitas.html](htmls/E3-mvp-marmitas.html) no navegador. O MVP usa HTML, CSS e JavaScript no mesmo arquivo e roda sem servidor ou instalação.
 
 1. Escolha a **data de preparo** e informe a **quantidade de marmitas** de um pedido confirmado.
 2. Clique em **Registrar pedido**.
@@ -49,7 +49,7 @@ A ideia é mostrar o QR Code entre **2:50 e 2:55** para quem quiser experimentar
 
 ## Dita — proposta experimental
 
-A [pauta da Dita](agente_IA/agente_IA.md) explora registro e consulta por voz ou texto. Maria poderia ditar um pedido, revisar a interpretação da data e da quantidade e confirmar na tela. A soma continuaria sendo calculada a partir dos pedidos salvos.
+A [pauta da Dita](agente_IA/agente_IA.md) e a [arquitetura passo a passo](agente_IA/arquitetura-passo-a-passo.md) exploram registro e consulta por voz ou texto. Maria poderia ditar um pedido, revisar a interpretação da data e da quantidade e confirmar na tela. A soma continuaria sendo calculada a partir dos pedidos salvos.
 
 A Dita está em fase de proposta. O MVP demonstrável é o registro manual da E3. Se o experimento avançar, o teste é comparar o esforço de ditar, revisar e salvar com o preenchimento dos campos à mão.
 

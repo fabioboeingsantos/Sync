@@ -95,7 +95,7 @@
 
 ## Preparação da demonstração
 
-1. Abra o [protótipo da E3](../E3/index.html) antes de começar e escolha duas datas vazias.
+1. Abra o [protótipo da E3](../htmls/E3-mvp-marmitas.html) antes de começar e escolha duas datas vazias.
 2. Deixe 2 marmitas no primeiro dia e 4 no segundo. Durante a fala, registre mais 3 no primeiro dia.
 3. Confira os totais e pratique a troca de data. Para outro ensaio, use novas datas vazias ou corrija os dados antes de começar.
 4. Para os slides finais, planeje uma gravação curta do mesmo fluxo como reserva. Se a navegação travar ao vivo, passe para a gravação e explique os totais.

@@ -1,4 +1,4 @@
-# Arquitetura Passo a Passo — Assistente de Estoque (IA)
+mo# Arquitetura Passo a Passo — Assistente de Estoque (IA)
 
 **Tema:** Gastronomia — Insumo vencendo na cozinha  
 **Protótipo separado para discussão em sala:** [htmls/agente-ia-cadastro.html](../htmls/agente-ia-cadastro.html)  
