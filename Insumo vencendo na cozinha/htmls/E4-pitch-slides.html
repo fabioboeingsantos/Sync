@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pitch E4 — Insumo vencendo na cozinha</title>
+  <style>
+    :root {
+      --font-main: Arial, Helvetica, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg-outer: #05070a;
+      --slide-bg: #0e131b;
+      --card-bg: #151c27;
+      --item-bg: #1b2432;
+      --text-primary: #ffffff;
+      --text-soft: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.14);
+      --accent: #fbbf24;
+      --green: #34d399;
+      --red: #f87171;
+      --blue: #38bdf8;
+    }
+
+    [data-theme="light"] {
+      --bg-outer: #e2e8f0;
+      --slide-bg: #ffffff;
+      --card-bg: #f8fafc;
+      --item-bg: #ffffff;
+      --text-primary: #0f172a;
+      --text-soft: #1e293b;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --accent: #b45309;
+      --green: #047857;
+      --red: #b91c1c;
+      --blue: #0369a1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-main);
+    }
+
+    body {
+      background: var(--bg-outer);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    /* Moldura 16:9 para retroprojetor */
+    .deck-shell {
+      width: 100%;
+      max-width: 1440px;
+      aspect-ratio: 16 / 9;
+      background: var(--slide-bg);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: clamp(22px, 2.8vw, 42px);
+      overflow: hidden;
+    }
+
+    @media (max-width: 960px) {
+      .deck-shell { aspect-ratio: auto; min-height: 85vh; }
+    }
+
+    /* Barra superior discreta */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .deck-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.4px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tool-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 10px;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tool-btn:hover { color: var(--text-primary); }
+
+    /* Área principal do slide */
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(14px, 1.8vw, 24px);
+      animation: fadeSlide 0.22s ease;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-tag {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: clamp(0.82rem, 0.95vw, 0.95rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      background: rgba(245, 158, 11, 0.16);
+      color: var(--accent);
+    }
+
+    .slide-title {
+      font-size: clamp(1.8rem, 3.1vw, 3.1rem);
+      font-weight: 700;
+      line-height: 1.12;
+      color: var(--text-primary);
+    }
+
+    .slide-lead {
+      font-size: clamp(1.1rem, 1.55vw, 1.55rem);
+      line-height: 1.42;
+      color: var(--text-soft);
+      max-width: 960px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 820px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--accent);
+      border-radius: 12px;
+      padding: clamp(16px, 1.8vw, 24px);
+    }
+
+    .card.green { border-left-color: var(--green); }
+    .card.red { border-left-color: var(--red); }
+    .card.blue { border-left-color: var(--blue); }
+
+    .card h3 {
+      font-size: clamp(1.08rem, 1.35vw, 1.35rem);
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .card p, .card li {
+      font-size: clamp(0.98rem, 1.15vw, 1.16rem);
+      line-height: 1.42;
+      color: var(--text-soft);
+    }
+
+    .card ul {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cta-link {
+      display: inline-block;
+      align-self: flex-start;
+      margin-top: 6px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: #175641;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: clamp(1rem, 1.15vw, 1.15rem);
+    }
+
+    .cta-link:hover { filter: brightness(1.1); }
+
+    /* Rodapé discreto */
+    .footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .footer-info {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      opacity: 0.75;
+      margin-right: auto;
+    }
+
+    .nav-btn {
+      padding: 5px 11px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      color: var(--text-primary);
+      background: rgba(128, 128, 128, 0.12);
+    }
+
+    .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+    /* Modo impressão para gerar o PDF da E5 (Ctrl+P -> Salvar como PDF) */
+    .print-deck { display: none; }
+
+    @media print {
+      @page { size: 16in 9in; margin: 0; }
+      body { background: #ffffff; padding: 0; display: block; }
+      .deck-shell { display: none !important; }
+      .print-deck { display: block; }
+      .print-slide {
+        width: 100vw;
+        height: 100vh;
+        page-break-after: always;
+        background: var(--slide-bg);
+        color: var(--text-primary);
+        padding: 48px 56px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 24px;
+      }
+      .print-slide:last-child { page-break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck-shell" id="deckRoot">
+    <div class="top-bar">
+      <span class="deck-label">Insumo vencendo na cozinha</span>
+      <div class="top-actions">
+        <button class="tool-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema (T)">☀️</button>
+        <button class="tool-btn" onclick="window.print()" title="Exportar slides em PDF (Ctrl+P)">PDF</button>
+        <button class="tool-btn" onclick="toggleFullscreen()" title="Tela cheia (F)">⛶</button>
+      </div>
+    </div>
+
+    <main id="slideMount" class="slide-body"></main>
+
+    <div class="footer-bar">
+      <span class="footer-info" id="slideCounter">Slide 1 de 8 • Setas ← →</span>
+      <button class="nav-btn" id="prevBtn">← Anterior</button>
+      <button class="nav-btn" id="nextBtn">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- Container usado apenas ao imprimir/salvar como PDF (gera 1 slide por página 16:9) -->
+  <div class="print-deck" id="printDeck"></div>
+
+  <script>
+    /*
+      SLIDES DO PITCH (E4):
+      - Estrutura alinhada ao storytelling (Dor -> Caminho -> Resolução) e aos 5 critérios do simulado.
+      - Suporta navegação por clique ou teclado (<-, ->, Espaço), Modo Claro/Escuro (T), Tela Cheia (F)
+        e exportação limpa para PDF via Ctrl+P (para entrega da E5).
+    */
+    const slides = [
+      {
+        html: `
+          <span class="slide-tag">Ato 1 • Gancho</span>
+          <h1 class="slide-title">Insumo vencendo na cozinha</h1>
+          <p class="slide-lead">“Você abre um creme de leite novo no almoço e, no sábado, descobre dois potes vencidos escondidos no fundo da geladeira.”</p>
+          <div class="card">
+            <h3>Controle simples de validade (PVPS) para restaurantes pequenos</h3>
+            <p>Simulado Hackathon UC6 · Apresentação da equipe</p>
+          </div>
+        `
+      },
+      {
+        html: `
+          <span class="slide-tag">Ato 1 • A Dor</span>
+          <h2 class="slide-title">O prejuízo invisível do caderno</h2>
+          <div class="grid-3">
+            <div class="card red">
+              <h3>Quem sofre</h3>
+              <p>Dono e cozinheiro de restaurante pequeno na rotina corrida do almoço.</p>
+            </div>
+            <div class="card">
+              <h3>Onde trava</h3>
+              <p>O estoque é anotado em um caderno e ingredientes vencem no fundo da geladeira.</p>
+            </div>
+            <div class="card red">
+              <h3>Consequência</h3>
+              <p>O desperdício não aparece no dia a dia — só estoura no fechamento do mês.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        html: `
+          <span class="slide-tag">Ato 2 • Matriz CSD (E1)</span>
+          <h2 class="slide-title">O que precisávamos descobrir antes de codar</h2>
+          <div class="grid-3">
+            <div class="card green">
+              <h3>C — Certezas</h3>
+              <ul>
+                <li>Controle feito em caderno.</li>
+                <li>Insumos vencem na geladeira.</li>
+                <li>Perda vista só no fim do mês.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>S — Suposições</h3>
+              <ul>
+                <li>Caderno difícil de consultar no preparo.</li>
+                <li>Compra nova empurra lote antigo.</li>
+                <li>Lista por validade ajuda a decidir.</li>
+              </ul>
+            </div>
+            <div class="card red">
+              <h3>D — Dúvida prioritária (D1)</h3>
+              <p><strong>Como a equipe escolhe qual lote usar primeiro</strong> e em que momento percebe um insumo vencido?</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        html: `
+          <span class="slide-tag">Ato 2 • O Caminho (E2)</span>
+          <h2 class="slide-title">O que a validação revelou na rotina</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Na visão do cozinheiro (P01)</h3>
+              <ul>
+                <li>O caderno fica fora da cozinha — no serviço não dá tempo de folhear.</li>
+                <li>Pega o lote mais acessível na frente; vencidos só aparecem na limpeza.</li>
+                <li>Caneta apaga na geladeira e lousa não é atualizada todo dia.</li>
+              </ul>
+            </div>
+            <div class="card blue">
+              <h3>Na visão do dono (P02)</h3>
+              <ul>
+                <li>Descartes raramente chegam na hora — só sente o impacto nas contas do mês.</li>
+                <li>ERP de computador foi abandonado por ser caro e trabalhoso.</li>
+                <li>Na cozinha, a única ferramenta sempre à mão é o celular.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        html: `
+          <span class="slide-tag">Ato 3 • A Solução (E3)</span>
+          <h2 class="slide-title">Simples como o caderno, inteligente como PVPS</h2>
+          <p class="slide-lead">Um fluxo rápido direto no navegador do celular — sem hardware caro, sem ERP complexo.</p>
+          <div class="grid-3">
+            <div class="card green">
+              <h3>1. Registrar em segundos</h3>
+              <p>Insumo + data de validade obrigatória (quantidade e prateleira opcionais).</p>
+            </div>
+            <div class="card">
+              <h3>2. Ordenar por vencimento</h3>
+              <p>O sistema coloca automaticamente no topo o que vence primeiro (PVPS) com alerta visual.</p>
+            </div>
+            <div class="card red">
+              <h3>3. Agir ou registrar perda</h3>
+              <p>1 toque para marcar como <strong>Usado</strong> ou <strong>Descartado</strong>, visível ao dono na hora.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        html: `
+          <span class="slide-tag">Ato 3 • Demo do MVP</span>
+          <h2 class="slide-title">Protótipo funcionando na prática</h2>
+          <div class="grid-2">
+            <div class="card green">
+              <h3>O que demonstramos ao vivo</h3>
+              <ul>
+                <li>Cadastro de dois lotes com validades diferentes → ordenação automática.</li>
+                <li>Correção de validade → reordenação imediata sem duplicar o lote.</li>
+                <li>Bloqueio de validade em branco + registro rápido de descarte.</li>
+              </ul>
+            </div>
+            <div class="card blue">
+              <h3>Abrir o MVP agora</h3>
+              <p>Roda 100% no navegador com salvamento local e relógio de teste para validação.</p>
+              <a class="cta-link" href="E3-mvp-validade.html" target="_blank">Abrir MVP (E3-mvp-validade.html) ↗</a>
+            </div>
+          </div>
+        `
+      },
+      {
+        html: `
+          <span class="slide-tag">Ato 3 • Viabilidade e Impacto</span>
+          <h2 class="slide-title">Por que funciona no restaurante pequeno</h2>
+          <div class="grid-2">
+            <div class="card green">
+              <h3>Viabilidade e Impacto</h3>
+              <ul>
+                <li><strong>Custo quase zero:</strong> roda no celular que a cozinha já tem.</li>
+                <li><strong>Menos desperdício:</strong> lote prestes a vencer vira prato do dia antes de estragar.</li>
+                <li><strong>Controle real:</strong> o dono vê perdas na semana, não só no fim do mês.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Próximos passos</h3>
+              <ul>
+                <li>Medir o tempo de consulta e cadastro em teste com outro grupo/restaurante real.</li>
+                <li>Validar alertas diários antes do turno de preparo.</li>
+                <li>Avaliar relatório mensal simples de perdas por categoria.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        html: `
+          <span class="slide-tag">Fechamento</span>
+          <h1 class="slide-title">Nenhum insumo vencendo escondido no fundo da geladeira.</h1>
+          <p class="slide-lead">Visibilidade diária na cozinha. Menos desperdício. Mais lucro no fim do mês.</p>
+          <div class="card green">
+            <h3>Obrigado!</h3>
+            <p>Insumo vencendo na cozinha · Perguntas da banca</p>
+          </div>
+        `
+      }
+    ];
+
+    let index = 0;
+
+    function render() {
+      document.getElementById('slideMount').innerHTML = slides[index].html;
+      document.getElementById('slideCounter').textContent = `Slide ${index + 1} de ${slides.length} • Setas ← →`;
+      document.getElementById('prevBtn').disabled = index === 0;
+      document.getElementById('nextBtn').disabled = index === slides.length - 1;
+    }
+
+    function buildPrintDeck() {
+      document.getElementById('printDeck').innerHTML = slides
+        .map(s => `<section class="print-slide">${s.html}</section>`)
+        .join('');
+    }
+
+    function next() { if (index < slides.length - 1) { index++; render(); } }
+    function prev() { if (index > 0) { index--; render(); } }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const nextTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', nextTheme);
+      document.getElementById('themeBtn').textContent = nextTheme === 'dark' ? '☀️' : '🌙';
+    }
+
+    function toggleFullscreen() {
+      const root = document.getElementById('deckRoot');
+      if (!document.fullscreenElement) root.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', prev);
+    document.getElementById('nextBtn').addEventListener('click', next);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key.toLowerCase() === 'f') toggleFullscreen();
+      if (e.key.toLowerCase() === 't') toggleTheme();
+    });
+
+    buildPrintDeck();
+    render();
+  </script>
+</body>
+</html>

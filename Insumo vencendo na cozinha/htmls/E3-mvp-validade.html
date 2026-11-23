@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controle de Validade — Insumo vencendo na cozinha (E3)</title>
+  <style>
+    /* Paleta limpa e de alto contraste para uso rápido no celular da cozinha */
+    :root {
+      color-scheme: light;
+      font: 100%/1.5 Arial, Helvetica, sans-serif;
+      color: #1e293b;
+      background: #f6f4ed;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    header {
+      background: #163d31;
+      color: #ffffff;
+      padding: 1.8rem max(1rem, calc((100% - 66rem) / 2));
+    }
+
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(1.6rem, 4.5vw, 2.5rem); line-height: 1.1; margin: .3rem 0 .5rem; }
+    header p { color: #e4efe5; }
+    .tag { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+
+    main {
+      max-width: 68rem;
+      margin: 0 auto;
+      padding: 1.3rem 1rem 3rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1.1rem;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      align-items: start;
+    }
+
+    section {
+      background: #fffdf8;
+      border: 1px solid #dedfd4;
+      border-radius: 1rem;
+      padding: clamp(1rem, 2.8vw, 1.5rem);
+    }
+
+    h2 { font-size: 1.25rem; margin-bottom: .8rem; color: #163d31; }
+
+    label { display: block; font-weight: 700; margin-top: .75rem; font-size: .95rem; }
+
+    input, button {
+      font: inherit;
+      border-radius: .55rem;
+      min-height: 2.7rem;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #94a3b8;
+      padding: .45rem .65rem;
+      color: inherit;
+      background: #ffffff;
+      margin-top: .25rem;
+    }
+
+    button {
+      cursor: pointer;
+      background: #175641;
+      color: #ffffff;
+      border: 1px solid #175641;
+      padding: .45rem .9rem;
+      font-weight: 700;
+    }
+
+    button.secondary {
+      background: #ffffff;
+      color: #175641;
+    }
+
+    button.danger {
+      background: #ffffff;
+      color: #b91c1c;
+      border-color: #fca5a5;
+    }
+
+    button.small {
+      min-height: 2.1rem;
+      padding: .25rem .65rem;
+      font-size: .85rem;
+    }
+
+    :focus-visible { outline: 3px solid #d97706; outline-offset: 2px; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: 1rem;
+    }
+
+    /* Resumo rápido no topo da lista para o cozinheiro e o dono */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .6rem;
+      margin: .9rem 0 1rem;
+    }
+
+    .metric {
+      background: #f1f5f9;
+      border-radius: .7rem;
+      padding: .65rem .75rem;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.45rem;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      font-size: .8rem;
+      color: #475569;
+    }
+
+    .metric.alert { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+    .metric.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+
+    /* Relógio de teste explícito para validar cenários da E3 */
+    .clock-box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      background: #eef4f1;
+      border: 1px dashed #94a3b8;
+      border-radius: .7rem;
+      padding: .55rem .8rem;
+      margin-bottom: .9rem;
+      font-size: .9rem;
+    }
+
+    .clock-box label { margin: 0; font-size: .88rem; }
+    .clock-box input { width: auto; min-height: 2.1rem; margin: 0; padding: .2rem .5rem; }
+
+    ol { margin: 0; padding: 0; list-style: none; }
+
+    li.lot-card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: .7rem;
+      border: 1px solid #e2e8f0;
+      border-left: 5px solid #10b981;
+      border-radius: .75rem;
+      padding: .75rem .9rem;
+      margin-bottom: .65rem;
+      background: #ffffff;
+    }
+
+    li.lot-card.status-expired { border-left-color: #dc2626; background: #fef2f2; }
+    li.lot-card.status-today { border-left-color: #ea580c; background: #fff7ed; }
+    li.lot-card.status-soon { border-left-color: #d97706; background: #fffbeb; }
+
+    .lot-info { flex: 1; min-width: 12rem; }
+    .lot-name { font-weight: 700; font-size: 1.05rem; }
+    .lot-meta { font-size: .88rem; color: #475569; margin-top: .15rem; }
+
+    .badge {
+      display: inline-block;
+      font-size: .78rem;
+      font-weight: 700;
+      padding: .15rem .55rem;
+      border-radius: 999px;
+      margin-left: .4rem;
+      vertical-align: middle;
+    }
+
+    .badge-expired { background: #fee2e2; color: #991b1b; }
+    .badge-today { background: #ffedd5; color: #9a3412; }
+    .badge-soon { background: #fef3c7; color: #92400e; }
+    .badge-ok { background: #d1fae5; color: #065f46; }
+
+    .lot-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+    }
+
+    .hint { color: #475569; font-size: .9rem; margin-top: .7rem; }
+
+    #feedback { margin-top: .75rem; font-weight: 700; min-height: 1.4rem; }
+    #feedback[data-error="true"] { color: #b91c1c; }
+    #feedback[data-error="false"] { color: #047857; }
+
+    .discard-log {
+      margin-top: 1rem;
+      padding-top: .8rem;
+      border-top: 1px solid #dedfd4;
+    }
+
+    .discard-log h3 { font-size: 1rem; margin: 0 0 .45rem; color: #991b1b; }
+    .discard-item { font-size: .88rem; color: #475569; padding: .25rem 0; }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 46rem) {
+      .grid { grid-template-columns: minmax(0, 1fr); }
+      .summary-bar { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="tag">Insumo vencendo na cozinha · MVP E3</p>
+    <h1>Controle de Validade (PVPS)</h1>
+    <p>Cadastre cada lote com sua data de validade e consulte rapidamente o que vence primeiro antes do preparo.</p>
+  </header>
+
+  <main>
+    <div class="grid">
+      <!-- COMPONENTE 1: Formulário de cadastro e correção de validade -->
+      <section aria-labelledby="form-title">
+        <h2 id="form-title">Cadastrar lote</h2>
+        <!-- novalidate permite exibir mensagem clara e padronizada no próprio layout em caso de erro -->
+        <form id="lot-form" novalidate>
+          <label for="item-name">Insumo *</label>
+          <input id="item-name" type="text" placeholder="Ex.: Creme de leite" required>
+
+          <label for="expiry-date">Data de validade *</label>
+          <input id="expiry-date" type="date" required>
+
+          <label for="quantity">Quantidade (opcional)</label>
+          <input id="quantity" type="text" placeholder="Ex.: 2 caixas ou 500g">
+
+          <label for="location">Local na geladeira (opcional)</label>
+          <input id="location" type="text" placeholder="Ex.: Prateleira do meio">
+
+          <div class="actions">
+            <button id="save-btn" type="submit">Salvar lote</button>
+            <button id="cancel-btn" class="secondary" type="button" hidden>Cancelar edição</button>
+          </div>
+          <p id="feedback" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <!-- COMPONENTE 2: Lista ordenada por validade (PVPS) + resumo para dono e cozinheiro -->
+      <section aria-labelledby="list-title">
+        <h2 id="list-title">Lista por validade (vence primeiro)</h2>
+
+        <!-- Relógio de teste: permite simular qualquer data (ex.: 18/11/2026 nos testes da E3) -->
+        <div class="clock-box">
+          <label for="reference-date">Data de referência (relógio de teste):</label>
+          <input id="reference-date" type="date">
+        </div>
+
+        <div class="summary-bar" aria-live="polite">
+          <div class="metric alert">
+            <strong id="count-urgent">0</strong>
+            <span>Vencidos ou hoje</span>
+          </div>
+          <div class="metric warn">
+            <strong id="count-soon">0</strong>
+            <span>Vencem em até 3 dias</span>
+          </div>
+          <div class="metric">
+            <strong id="count-discarded">0</strong>
+            <span>Descartes registrados</span>
+          </div>
+        </div>
+
+        <p id="empty-msg" class="hint">Nenhum lote ativo cadastrado. Cadastre o primeiro lote ao lado.</p>
+        <ol id="lots-list" aria-label="Lotes ordenados pela data de validade"></ol>
+
+        <!-- Registro simples de descartes para dar visibilidade ao dono antes do fim do mês -->
+        <div class="discard-log" id="discard-section" hidden>
+          <h3>Descartes por vencimento (visão do dono)</h3>
+          <div id="discard-list"></div>
+        </div>
+      </section>
+    </div>
+
+    <p id="storage-note" class="hint">MVP da E3 rodando localmente no navegador (sem necessidade de servidor). Os dados ficam salvos neste navegador.</p>
+  </main>
+
+  <script>
+    /*
+      ARQUITETURA DO MVP (E3):
+      - Aplicação 100% client-side em HTML + CSS + JavaScript puro para rodar em qualquer celular ou PC.
+      - Regra central de negócio (PVPS - Primeiro que Vence, Primeiro que Sai):
+        todos os lotes ativos são ordenados sempre pela menor data de validade primeiro.
+      - Regras de validação: nome do insumo e data de validade são obrigatórios;
+        entradas inválidas exibem erro claro e não entram na lista.
+      - Registro de descarte: permite ao cozinheiro marcar um item como descartado em 1 toque,
+        gerando histórico imediato para o dono acompanhar perdas antes do fim do mês.
+    */
+
+    const STORAGE_KEY_LOTS = 'insumo-e3-lotes-v1';
+    const STORAGE_KEY_DISCARDS = 'insumo-e3-descartes-v1';
+
+    const el = id => document.getElementById(id);
+    const form = el('lot-form');
+    const nameInput = el('item-name');
+    const expiryInput = el('expiry-date');
+    const qtyInput = el('quantity');
+    const locInput = el('location');
+    const refDateInput = el('reference-date');
+
+    let lots = [];
+    let discards = [];
+    let editingId = null;
+
+    // Retorna a data local no formato YYYY-MM-DD sem sofrer deslocamento de fuso UTC
+    function getLocalTodayIso() {
+      const now = new Date();
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')
+      ].join('-');
+    }
+
+    // Formata YYYY-MM-DD para DD/MM/YYYY para leitura rápida na cozinha
+    function formatDateBr(iso) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    // Calcula diferença em dias inteiros entre a data de validade e a data de referência
+    function diffDays(expiryIso, refIso) {
+      const [ey, em, ed] = expiryIso.split('-').map(Number);
+      const [ry, rm, rd] = refIso.split('-').map(Number);
+      const expUtc = Date.UTC(ey, em - 1, ed);
+      const refUtc = Date.UTC(ry, rm - 1, rd);
+      return Math.round((expUtc - refUtc) / 86400000);
+    }
+
+    // Classifica o status visual do lote com base nos dias restantes
+    function getLotStatus(daysLeft) {
+      if (daysLeft < 0) {
+        return { cls: 'status-expired', badgeCls: 'badge-expired', label: `Vencido há ${Math.abs(daysLeft)}d`, urgent: true, soon: false };
+      }
+      if (daysLeft === 0) {
+        return { cls: 'status-today', badgeCls: 'badge-today', label: 'Vence hoje', urgent: true, soon: false };
+      }
+      if (daysLeft <= 3) {
+        return { cls: 'status-soon', badgeCls: 'badge-soon', label: `Vence em ${daysLeft}d`, urgent: false, soon: true };
+      }
+      return { cls: '', badgeCls: 'badge-ok', label: `Faltam ${daysLeft}d`, urgent: false, soon: false };
+    }
+
+    function showFeedback(message, isError = false) {
+      const fb = el('feedback');
+      fb.textContent = message;
+      fb.dataset.error = String(isError);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY_LOTS, JSON.stringify(lots));
+        localStorage.setItem(STORAGE_KEY_DISCARDS, JSON.stringify(discards));
+      } catch {
+        el('storage-note').textContent = 'Aviso: o navegador bloqueou o salvamento local. Os dados ficam ativos até recarregar a página.';
+      }
+    }
+
+    function loadState() {
+      try {
+        const savedLots = JSON.parse(localStorage.getItem(STORAGE_KEY_LOTS) || '[]');
+        const savedDiscards = JSON.parse(localStorage.getItem(STORAGE_KEY_DISCARDS) || '[]');
+        if (Array.isArray(savedLots)) lots = savedLots;
+        if (Array.isArray(savedDiscards)) discards = savedDiscards;
+      } catch {
+        lots = [];
+        discards = [];
+      }
+    }
+
+    function resetForm() {
+      editingId = null;
+      form.reset();
+      el('form-title').textContent = 'Cadastrar lote';
+      el('save-btn').textContent = 'Salvar lote';
+      el('cancel-btn').hidden = true;
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    // Renderiza a lista aplicando a regra PVPS (menor data de validade no topo)
+    function render() {
+      const refIso = refDateInput.value || getLocalTodayIso();
+      const sorted = [...lots].sort((a, b) => a.expiry.localeCompare(b.expiry) || a.id - b.id);
+
+      let urgentCount = 0;
+      let soonCount = 0;
+
+      const listEl = el('lots-list');
+      el('empty-msg').hidden = sorted.length > 0;
+
+      listEl.innerHTML = sorted.map(lot => {
+        const daysLeft = diffDays(lot.expiry, refIso);
+        const st = getLotStatus(daysLeft);
+        if (st.urgent) urgentCount++;
+        if (st.soon) soonCount++;
+
+        const extras = [lot.qty, lot.location].filter(Boolean).map(escapeHtml).join(' • ');
+
+        return `
+          <li class="lot-card ${st.cls}">
+            <div class="lot-info">
+              <div class="lot-name">
+                ${escapeHtml(lot.name)}
+                <span class="badge ${st.badgeCls}">${st.label}</span>
+              </div>
+              <div class="lot-meta">
+                Validade: <strong>${formatDateBr(lot.expiry)}</strong>${extras ? ` • ${extras}` : ''}
+              </div>
+            </div>
+            <div class="lot-actions">
+              <button type="button" class="secondary small" onclick="startEdit(${lot.id})">Corrigir</button>
+              <button type="button" class="small" onclick="markUsed(${lot.id})">Usado</button>
+              <button type="button" class="danger small" onclick="markDiscarded(${lot.id})">Descartado</button>
+            </div>
+          </li>
+        `;
+      }).join('');
+
+      el('count-urgent').textContent = String(urgentCount);
+      el('count-soon').textContent = String(soonCount);
+      el('count-discarded').textContent = String(discards.length);
+
+      const discardSection = el('discard-section');
+      const discardList = el('discard-list');
+      discardSection.hidden = discards.length === 0;
+      discardList.innerHTML = discards.slice(0, 8).map(d =>
+        `<div class="discard-item">• <strong>${escapeHtml(d.name)}</strong> (validade ${formatDateBr(d.expiry)})${d.qty ? ` — ${escapeHtml(d.qty)}` : ''} • registrado em ${formatDateBr(d.recordedAt)}</div>`
+      ).join('');
+    }
+
+    // Inicia a edição do mesmo lote (sem criar duplicata)
+    window.startEdit = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot) return;
+      editingId = id;
+      nameInput.value = lot.name;
+      expiryInput.value = lot.expiry;
+      qtyInput.value = lot.qty || '';
+      locInput.value = lot.location || '';
+      el('form-title').textContent = 'Corrigir lote';
+      el('save-btn').textContent = 'Salvar alteração';
+      el('cancel-btn').hidden = false;
+      showFeedback('Editando lote selecionado. Altere os campos e clique em Salvar alteração.');
+      nameInput.focus();
+    };
+
+    // Remove o lote da lista quando consumido dentro do prazo
+    window.markUsed = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot) return;
+      lots = lots.filter(item => item.id !== id);
+      if (editingId === id) resetForm();
+      saveState();
+      render();
+      showFeedback(`Lote "${lot.name}" marcado como usado e removido da lista.`);
+    };
+
+    // Registra o descarte na visão do dono e remove o lote da lista ativa
+    window.markDiscarded = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot) return;
+      lots = lots.filter(item => item.id !== id);
+      discards.unshift({
+        name: lot.name,
+        expiry: lot.expiry,
+        qty: lot.qty,
+        recordedAt: refDateInput.value || getLocalTodayIso()
+      });
+      if (editingId === id) resetForm();
+      saveState();
+      render();
+      showFeedback(`Descarte de "${lot.name}" registrado para o acompanhamento do dono.`);
+    };
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+
+      const name = nameInput.value.trim();
+      const expiry = expiryInput.value.trim();
+      const qty = qtyInput.value.trim();
+      const location = locInput.value.trim();
+
+      // Regra de entrada inválida (Cenário 3 de teste da E3)
+      if (!name) {
+        showFeedback('Informe o nome do insumo antes de salvar.', true);
+        nameInput.focus();
+        return;
+      }
+
+      if (!expiry || !/^\d{4}-\d{2}-\d{2}$/.test(expiry)) {
+        showFeedback('A data de validade é obrigatória. O lote não foi adicionado à lista.', true);
+        expiryInput.focus();
+        return;
+      }
+
+      if (editingId !== null) {
+        lots = lots.map(item =>
+          item.id === editingId ? { ...item, name, expiry, qty, location } : item
+        );
+        showFeedback(`Lote "${name}" atualizado e reordenado na lista.`);
+      } else {
+        lots.push({
+          id: Date.now(),
+          name,
+          expiry,
+          qty,
+          location
+        });
+        showFeedback(`Lote "${name}" salvo e ordenado pela data de validade.`);
+      }
+
+      resetForm();
+      saveState();
+      render();
+    });
+
+    el('cancel-btn').addEventListener('click', () => {
+      resetForm();
+      showFeedback('Edição cancelada.');
+    });
+
+    refDateInput.addEventListener('change', render);
+
+    // Inicialização
+    refDateInput.value = getLocalTodayIso();
+    loadState();
+    render();
+  </script>
+</body>
+</html>
