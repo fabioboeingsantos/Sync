@@ -1,0 +1,79 @@
+/* Layout da tela de estoque. Os botões usam os estilos compartilhados em css/botoes.css. */
+:root {
+  font-family: system-ui, sans-serif;
+  color: #153327;
+  background: #f2f6f3;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+h1, h2, p { margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; letter-spacing: -.04em; }
+h2 { font-size: 1.25rem; letter-spacing: -.025em; }
+.topo { background: #102f22; color: #fff; }
+.largura { width: min(100% - 2rem, 69rem); margin-inline: auto; }
+.topo-conteudo { min-height: 4.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.marca { display: flex; align-items: center; gap: .65rem; font-size: 1.125rem; font-weight: 750; }
+.marca-sinal { display: grid; place-items: center; width: 2.35rem; height: 2.35rem; border: 1px solid #5e9675; border-radius: .7rem; background: #28513b; font-size: .875rem; }
+/* O cabeçalho escuro precisa de um contorno de foco claro. */
+.topo .botao { --btn-foco: #c3f5d5; }
+main { padding-block: 1.75rem 3rem; }
+.pular { position: fixed; left: 1rem; top: .5rem; padding: .75rem; background: #fff; color: #153327; transform: translateY(-150%); z-index: 1; }
+.pular:focus { transform: translateY(0); }
+.aviso-local { display: inline-block; padding: .4rem .65rem; border: 1px solid #bacdc0; border-radius: .5rem; color: #294638; font-size: .875rem; margin-bottom: 1rem; }
+.painel { padding: clamp(1rem, 3vw, 1.6rem); border: 1px solid #d4e1d8; border-radius: 1rem; background: #fff; }
+.entrada { max-width: 29rem; margin: 1rem auto; }
+.entrada h1, #sem-restaurante h1 { font-size: clamp(1.55rem, 4vw, 2rem); }
+.entrada details { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid #d4e1d8; overflow-wrap: anywhere; }
+summary { font-weight: 650; cursor: pointer; }
+.entrada ul { margin: .65rem 0; padding-left: 1.2rem; }
+.entrada li { margin-bottom: .35rem; }
+#sem-restaurante p { margin-top: .7rem; }
+.cabecalho-estoque { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.4rem; }
+.restaurante { color: #4c6556; font-weight: 650; margin-bottom: .35rem; }
+.painel-cadastro { margin-bottom: 1rem; }
+.dialogo-validade { width: min(100% - 2rem, 27rem); color: inherit; }
+.dialogo-validade::backdrop { background: rgb(16 47 34 / 52%); }
+#lote-em-correcao, #lote-em-abertura { margin-top: .75rem; overflow-wrap: anywhere; }
+#validade-atual, #saldo-fechado { color: #4c6556; }
+.formulario { display: grid; gap: .9rem; margin-top: 1rem; }
+.formulario > .botao { justify-self: start; }
+.grade-formulario { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+.formulario label { display: block; font-size: .875rem; font-weight: 650; }
+.formulario label span { font-weight: 400; color: #4c6556; }
+.formulario input, .formulario select { display: block; width: 100%; min-width: 0; min-height: 3rem; margin-top: .35rem; padding: .65rem .7rem; border: 1px solid #80978a; border-radius: .65rem; background: #fff; color: inherit; font: 400 1rem system-ui, sans-serif; }
+.formulario select { appearance: none; padding-right: 2rem; background-image: linear-gradient(45deg, transparent 50%, #355746 50%), linear-gradient(135deg, #355746 50%, transparent 50%); background-position: calc(100% - 15px) center, calc(100% - 10px) center; background-size: 5px 5px; background-repeat: no-repeat; }
+.formulario [aria-invalid="true"] { border-color: #a5221d; }
+.formulario :is(input, select):focus-visible, summary:focus-visible { outline: 3px solid #1f4d2e; outline-offset: 2px; }
+.acoes { display: flex; flex-wrap: wrap; gap: .6rem; }
+.mensagem { color: #3d594b; }
+.mensagem:not(:empty) { padding-block: .7rem; }
+.mensagem.erro { color: #a5221d; }
+.painel-lista h2 { margin-bottom: .75rem; }
+table { border-collapse: collapse; width: 100%; text-align: left; }
+th, td { padding: .85rem .6rem; border-bottom: 1px solid #dce7df; }
+th { color: #4c6556; font-size: .875rem; }
+td:first-child { font-weight: 650; overflow-wrap: anywhere; }
+td small { display: block; color: #4c6556; font-size: .875rem; font-weight: 400; }
+.rotulo-celula { display: none; }
+tbody tr:last-child td { border-bottom: 0; }
+/* A cor complementa o texto dos estados de validade. */
+.estado { display: inline-block; padding: .3rem .55rem; border-radius: .45rem; background: #e8f2eb; color: #23503a; font-size: .875rem; font-weight: 650; }
+.estado[data-situacao="hoje"] { background: #fff1d5; color: #6a490a; }
+.estado[data-situacao="vencido"] { background: #fde7e5; color: #8e211b; }
+
+/* No celular, cada lote mantém seus dados e ações juntos, sem rolagem horizontal. */
+@media (max-width: 620px) {
+  .largura { width: calc(100% - 1.25rem); }
+  .grade-formulario { grid-template-columns: minmax(0, 1fr); }
+  table, tbody { display: block; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem .85rem; padding: .85rem 0; border-bottom: 1px solid #dce7df; }
+  tbody tr:last-child { border-bottom: 0; }
+  td { padding: 0; border: 0; overflow-wrap: anywhere; }
+  td:first-child, td:last-child { grid-column: 1 / -1; }
+  .rotulo-celula { display: block; margin-bottom: .15rem; color: #4c6556; font-size: .875rem; }
+  .estado { padding: .2rem .3rem; }
+}

@@ -1,0 +1,7 @@
+# Identificador do ambiente de desenvolvimento do Supabase CLI.
+project_id = "visionchef"
+
+[functions.login-usuario]
+# O endpoint recebe a senha antes que exista uma sessão. O Supabase Auth valida a credencial.
+verify_jwt = false
+entrypoint = "./functions/login-usuario/index.js"

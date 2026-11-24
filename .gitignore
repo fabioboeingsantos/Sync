@@ -6,6 +6,8 @@
 *.key
 # Dependências e arquivos temporários
 node_modules/
+dist/
+.dados-local/
 .venv/
 __pycache__/
 .DS_Store

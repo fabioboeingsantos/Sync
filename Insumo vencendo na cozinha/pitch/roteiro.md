@@ -1,6 +1,6 @@
 # Roteiro de ensaio — Insumo vencendo na cozinha
 
-[Voltar à E4](../../desafios/E4.md) · [Slides E4](E4-pitch-slides.html) · [E1](../../desafios/E1.md) · [E2](../../desafios/E2.md) · [E3](../../desafios/E3.md) · [MVP (E3)](../htmls/E3-mvp-validade.html) · [E5](../../desafios/E5.md)
+[Voltar à E4](../desafios/E4.md) · [Slides E4](E4-pitch-slides.html) · [E1](../desafios/E1.md) · [E2](../desafios/E2.md) · [E3](../desafios/E3.md) · [MVP (E3)](../htmls/E3-mvp-validade.html) · [E5](../desafios/E5.md)
 
 **Tema:** Gastronomia — Insumo vencendo na cozinha  
 **Duração máxima:** 3 minutos (meta de ensaio: **2min55s**, deixando 5s de margem)  

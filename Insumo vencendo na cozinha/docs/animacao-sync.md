@@ -1,7 +1,7 @@
 # Abertura da SYNC
 
 - Referência — abertura da [Igloo Inc.](https://www.igloo.inc/), conforme a [análise da sequência publicada](https://rickcreates.com/r/2024-07-23-igloo-inc).
-- Implementação — [landing page](../index.html) e [estilos da SYNC](../css/sync.css), sem dependências de execução.
+- Implementação — [landing page](../../index.html) e [estilos da SYNC](../abertura/sync.css), sem dependências de execução.
 - Fidelidade — adaptação do movimento. A sequência linhas → luz → emblema → texto usa a identidade visual da SYNC e tempos próprios.
 
 | Camada | Início | Duração | Movimento |

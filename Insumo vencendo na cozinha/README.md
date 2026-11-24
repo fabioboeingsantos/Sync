@@ -2,18 +2,18 @@
 
 **VisionChef** é o sistema de controle de validade para cozinhas desenvolvido pela **SYNC**. A coruja identifica a SYNC, e a marca VisionChef identifica as telas de estoque e cadastro.
 
-Segundo simulado da UC6. Um restaurante pequeno controla o estoque em um caderno. Ingredientes vencem no fundo da geladeira, e o desperdício só aparece no fim do mês. A situação afeta o dono e o cozinheiro. Consulte as [regras do modelo](regras.md) e o [guia UC6](../docs/GUIA-SIMULADO-UC6.md).
+Segundo simulado da UC6. Um restaurante pequeno controla o estoque em um caderno. Ingredientes vencem no fundo da geladeira, e o desperdício só aparece no fim do mês. A situação afeta o dono e o cozinheiro. Consulte as [regras do modelo](regras.md) e o [guia UC6](docs/GUIA-SIMULADO-UC6.md).
 
 | Arquivo | Quando usar |
 | --- | --- |
-| [E1](../desafios/E1.md), [CSD](Matriz-CSD.md) e [persona](persona.md) | Definir problema, público e desafio. |
-| [E2](../desafios/E2.md) | Entrevistar e registrar a revisão da CSD. |
-| [E3](../desafios/E3.md) e [MVP](htmls/E3-mvp-validade.html) | Planejar, executar e testar o MVP (abrir `htmls/E3-mvp-validade.html` direto no navegador). |
-| [E4](../desafios/E4.md), [roteiro](pitch/roteiro.md) e [slides](pitch/E4-pitch-slides.html) | Preparar, apresentar e exportar o pitch em PDF (`Ctrl + P`). |
-| [E5](../desafios/E5.md) | Organizar PDF, link e evidências. |
+| [E1](desafios/E1.md), [CSD](Matriz-CSD.md) e [persona](persona.md) | Definir problema, público e desafio. |
+| [E2](desafios/E2.md) | Entrevistar e registrar a revisão da CSD. |
+| [E3](desafios/E3.md) e [MVP](htmls/E3-mvp-validade.html) | Planejar, executar e testar o MVP (abrir `htmls/E3-mvp-validade.html` direto no navegador). |
+| [E4](desafios/E4.md), [roteiro](pitch/roteiro.md) e [slides](pitch/E4-pitch-slides.html) | Preparar, apresentar e exportar o pitch em PDF (`Ctrl + P`). |
+| [E5](desafios/E5.md) | Organizar PDF, link e evidências. |
 | [Índice de imagens](imagens/README.md) | Registrar as imagens produzidas para este tema. |
 | [Agente de IA](agente_IA/agente_IA.md), [arquitetura](agente_IA/arquitetura-passo-a-passo.md) e [protótipo IA](htmls/agente-ia-cadastro.html) | Discutir em sala e testar o assistente de cadastro (texto natural e voz) separado do MVP manual. |
-| [Landing page](../index.html) e [animação da SYNC](../docs/animacao-sync.md) | Abrir a página inicial e consultar os tempos da animação. |
+| [Landing page](../index.html) e [animação da SYNC](docs/animacao-sync.md) | Abrir a página inicial e consultar os tempos da animação. |
 
 ### Como executar os arquivos HTML (`htmls/`)
 - **MVP da E3 (manual):** abra [htmls/E3-mvp-validade.html](htmls/E3-mvp-validade.html) no Chrome/Edge.

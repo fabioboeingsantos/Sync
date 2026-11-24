@@ -1,5 +1,13 @@
 # Regras do projeto
 
+## Organização do repositório
+
+Consulte o [mapa da raiz](docs/MAPA-DA-RAIZ.md) antes de criar pastas ou mover arquivos. Ao incluir, mover ou renomear um item listado no mapa, atualize o inventário e confira os caminhos afetados na mesma mudança.
+
+## Comentários no código
+
+Todo código novo ou alterado deve ser comentado em português. Explique, junto ao trecho relevante, a finalidade do arquivo, as regras de negócio, as decisões importantes e os detalhes que exigem contexto. Inclua scripts, testes, telas, estilos e migrações. Documente configurações de formatos sem suporte a comentários, como JSON, no README pertinente.
+
 ## Padrão obrigatório para botões (Cesta do Vale)
 
 Todo botão novo criado em qualquer página ou componente deste projeto **deve** seguir o padrão visual da Cesta do Vale definido em `css/botoes.css`, usando a classe base `.botao` combinada com uma variante: `.botao-primario` ou `.botao-secundario`.

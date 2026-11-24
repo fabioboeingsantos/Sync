@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estoque | VisionChef</title>
+  <!-- A página de estoque fica em /estoque/ e compartilha os recursos servidos na raiz. -->
+  <link rel="stylesheet" href="../css/estoque.css">
+  <!-- Reutiliza o padrão de botões definido para o projeto. -->
+  <link rel="stylesheet" href="../css/botoes.css">
+  <script type="module" src="../estoque.js"></script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Ir para o conteúdo</a>
+  <header class="topo">
+    <div class="largura topo-conteudo">
+      <div class="marca"><span class="marca-sinal" aria-hidden="true">VC</span> VisionChef</div>
+      <button class="botao botao-secundario" id="sair" type="button" hidden>Sair</button>
+    </div>
+  </header>
+  <main class="largura" id="conteudo" tabindex="-1">
+    <!-- A interface exibe o painel compatível com a sessão e o acesso ao restaurante. -->
+    <p class="aviso-local" id="ambiente-local" hidden>Ambiente local com contas e dados fictícios</p>
+    <p id="situacao-sessao" role="status" class="mensagem">Verificando acesso…</p>
+
+    <section class="painel entrada" id="entrada" aria-labelledby="titulo-entrada" hidden>
+      <h1 id="titulo-entrada" tabindex="-1">Entre para ver o estoque</h1>
+      <form id="form-entrada" class="formulario">
+        <label>Usuário ou e-mail <input name="identificador" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+        <label>Senha <input name="senha" type="password" autocomplete="current-password" required></label>
+        <button type="submit" class="botao botao-primario">Entrar</button>
+      </form>
+      <!-- contas-ficticias-inicio -->
+      <details id="contas-locais" hidden>
+        <summary>Contas de teste</summary>
+        <ul>
+          <li>Dono do piloto <strong>dono.piloto</strong> ou <strong>dono@piloto.test</strong></li>
+          <li>Cozinheiro do piloto <strong>cozinha.piloto</strong> ou <strong>cozinha@piloto.test</strong></li>
+          <li>Dono de outro restaurante <strong>dono.outro</strong> ou <strong>dono@outro.test</strong></li>
+        </ul>
+        <p>Senha das contas de teste <code>visionchef-local</code></p>
+      </details>
+      <!-- contas-ficticias-fim -->
+    </section>
+
+    <section id="sem-restaurante" class="painel" aria-labelledby="titulo-sem-restaurante" hidden>
+      <h1 id="titulo-sem-restaurante" tabindex="-1">Estoque indisponível</h1>
+      <p>Esta conta não tem acesso ativo a um restaurante. Fale com a pessoa responsável pelo acesso.</p>
+    </section>
+
+    <section id="aplicacao" aria-labelledby="titulo-estoque" hidden>
+      <div class="cabecalho-estoque">
+        <div>
+          <p class="restaurante" id="restaurante"></p>
+          <h1 id="titulo-estoque" tabindex="-1">Estoque</h1>
+        </div>
+        <button class="botao botao-primario" id="abrir-cadastro" type="button" aria-expanded="false" aria-controls="painel-cadastro">Cadastrar lote</button>
+      </div>
+
+      <!-- As mensagens de status anunciam o resultado sem exigir que a pessoa mude de foco. -->
+      <p class="mensagem" id="feedback" role="status"></p>
+      <section class="painel painel-cadastro" id="painel-cadastro" aria-labelledby="titulo-cadastro" hidden>
+        <h2 id="titulo-cadastro">Novo lote</h2>
+        <form id="form-lote" class="formulario">
+          <div class="grade-formulario">
+            <label>Insumo <input name="insumo" maxlength="120" required></label>
+            <label>Código do fabricante <span>(opcional)</span> <input name="codigo" maxlength="80"></label>
+            <!-- O teclado decimal atende quilos e litros. O JavaScript valida a quantidade conforme a medida. -->
+            <label>Quantidade <input name="quantidade" inputmode="decimal" required></label>
+            <label>Medida
+              <select name="medida">
+                <option value="un">Unidade</option><option value="kg">Quilo (kg)</option><option value="L">Litro (L)</option>
+              </select>
+            </label>
+            <label>Validade <input name="validade" type="date" required></label>
+          </div>
+          <p id="erro-cadastro" class="mensagem erro" role="alert"></p>
+          <div class="acoes">
+            <button type="submit" class="botao botao-primario">Salvar lote</button>
+            <button type="button" class="botao botao-secundario" id="cancelar-cadastro">Cancelar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="painel painel-lista" aria-labelledby="titulo-lista">
+        <h2 id="titulo-lista" tabindex="-1">Lotes por validade</h2>
+        <p id="mensagem-lista" class="mensagem" role="status"></p>
+        <button type="button" class="botao botao-secundario" id="recarregar" hidden>Tentar novamente</button>
+        <div id="tabela-estoque" hidden>
+          <!-- Os papéis mantêm a semântica de tabela quando o CSS empilha os lotes no celular. -->
+          <table role="table" aria-labelledby="titulo-lista">
+            <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Insumo</th><th role="columnheader" scope="col">Saldo</th><th role="columnheader" scope="col">Validade</th><th role="columnheader" scope="col">Situação</th><th role="columnheader" scope="col">Ações</th></tr></thead>
+            <tbody id="lotes" role="rowgroup"></tbody>
+          </table>
+        </div>
+      </section>
+      <!-- O diálogo mantém os demais controles inativos durante a correção. -->
+      <dialog id="dialogo-validade" class="painel dialogo-validade" aria-labelledby="titulo-validade">
+        <h2 id="titulo-validade">Corrigir validade</h2>
+        <p id="lote-em-correcao"></p>
+        <form id="form-validade" class="formulario">
+          <label>Nova validade da embalagem <input name="validade" type="date" aria-describedby="validade-atual" required></label>
+          <p id="validade-atual"></p>
+          <p id="erro-validade" class="mensagem erro" role="alert"></p>
+          <div class="acoes">
+            <button type="submit" class="botao botao-primario">Salvar validade</button>
+            <button type="button" class="botao botao-secundario" id="cancelar-validade">Cancelar</button>
+          </div>
+        </form>
+      </dialog>
+      <!-- Registrar abertura é uma transferência de saldo entre partes do mesmo lote. -->
+      <dialog id="dialogo-abertura" class="painel dialogo-validade" aria-labelledby="titulo-abertura">
+        <h2 id="titulo-abertura">Registrar abertura ou fracionamento</h2>
+        <p id="lote-em-abertura"></p>
+        <form id="form-abertura" class="formulario">
+          <label>Quantidade aberta <input name="quantidade" inputmode="decimal" aria-describedby="saldo-fechado" required></label>
+          <p id="saldo-fechado"></p>
+          <label>Data da abertura ou fracionamento <input name="data" type="date" required></label>
+          <label>Validade após abertura <input name="validade" type="date" required></label>
+          <p id="erro-abertura" class="mensagem erro" role="alert"></p>
+          <div class="acoes">
+            <button type="submit" class="botao botao-primario">Salvar abertura</button>
+            <button type="button" class="botao botao-secundario" id="cancelar-abertura">Cancelar</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+  </main>
+</body>
+</html>

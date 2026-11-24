@@ -7,7 +7,7 @@
 
 ## Objetivo
 
-Investigar se interpretar uma descrição do lote em linguagem natural agiliza o preenchimento em relação ao formulário manual. Consulte o [MVP da E3](../../desafios/E3.md).
+Investigar se interpretar uma descrição do lote em linguagem natural agiliza o preenchimento em relação ao formulário manual. Consulte o [MVP da E3](../desafios/E3.md).
 
 ## Fluxo mínimo e limites
 

@@ -33,7 +33,7 @@
 - **C3** e **D1** apontam a necessidade: identificar quais lotes vencem primeiro.
 - **C2** e **S1** indicam o obstáculo a investigar: procurar as datas no caderno durante o preparo.
 
-Priorize a **D1** na entrevista para entender como a equipe escolhe o lote na prática. A formulação final está em [Desafio em uma frase, na E1](../desafios/E1.md#desafio-em-uma-frase).
+Priorize a **D1** na entrevista para entender como a equipe escolhe o lote na prática. A formulação final está em [Desafio em uma frase, na E1](desafios/E1.md#desafio-em-uma-frase).
 
 ## Quadro de post-its
 

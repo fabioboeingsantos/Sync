@@ -1,0 +1,43 @@
+# VisionChef
+
+O piloto profissional permite cadastrar e consultar lotes, corrigir a validade e registrar abertura ou fracionamento. A tela de estoque fica em `piloto/` e o componente React de acesso à [landing page](index.html) fica em `frontend/`. Os materiais de apoio estão no [índice do simulado](<Insumo vencendo na cozinha/README.md>).
+
+Consulte o [mapa da raiz](docs/MAPA-DA-RAIZ.md) para localizar arquivos e escolher onde colocar mudanças.
+
+## Rodar o piloto no computador
+
+Com Node.js 24 e npm, abra um terminal na raiz do projeto e execute:
+
+```powershell
+npm.cmd ci
+npm.cmd run dev
+```
+
+Abra a [seção de acesso na landing page](http://127.0.0.1:4173/#prototipos) e entre com uma das contas de teste. Depois do login, a página abre o estoque em `/estoque/`. A senha compartilhada para essas contas fictícias é `visionchef-local`. Ao abrir `index.html` diretamente como arquivo, use **Abrir login local** para chegar a essa mesma seção pelo servidor.
+
+| Usuário | E-mail | O que permite verificar |
+| --- | --- | --- |
+| `dono.piloto` | `dono@piloto.test` | Cadastra e consulta os lotes do restaurante piloto. |
+| `cozinha.piloto` | `cozinha@piloto.test` | Acessa o mesmo estoque do dono com outra conta. |
+| `dono.outro` | `dono@outro.test` | Acessa apenas o estoque de outro restaurante fictício. |
+
+O campo **Usuário ou e-mail** aceita qualquer uma das duas opções para a mesma conta. O nome de usuário tem de 3 a 32 caracteres. Pode conter letras sem acento, números, ponto, hífen e sublinhado e deve começar por letra ou número. A exclusividade vale em todo o sistema e ignora maiúsculas e minúsculas.
+
+No estoque, use **Corrigir validade** ao lado do lote, confira a data atual e salve a nova. A lista usa a nova data para ordenar e mostrar a situação do lote.
+
+Em um lote fechado, use **Registrar abertura** e informe quanto foi aberto, a data da operação e a validade após abertura. A lista mostra a parte aberta com a menor validade aplicável. O saldo fechado que restar aparece em uma linha própria.
+
+O servidor local usa PostgreSQL embarcado via PGlite e aplica as migrações em `supabase/migrations/`. As contas e as sessões são de teste. O banco fica na pasta ignorada `.dados-local/` e preserva os registros após fechar a página. Para encerrar o servidor, use `Ctrl+C` no terminal.
+
+## Verificações e integração
+
+- `npm.cmd test` roda os testes de cadastro, correção, abertura, ordenação por validade, repetição de envio, validação de quantidade e isolamento entre restaurantes. Os testes usam um banco descartável em memória.
+- `npm.cmd run build` gera a interface integrada em `dist/`. Use `.env.example` como modelo para `.env.local` e informe apenas a URL HTTPS e a chave pública `sb_publishable_` de um projeto Supabase de teste. A versão gerada usa Supabase Auth e a API do banco. A integração real com um projeto Supabase ainda precisa ser verificada.
+- Para validar o login por nome na versão integrada, aplique a migração `20261124000400_nomes_usuario.sql` no projeto de teste e vincule cada nome a uma conta do Auth em `public.nomes_usuario`. A função `login-usuario` deve estar disponível nesse projeto. Configure `VISIONCHEF_LOGIN_ORIGINS` na função com as origens exatas autorizadas, separadas por vírgula. O login por e-mail continua usando o Supabase Auth diretamente.
+- Baixas por uso ou descarte e gestão de convites estão previstas nas próximas entregas.
+
+Veja os [requisitos do piloto](docs/product/requirements.md), o [desenho técnico](docs/architecture/piloto.md) e as [futuras implantações](docs/futuras-implantacoes/README.md).
+
+## Configuração do projeto
+
+O `package.json` define os comandos acima. O Vite compila o componente React para a seção de acesso. O cliente JavaScript do Supabase é usado na versão integrada. O PGlite roda o banco local e os testes. O `package-lock.json` fixa as versões instaladas por `npm.cmd ci`.
