@@ -22,11 +22,11 @@ Use este guia nas versões manual e com assistente integrado do controle de vali
 | --- | --- | --- | --- |
 | Primária | `#0F4C5C` | Marca, ação principal e foco | Cabeçalho, botão **Salvar lote** e mensagens do usuário com texto branco. Use também em links e contornos de foco. |
 | Secundária | `#2A7F8E` | Ações secundárias e bordas | Texto e borda de botões com fundo branco. Use nas bordas dos campos e no marcador **Vence em breve**. |
-| Destaque | `#E36414` | Atenção imediata | Fundo do rótulo **Vence hoje** com texto grafite. |
+| Destaque | `#A8D5DD` | Atenção imediata | Fundo azul-petróleo claro do rótulo **Vence hoje** com texto grafite. |
 | Fundo | `#F4F6F7` | Fundo geral | Base da página e áreas de orientação, com texto grafite. |
 | Alerta | `#B3261E` | Erros e lotes vencidos | Texto de validação e rótulo **Vencido** sobre fundo branco ou cinza claro. |
 
-**Neutros de apoio:** branco `#FFFFFF` para cartões, campos e texto sobre a cor primária. Grafite `#182327` para texto principal e para texto sobre o laranja.
+**Neutros de apoio:** branco `#FFFFFF` para cartões, campos e texto sobre a cor primária. Grafite `#182327` para texto principal e para texto sobre o destaque.
 
 ### Contraste para texto a 16 px
 
@@ -34,17 +34,17 @@ Use este guia nas versões manual e com assistente integrado do controle de vali
 | --- | ---: |
 | Branco sobre a primária | 9,51:1 |
 | Secundária sobre branco | 4,64:1 |
-| Grafite sobre o destaque laranja | 4,66:1 |
+| Grafite sobre o destaque | 10,11:1 |
 | Alerta sobre o fundo cinza | 6,03:1 |
 
-Use grafite ou a cor primária para texto sobre o fundo cinza. Reserve a secundária para texto sobre branco. No destaque laranja, use grafite, pois branco sobre laranja fica em 3,44:1.
+Use grafite ou a cor primária para texto sobre o fundo cinza. Reserve a secundária para texto sobre branco. Use grafite para texto sobre o destaque.
 
 ### Estados de validade
 
 | Estado | Quando aparece | Rótulo e aplicação |
 | --- | --- | --- |
 | Vencido | A validade é anterior à data de referência. | **Vencido há 2 dias**, em vermelho alerta sobre branco. |
-| Vence hoje | A validade coincide com a data de referência. | **Vence hoje**, em grafite sobre laranja. |
+| Vence hoje | A validade coincide com a data de referência. | **Vence hoje**, em grafite sobre azul-petróleo claro. |
 | Vence em breve | Faltam de 1 a 3 dias. | **Vence em 2 dias**, em azul secundário sobre branco. |
 | Dentro do prazo | Faltam mais de 3 dias. | **Dentro do prazo**, em azul primário sobre branco. |
 
@@ -70,7 +70,7 @@ Exiba o estado por escrito e mantenha a data de validade visível. Em avisos de 
 
   --cor-primaria: #0f4c5c;
   --cor-secundaria: #2a7f8e;
-  --cor-destaque: #e36414;
+  --cor-destaque: #a8d5dd;
   --cor-fundo: #f4f6f7;
   --cor-alerta: #b3261e;
   --cor-superficie: #ffffff;

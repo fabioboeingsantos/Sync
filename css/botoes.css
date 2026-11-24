@@ -1,0 +1,176 @@
+/* ==========================================================================
+   Regra global de botões — Padrão visual Cesta do Vale
+   Classes: .botao (base), .botao-primario, .botao-secundario
+   Tokens de cor sobreponíveis pelo tema ativo.
+   ========================================================================== */
+
+:root {
+  --btn-primario-inicio: #2F6B3B;
+  --btn-primario-fim: #1F4D2E;
+  --btn-primario-hover: #1F4D2E;
+  --btn-primario-texto: #FFFFFF;
+  --btn-primario-borda: #1F4D2E;
+  --btn-primario-sombra: 0 2px 6px rgba(31, 77, 46, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --btn-primario-sombra-hover: 0 6px 14px rgba(31, 77, 46, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
+  --btn-secundario-fundo: #FFFFFF;
+  --btn-secundario-texto: #1F4D2E;
+  --btn-secundario-borda: #2F6B3B;
+  --btn-secundario-fundo-hover: #E8F3EB;
+  --btn-secundario-sombra-hover: 0 2px 8px rgba(31, 77, 46, 0.14);
+
+  --btn-foco: #1F4D2E;
+  --btn-alerta-texto: #B3261E;
+  --btn-alerta-borda: #B3261E;
+  --btn-alerta-fundo-hover: #FDECEB;
+}
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 20px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.botao svg,
+.botao img {
+  flex: 0 0 auto;
+}
+
+/* Botão primário */
+.botao.botao-primario {
+  background-color: var(--btn-primario-inicio);
+  background-image: linear-gradient(135deg, var(--btn-primario-inicio), var(--btn-primario-fim));
+  color: var(--btn-primario-texto);
+  border-color: var(--btn-primario-borda);
+  box-shadow: var(--btn-primario-sombra);
+}
+
+.botao.botao-primario:hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]):not(.is-loading) {
+  background-color: var(--btn-primario-hover);
+  background-image: none;
+  border-color: var(--btn-primario-borda);
+  color: var(--btn-primario-texto);
+  box-shadow: var(--btn-primario-sombra-hover);
+  transform: translateY(-1px);
+}
+
+/* Botão secundário */
+.botao.botao-secundario {
+  background-color: var(--btn-secundario-fundo);
+  background-image: none;
+  color: var(--btn-secundario-texto);
+  border-color: var(--btn-secundario-borda);
+  box-shadow: none;
+}
+
+.botao.botao-secundario:hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]):not(.is-loading) {
+  background-color: var(--btn-secundario-fundo-hover);
+  color: var(--btn-secundario-texto);
+  border-color: var(--btn-secundario-borda);
+  box-shadow: var(--btn-secundario-sombra-hover);
+}
+
+.botao.botao-secundario[aria-pressed="true"] {
+  background-color: var(--btn-secundario-fundo-hover);
+  color: var(--btn-secundario-texto);
+  border-color: var(--btn-primario-borda);
+}
+
+/* Ação destrutiva mantendo base secundária clara */
+.botao.botao-secundario.danger {
+  background-color: var(--btn-secundario-fundo);
+  color: var(--btn-alerta-texto);
+  border-color: var(--btn-alerta-borda);
+}
+
+.botao.botao-secundario.danger:hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]):not(.is-loading) {
+  background-color: var(--btn-alerta-fundo-hover);
+  color: var(--btn-alerta-texto);
+  border-color: var(--btn-alerta-borda);
+  box-shadow: 0 2px 8px rgba(179, 38, 30, 0.14);
+}
+
+/* Foco por teclado */
+.botao:focus-visible {
+  outline: 3px solid var(--btn-foco);
+  outline-offset: 2px;
+}
+
+/* Estado desabilitado */
+.botao:disabled,
+.botao[aria-disabled="true"] {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Estado de carregamento: preserva rótulo, exibe spinner e bloqueia cliques repetidos */
+.botao[aria-busy="true"],
+.botao.is-loading,
+.botao[data-loading="true"] {
+  pointer-events: none;
+  cursor: progress;
+  box-shadow: none;
+  transform: none;
+}
+
+.botao[aria-busy="true"]::before,
+.botao.is-loading::before,
+.botao[data-loading="true"]::before {
+  content: "";
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: botao-spinner 700ms linear infinite;
+}
+
+@keyframes botao-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Respeito à preferência de movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  .botao,
+  .botao.botao-primario,
+  .botao.botao-secundario {
+    transition: none;
+    transform: none;
+  }
+
+  .botao:hover,
+  .botao.botao-primario:hover,
+  .botao.botao-secundario:hover {
+    transform: none;
+  }
+
+  .botao[aria-busy="true"]::before,
+  .botao.is-loading::before,
+  .botao[data-loading="true"]::before {
+    animation: none;
+  }
+}

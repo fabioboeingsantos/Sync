@@ -16,7 +16,7 @@ As entregas abaixo foram conferidas com o roteiro do simulado e a [página do Ha
 
 | Área | Situação no nosso simulado |
 | --- | --- |
-| Gastronomia | Temas de treino: [Marmita no WhatsApp](<Marmita no WhatsApp/E1.md>) e [Insumo vencendo na cozinha](<Insumo vencendo na cozinha/E1.md>). |
+| Gastronomia | [Insumo vencendo na cozinha](../desafios/E1.md) é o tema de treino. |
 | Beleza | Referência para futuros desafios. |
 | Saúde | Referência para futuros desafios. |
 | Turismo | Referência para futuros desafios. |
@@ -38,14 +38,14 @@ A dor e a persona de cada novo desafio serão registradas na pasta do tema quand
 ## Como usar no nosso simulado
 
 - Consulte este guia antes de avançar. Compare os requisitos da etapa com os arquivos de trabalho e registre o que está pronto, pendente ou precisa ser confirmado.
-- Use [exemplo/regras.md](exemplo/regras.md) para o padrão reutilizável e [E1 do tema atual](<Insumo vencendo na cozinha/E1.md>) para o trabalho atual.
-- Discuta alterações da [Matriz CSD](<Insumo vencendo na cozinha/Matriz-CSD.md>) no chat e aplique somente as aprovadas. Mantenha a pesquisa de mercado como material de discussão.
+- Use o padrão profissional deste guia e a [E1 do tema atual](../desafios/E1.md) para orientar o trabalho.
+- Discuta alterações da [Matriz CSD](<../Insumo vencendo na cozinha/Matriz-CSD.md>) no chat e aplique somente as aprovadas. Mantenha a pesquisa de mercado como material de discussão.
 - Prepare os slides finais depois de reunir os resultados e evidências das etapas, respeitando os prazos confirmados do pitch e do PDF.
 - Ao criar código, comente as regras de negócio e as decisões que precisam de explicação.
 
 ## Acompanhamento por tema
 
-Consulte o documento da etapa na pasta do tema para ver o status e as pendências. O treino atual está em [Insumo vencendo na cozinha](<Insumo vencendo na cozinha/README.md>).
+Consulte os documentos das etapas E1 a E5 na pasta `desafios` para ver o status e as pendências. Os materiais de apoio e os protótipos estão em [Insumo vencendo na cozinha](<../Insumo vencendo na cozinha/README.md>).
 
 ## Imagens do projeto
 

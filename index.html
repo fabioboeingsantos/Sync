@@ -3,23 +3,165 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Insumo vencendo na cozinha | E3</title>
-  <style>
-    body { margin: 0; background: #f4f6fa; color: #17243b; font: 1rem/1.55 system-ui, sans-serif; }
-    main { max-width: 42rem; margin: 0 auto; padding: clamp(1.5rem, 7vw, 5rem) 1.25rem; }
-    h1 { line-height: 1.15; }
-    a { display: block; padding: 1rem 1.25rem; border: 1px solid #ccd7e6; border-radius: .75rem; background: white; color: #12427a; font-weight: 650; }
-    a:hover { background: #eaf2ff; }
-    a:focus-visible { outline: 3px solid #12427a; outline-offset: 3px; }
-  </style>
+  <meta name="theme-color" content="#060b1b">
+  <meta name="description" content="VisionChef, um produto da SYNC. Cadastre lotes, acompanhe validades e registre descartes na sua cozinha.">
+  <title>VisionChef | Controle de validade para cozinhas</title>
+  <link rel="icon" type="image/png" sizes="128x128" href="imagens/coruja-sync-icone.png">
+  <link rel="stylesheet" href="css/sync.css">
+  <link rel="stylesheet" href="css/botoes.css">
 </head>
 <body>
-  <main>
-    <p>Simulado Hackathon Senac</p>
-    <h1>Insumo vencendo na cozinha</h1>
-    <p>Cadastre lotes e veja quais insumos vencem primeiro.</p>
-    <a href="Insumo%20vencendo%20na%20cozinha/htmls/E3-mvp-validade.html">Abrir a versão simples</a>
-    <p><a href="Insumo%20vencendo%20na%20cozinha/htmls/agente-ia-cadastro.html">Abrir a versão com IA integrada</a></p>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="site-header frame">
+    <a class="brand" href="#inicio" aria-label="SYNC, início">
+      <img class="brand-logo" src="imagens/coruja-sync-icone.png" width="128" height="128" alt="">
+    </a>
+    <nav class="site-nav" aria-label="Navegação principal">
+      <a class="header-link" href="#estoque">Estoque</a>
+      <a class="header-link" href="#como-funciona">Como funciona</a>
+      <a class="header-link" href="#assistente">Assistente</a>
+      <a class="header-link" href="#duvidas">Dúvidas</a>
+    </nav>
+    <a class="header-link header-cta" href="#prototipos">Acessar VisionChef</a>
+  </header>
+  <main id="conteudo" tabindex="-1">
+    <section class="hero frame" id="inicio" aria-labelledby="titulo">
+      <div class="hero-copy">
+        <div class="hero-title">
+          <p class="eyebrow">Gestão de estoque para cozinhas</p>
+          <h1 id="titulo">VisionChef</h1>
+          <p class="tagline">Saiba o que vence primeiro na sua cozinha.</p>
+          <p class="product-signature">Um produto da SYNC</p>
+        </div>
+        <div class="hero-action">
+          <p>Cadastre lotes, organize o estoque por validade e acompanhe os descartes.</p>
+          <div class="actions">
+            <a class="botao botao-primario" href="#prototipos">Acessar VisionChef</a>
+            <a class="botao botao-secundario" href="#estoque">Consultar exemplo de estoque</a>
+          </div>
+        </div>
+      </div>
+      <div class="scene">
+        <video class="owl" src="imagens/sync-emblema-animado.mp4" poster="imagens/LogoOficial.png" autoplay loop muted playsinline aria-label="Animação do emblema da SYNC com uma coruja de olhos azuis e letras prateadas"></video>
+      </div>
+    </section>
+    <section class="section-band" id="estoque" aria-labelledby="titulo-estoque">
+      <div class="frame section">
+        <div class="section-intro">
+          <h2 id="titulo-estoque">Quais lotes vencem primeiro?</h2>
+          <p>Filtre um estoque de exemplo pela validade. Data de referência da amostra: 24/11/2026.</p>
+        </div>
+        <div class="filters-bar">
+          <div class="filters" role="group" aria-label="Filtrar lotes por validade" hidden>
+            <button type="button" class="botao botao-secundario" data-filter="todos" aria-pressed="true">Todos</button>
+            <button type="button" class="botao botao-secundario" data-filter="vencido" aria-pressed="false">Vencido</button>
+            <button type="button" class="botao botao-secundario" data-filter="hoje" aria-pressed="false">Vence hoje</button>
+            <button type="button" class="botao botao-secundario" data-filter="breve" aria-pressed="false">Vence em breve</button>
+            <button type="button" class="botao botao-secundario" data-filter="prazo" aria-pressed="false">Dentro do prazo</button>
+          </div>
+          <p class="stock-count" id="resultado-estoque" role="status">4 lotes exibidos.</p>
+        </div>
+        <ul class="stock-grid">
+          <li data-status="vencido"><span class="lot-status">Vencido</span><h3>Alface</h3><p>Lote A01 · <time datetime="2026-11-23">23/11/2026</time></p></li>
+          <li data-status="hoje"><span class="lot-status">Vence hoje</span><h3>Creme de leite</h3><p>Lote B02 · <time datetime="2026-11-24">24/11/2026</time></p></li>
+          <li data-status="breve"><span class="lot-status">Vence em 2 dias</span><h3>Queijo</h3><p>Lote C03 · <time datetime="2026-11-26">26/11/2026</time></p></li>
+          <li data-status="prazo"><span class="lot-status">Dentro do prazo</span><h3>Farinha</h3><p>Lote D04 · <time datetime="2026-12-02">02/12/2026</time></p></li>
+        </ul>
+      </div>
+    </section>
+    <section class="frame section section-split" id="como-funciona" aria-labelledby="titulo-fluxo">
+      <div>
+        <h2 id="titulo-fluxo">Da entrada ao descarte</h2>
+        <p>Uma rotina para cozinhas que precisam consultar as datas antes de usar um insumo.</p>
+      </div>
+      <ol class="steps">
+          <li><strong>Cadastre o lote</strong><p>Informe o nome do insumo e a validade. Acrescente quantidade e local de armazenamento quando precisar.</p></li>
+        <li><strong>Consulte por validade</strong><p>Confira as datas e identifique os lotes que precisam de atenção primeiro.</p></li>
+        <li><strong>Registre o descarte</strong><p>Ao marcar um lote vencido como descartado, ele vai para o histórico.</p></li>
+      </ol>
+    </section>
+    <section class="section-band" id="assistente" aria-labelledby="titulo-assistente">
+      <div class="frame section section-split">
+        <div>
+          <h2 id="titulo-assistente">Cadastro com assistente</h2>
+          <p>Descreva o lote por texto ou por voz, quando disponível. Confira os campos sugeridos antes de salvar.</p>
+          <a class="botao botao-primario" href="Insumo%20vencendo%20na%20cozinha/htmls/agente-ia-cadastro.html">Abrir assistente de cadastro</a>
+        </div>
+        <figure class="assistant-example">
+          <figcaption>Exemplo de mensagem</figcaption>
+          <blockquote>“Cadastrar queijo, lote B02, 2 kg, vencimento 25/11/2026.”</blockquote>
+          <dl>
+            <div><dt>Insumo</dt><dd>Queijo</dd></div>
+            <div><dt>Lote</dt><dd>B02</dd></div>
+            <div><dt>Quantidade</dt><dd>2 kg</dd></div>
+            <div><dt>Validade</dt><dd>25/11/2026</dd></div>
+          </dl>
+        </figure>
+      </div>
+    </section>
+    <section class="frame section section-split" id="duvidas" aria-labelledby="titulo-duvidas">
+      <div class="faq-intro">
+        <h2 id="titulo-duvidas">Dúvidas frequentes</h2>
+        <p>Respostas rápidas sobre uso, privacidade e funcionamento do VisionChef no dia a dia da cozinha.</p>
+        <a class="text-link" href="informacoes.html">Ver privacidade e termos de uso →</a>
+      </div>
+      <div class="questions">
+        <details name="duvidas"><summary>Preciso criar uma conta?</summary><p>Não. O cadastro e a consulta de lotes estão disponíveis imediatamente, sem login ou senha.</p></details>
+        <details name="duvidas"><summary>O VisionChef é gratuito?</summary><p>Sim. A versão atual é gratuita e não realiza cobranças nem exige cartão.</p></details>
+        <details name="duvidas"><summary>Onde ficam os lotes cadastrados?</summary><p>Os registros ficam salvos localmente neste navegador. O cadastro manual e o cadastro com assistente mantêm estoques separados para você testar cada fluxo de forma independente.</p></details>
+        <details name="duvidas"><summary>O que acontece se eu limpar os dados do navegador?</summary><p>Como o armazenamento é local, limpar os dados do site nas configurações do navegador remove os lotes e o histórico salvos neste dispositivo.</p></details>
+        <details name="duvidas"><summary>Posso usar o assistente sem microfone?</summary><p>Sim. Digite os dados do lote no campo de mensagem e confira a sugestão preenchida antes de salvar.</p></details>
+        <details name="duvidas"><summary>Funciona no celular dentro da cozinha?</summary><p>Sim. A interface se adapta a telas menores para consulta rápida direto no celular ou tablet.</p></details>
+      </div>
+    </section>
+    <section class="prototypes frame section" id="prototipos" tabindex="-1" aria-labelledby="titulo-prototipos">
+      <div>
+        <h2 id="titulo-prototipos">Gerencie seus lotes no VisionChef</h2>
+        <p>Escolha o fluxo que melhor se adapta à rotina da sua cozinha.</p>
+      </div>
+      <div class="prototype-grid">
+        <div class="prototype-card">
+          <h3>Cadastro com assistente</h3>
+          <p>Descreva o lote por texto ou voz e apenas confirme os campos identificados.</p>
+          <a class="botao botao-primario" href="Insumo%20vencendo%20na%20cozinha/htmls/agente-ia-cadastro.html">Abrir assistente</a>
+        </div>
+        <div class="prototype-card">
+          <h3>Cadastro manual</h3>
+          <p>Preencha diretamente o formulário com controle total de cada campo do lote.</p>
+          <a class="botao botao-secundario" href="Insumo%20vencendo%20na%20cozinha/htmls/E3-mvp-validade.html">Abrir cadastro manual</a>
+        </div>
+      </div>
+    </section>
   </main>
+  <footer class="site-footer frame">
+    <span>VisionChef · Um produto da SYNC</span>
+    <nav aria-label="Informações do produto">
+      <a href="informacoes.html#privacidade">Privacidade</a>
+      <a href="informacoes.html#armazenamento">Cookies e armazenamento</a>
+      <a href="informacoes.html#termos">Termos de uso</a>
+      <a href="#inicio">Voltar ao início</a>
+    </nav>
+  </footer>
+  <script>
+    const filters = document.querySelector('.filters');
+    const buttons = filters.querySelectorAll('[data-filter]');
+    const lots = document.querySelectorAll('.stock-grid [data-status]');
+    const result = document.querySelector('#resultado-estoque');
+
+    filters.addEventListener('click', (event) => {
+      const selected = event.target.closest('button[data-filter]');
+      if (!selected) return;
+
+      const filter = selected.dataset.filter;
+      let visible = 0;
+      buttons.forEach((button) => button.setAttribute('aria-pressed', String(button === selected)));
+      lots.forEach((lot) => {
+        lot.hidden = filter !== 'todos' && lot.dataset.status !== filter;
+        if (!lot.hidden) visible += 1;
+      });
+      result.textContent = visible === 1 ? '1 lote exibido.' : `${visible} lotes exibidos.`;
+    });
+    filters.hidden = false;
+  </script>
 </body>
 </html>

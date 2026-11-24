@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Assistente de estoque — VisionChef</title>
+  <title>Assistente de cadastro de lotes | VisionChef</title>
+  <link rel="icon" type="image/png" sizes="128x128" href="../../imagens/coruja-sync-icone.png">
   <style>
     :root {
       font: 100%/1.5 Arial, sans-serif;
       color-scheme: light;
       --primaria: #0f4c5c;
       --secundaria: #2a7f8e;
-      --destaque: #e36414;
+      --destaque: #a8d5dd;
       --fundo: #f4f6f7;
       --alerta: #b3261e;
       --branco: #ffffff;
@@ -45,13 +46,13 @@
     .stock-list:focus-visible { outline-offset: -2px; }
 
     label { display: block; font-weight: 700; }
-    input, textarea, button { font: inherit; min-height: 2.75rem; border-radius: .5rem; }
+    input, textarea, button:not(.botao) { font: inherit; min-height: 2.75rem; border-radius: .5rem; }
     input, textarea { display: block; width: 100%; min-width: 0; padding: .3rem .5rem; border: 1px solid var(--secundaria); color: inherit; background: var(--branco); }
     textarea { height: 2.75rem; resize: none; }
-    button { padding: .25rem .55rem; border: 1px solid var(--primaria); background: var(--primaria); color: var(--branco); font-weight: 700; cursor: pointer; }
-    button.secondary { background: var(--branco); color: var(--secundaria); border-color: var(--secundaria); }
-    button.danger { background: var(--branco); color: var(--alerta); border-color: var(--alerta); }
-    button:disabled { opacity: .65; cursor: default; }
+    button:not(.botao) { padding: .25rem .55rem; border: 1px solid var(--primaria); background: var(--primaria); color: var(--branco); font-weight: 700; cursor: pointer; }
+    button:not(.botao).secondary { background: var(--branco); color: var(--secundaria); border-color: var(--secundaria); }
+    button:not(.botao).danger { background: var(--branco); color: var(--alerta); border-color: var(--alerta); }
+    button:not(.botao):disabled { opacity: .65; cursor: default; }
 
     .assistant-row, .actions { display: flex; gap: .35rem; align-items: center; }
     .assistant-row textarea { flex: 1; }
@@ -61,7 +62,8 @@
     .fields { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .2rem .4rem; }
     .fields > div { grid-column: span 2; min-width: 0; }
     .fields > .required { grid-column: span 3; }
-    .field-suggested { background: var(--fundo); border-color: var(--destaque); }
+    .field-suggested { background: var(--destaque); }
+    .data-note { margin-block: .25rem; }
     #assistant-status, #feedback, #stock-notice, #storage-note { overflow-wrap: anywhere; }
     #assistant-status:not(:empty), #feedback:not(:empty) { margin-top: .25rem; }
     #assistant-status[data-state="warn"], #assistant-status[data-state="error"], #feedback[data-error="true"], #storage-note { color: var(--alerta); }
@@ -109,7 +111,7 @@
     @media (max-height: 619px), (max-width: 329px) {
       .stock-list { max-height: 18rem; }
     }
-    @media (max-width: 350px) {
+    @media (max-width: 550px) {
       .assistant-row { flex-wrap: wrap; }
       .assistant-row textarea { flex-basis: 100%; }
     }
@@ -119,17 +121,18 @@
       .badge { margin-left: 0; }
     }
   </style>
+  <link rel="stylesheet" href="../../css/botoes.css">
 </head>
 <body>
   <header>
     <div class="topbar">
       <div class="product-brand">
-        <img class="product-logo" src="../imagens/visionchef-logo.jpg" width="1356" height="759" alt="VisionChef">
-        <h1>Estoque com IA</h1>
+        <a href="../../index.html" aria-label="VisionChef, página inicial"><img class="product-logo" src="../imagens/visionchef-logo.jpg" width="1356" height="759" alt=""></a>
+        <h1>Assistente de cadastro de lotes</h1>
       </div>
       <nav aria-label="Opções">
         <a href="E3-mvp-validade.html" aria-label="Abrir a versão manual">Manual</a>
-        <a id="test-link" href="?teste=1">Testes</a>
+        <a id="test-link" href="?teste=1" hidden>Testes</a>
       </nav>
     </div>
   </header>
@@ -142,9 +145,9 @@
           <label for="reference-date">Data de referência</label>
           <input id="reference-date" type="date">
         </div>
-        <button type="button" class="secondary" onclick="fillExample('Creme de leite, lote A12, 2 caixas, validade 19/11/2026')">Exemplo claro</button>
-        <button type="button" class="secondary" onclick="fillExample('Queijo, lote B02, vence na terça')">Data ambígua</button>
-        <button type="button" id="simulate-error-btn" class="danger">Simular falha</button>
+        <button type="button" class="botao botao-secundario" onclick="fillExample('Creme de leite, lote A12, 2 caixas, validade 19/11/2026')">Exemplo claro</button>
+        <button type="button" class="botao botao-secundario" onclick="fillExample('Queijo, lote B02, vence na terça')">Data ambígua</button>
+        <button type="button" id="simulate-error-btn" class="botao botao-secundario danger">Simular falha</button>
       </div>
     </section>
 
@@ -153,23 +156,25 @@
         <label for="nl-input">Descrição do lote</label>
         <div class="assistant-row">
           <textarea id="nl-input" rows="1" placeholder="Ex.: Queijo, lote A12, validade 30/11/2026"></textarea>
-          <button type="button" id="parse-btn">Preencher</button>
-          <button type="button" id="voice-btn" class="secondary">Ditar</button>
+          <button type="button" id="parse-btn" class="botao botao-primario">Preencher cadastro</button>
+          <button type="button" id="voice-btn" class="botao botao-secundario" aria-describedby="voice-note">Ditar mensagem</button>
         </div>
+        <p class="data-note" id="voice-note">O ditado usa o microfone e pode enviar áudio ao serviço de voz do navegador. Você também pode digitar.</p>
         <p id="assistant-status" role="status"></p>
       </section>
 
       <section class="panel entry" aria-labelledby="form-title">
         <h2 id="form-title" tabindex="-1">Conferir e cadastrar</h2>
-        <form id="lot-form" novalidate>
+        <p class="data-note" id="lot-privacy">Informe apenas dados do estoque. Os registros ficam neste navegador. <a href="../../informacoes.html#privacidade">Privacidade</a>.</p>
+        <form id="lot-form" aria-describedby="lot-privacy" novalidate>
           <div class="fields">
             <div class="required">
               <label for="item-name">Insumo *</label>
-              <input id="item-name" type="text" required>
+              <input id="item-name" type="text" aria-describedby="feedback" required>
             </div>
             <div class="required">
               <label for="expiry-date">Validade *</label>
-              <input id="expiry-date" type="date" required>
+              <input id="expiry-date" type="date" aria-describedby="feedback" required>
             </div>
             <div>
               <label for="lot-code">Lote</label>
@@ -185,8 +190,8 @@
             </div>
           </div>
           <div class="actions">
-            <button id="save-btn" type="submit">Salvar lote</button>
-            <button id="cancel-btn" class="secondary" type="button" hidden>Cancelar edição</button>
+            <button id="save-btn" class="botao botao-primario" type="submit">Salvar lote</button>
+            <button id="cancel-btn" class="botao botao-secundario" type="button" hidden>Cancelar edição</button>
           </div>
           <p id="feedback" role="status"></p>
         </form>
@@ -495,14 +500,14 @@
       };
 
       recognition.onend = () => {
-        voiceBtn.textContent = 'Ditar';
+        voiceBtn.textContent = 'Ditar mensagem';
         voiceBtn.disabled = false;
       };
 
       try {
         recognition.start();
       } catch {
-        voiceBtn.textContent = 'Ditar';
+        voiceBtn.textContent = 'Ditar mensagem';
         voiceBtn.disabled = false;
         setAssistantStatus('Não foi possível iniciar o ditado. Digite a descrição do lote.', 'error');
       }
@@ -541,6 +546,8 @@
     function resetForm() {
       editingId = null;
       form.reset();
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
       clearSuggestionHighlights();
       el('form-title').textContent = 'Conferir e cadastrar';
       el('save-btn').textContent = 'Salvar lote';
@@ -583,9 +590,9 @@
               </div>
             </div>
             <div class="lot-actions">
-              <button type="button" class="secondary small" onclick="startEdit(${lot.id})">Corrigir</button>
-              <button type="button" class="small" onclick="markUsed(${lot.id})">Usado</button>
-              <button type="button" class="danger small" onclick="markDiscarded(${lot.id})">Descartado</button>
+              <button type="button" class="botao botao-secundario" onclick="startEdit(${lot.id})">Corrigir</button>
+              <button type="button" class="botao botao-primario" onclick="markUsed(${lot.id})">Usado</button>
+              <button type="button" class="botao botao-secundario danger" onclick="markDiscarded(${lot.id})">Descartado</button>
             </div>
           </li>
         `;
@@ -664,13 +671,17 @@
       const location = locInput.value.trim();
 
       // Validação obrigatória: impede entradas incompletas ou inválidas (Cenário 3 da E3)
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
       if (!name) {
+        nameInput.setAttribute('aria-invalid', 'true');
         showFeedback('Informe o nome do insumo antes de salvar.', true);
         nameInput.focus();
         return;
       }
 
       if (!expiry || !/^\d{4}-\d{2}-\d{2}$/.test(expiry)) {
+        expiryInput.setAttribute('aria-invalid', 'true');
         showFeedback('A data de validade é obrigatória. O lote não foi adicionado à lista.', true);
         expiryInput.focus();
         return;
@@ -712,9 +723,11 @@
     });
     el('voice-btn').addEventListener('click', startVoiceCapture);
     el('simulate-error-btn').addEventListener('click', simulateAssistantFailure);
+    form.addEventListener('input', ({ target }) => target.removeAttribute('aria-invalid'));
     el('cancel-btn').addEventListener('click', () => {
       resetForm();
       showFeedback('Edição cancelada.');
+      nameInput.focus();
     });
 
     refDateInput.addEventListener('change', render);
@@ -722,6 +735,7 @@
     // Inicialização da aplicação
     if (new URLSearchParams(window.location.search).get('teste') === '1') {
       el('test-tools').hidden = false;
+      el('test-link').hidden = false;
       el('test-link').href = 'agente-ia-cadastro.html';
       el('test-link').textContent = 'Sair dos testes';
     }

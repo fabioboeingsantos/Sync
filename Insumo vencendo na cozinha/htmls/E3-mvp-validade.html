@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Controle de validade — VisionChef</title>
+  <title>Cadastro manual de lotes | VisionChef</title>
+  <link rel="icon" type="image/png" sizes="128x128" href="../../imagens/coruja-sync-icone.png">
   <style>
     :root {
       --fonte-interface: Arial, sans-serif;
@@ -13,7 +14,7 @@
       --cor-texto: #182327;
       --cor-secundaria: #2a7f8e;
       --cor-alerta: #b3261e;
-      --cor-destaque: #e36414;
+      --cor-destaque: #a8d5dd;
       --cor-foco: var(--cor-primaria);
       font: 100%/1.5 var(--fonte-interface);
     }
@@ -76,7 +77,7 @@
     h2 { font-size: 1rem; margin-bottom: .8rem; color: var(--cor-primaria); }
     label { display: block; font-weight: 700; margin-top: .75rem; font-size: 1rem; }
 
-    input, button {
+    input, button:not(.botao) {
       font: inherit;
       border-radius: .5rem;
       min-height: 2.75rem;
@@ -93,7 +94,7 @@
       margin-top: .25rem;
     }
 
-    button {
+    button:not(.botao) {
       cursor: pointer;
       background: var(--cor-primaria);
       color: var(--cor-superficie);
@@ -102,9 +103,9 @@
       font-weight: 700;
     }
 
-    button.secondary { background: var(--cor-superficie); color: var(--cor-secundaria); border-color: var(--cor-secundaria); }
-    button.danger { background: var(--cor-superficie); color: var(--cor-alerta); border-color: var(--cor-alerta); }
-    button.small { min-height: 2.75rem; padding: .25rem .65rem; font-size: 1rem; }
+    button:not(.botao).secondary { background: var(--cor-superficie); color: var(--cor-secundaria); border-color: var(--cor-secundaria); }
+    button:not(.botao).danger { background: var(--cor-superficie); color: var(--cor-alerta); border-color: var(--cor-alerta); }
+    button:not(.botao).small { min-height: 2.75rem; padding: .25rem .65rem; font-size: 1rem; }
 
     .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
 
@@ -213,13 +214,14 @@
       .summary-bar { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
     }
 </style>
+  <link rel="stylesheet" href="../../css/botoes.css">
 </head>
 <body>
   <header>
     <div class="topbar">
       <div class="product-brand">
-        <img class="product-logo" src="../imagens/visionchef-logo.jpg" width="1356" height="759" alt="VisionChef">
-        <h1>Controle de validade</h1>
+        <a href="../../index.html" aria-label="VisionChef, página inicial"><img class="product-logo" src="../imagens/visionchef-logo.jpg" width="1356" height="759" alt=""></a>
+        <h1>Cadastro manual de lotes</h1>
       </div>
       <a href="agente-ia-cadastro.html">Assistente IA</a>
     </div>
@@ -261,7 +263,7 @@
           <div id="discard-list"></div>
         </div>
 
-        <details>
+        <details id="stock-tools" hidden>
           <summary>Opções de teste</summary>
           <div class="clock-box">
             <label for="reference-date">Data de referência</label>
@@ -274,12 +276,13 @@
       <section aria-labelledby="form-title">
         <h2 id="form-title">Cadastrar lote</h2>
         <!-- novalidate permite exibir mensagem padronizada de erro dentro do layout -->
-        <form id="lot-form" novalidate>
+        <p id="lot-privacy">Informe apenas dados do estoque. Os registros ficam neste navegador. <a href="../../informacoes.html#privacidade">Privacidade</a>.</p>
+        <form id="lot-form" aria-describedby="lot-privacy" novalidate>
           <label for="item-name">Insumo *</label>
-          <input id="item-name" type="text" placeholder="Ex.: Creme de leite" required>
+          <input id="item-name" type="text" placeholder="Ex.: Creme de leite" aria-describedby="feedback" required>
 
           <label for="expiry-date">Data de validade *</label>
-          <input id="expiry-date" type="date" required>
+          <input id="expiry-date" type="date" aria-describedby="feedback" required>
 
           <label for="quantity">Quantidade (opcional)</label>
           <input id="quantity" type="text" placeholder="Ex.: 2 caixas ou 500g">
@@ -288,8 +291,8 @@
           <input id="location" type="text" placeholder="Ex.: Prateleira do meio">
 
           <div class="actions">
-            <button id="save-btn" type="submit">Salvar lote</button>
-            <button id="cancel-btn" class="secondary" type="button" hidden>Cancelar edição</button>
+            <button id="save-btn" class="botao botao-primario" type="submit">Salvar lote</button>
+            <button id="cancel-btn" class="botao botao-secundario" type="button" hidden>Cancelar edição</button>
           </div>
           <p id="feedback" role="status" aria-live="polite"></p>
         </form>
@@ -297,7 +300,7 @@
 
     </div>
 
-    <p id="storage-note" class="hint">MVP manual da E3 rodando localmente no navegador (sem servidor). Os dados ficam salvos neste navegador.</p>
+    <p id="storage-note" class="hint" role="status" hidden></p>
   </main>
 
   <script>
@@ -378,6 +381,7 @@
         localStorage.setItem(STORAGE_KEY_LOTS, JSON.stringify(lots));
         localStorage.setItem(STORAGE_KEY_DISCARDS, JSON.stringify(discards));
       } catch {
+        el('storage-note').hidden = false;
         el('storage-note').textContent = 'Aviso: o navegador bloqueou o salvamento local. Os dados ficam ativos até recarregar a página.';
       }
     }
@@ -397,6 +401,8 @@
     function resetForm() {
       editingId = null;
       form.reset();
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
       el('form-title').textContent = 'Cadastrar lote';
       el('save-btn').textContent = 'Salvar lote';
       el('cancel-btn').hidden = true;
@@ -439,9 +445,9 @@
               </div>
             </div>
             <div class="lot-actions">
-              <button type="button" class="secondary small" onclick="startEdit(${lot.id})">Corrigir</button>
-              <button type="button" class="small" onclick="markUsed(${lot.id})">Usado</button>
-              <button type="button" class="danger small" onclick="markDiscarded(${lot.id})">Descartado</button>
+              <button type="button" class="botao botao-secundario" onclick="startEdit(${lot.id})">Corrigir</button>
+              <button type="button" class="botao botao-primario" onclick="markUsed(${lot.id})">Usado</button>
+              <button type="button" class="botao botao-secundario danger" onclick="markDiscarded(${lot.id})">Descartado</button>
             </div>
           </li>
         `;
@@ -511,13 +517,17 @@
       const qty = qtyInput.value.trim();
       const location = locInput.value.trim();
 
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
       if (!name) {
+        nameInput.setAttribute('aria-invalid', 'true');
         showFeedback('Informe o nome do insumo antes de salvar.', true);
         nameInput.focus();
         return;
       }
 
       if (!expiry || !/^\d{4}-\d{2}-\d{2}$/.test(expiry)) {
+        expiryInput.setAttribute('aria-invalid', 'true');
         showFeedback('A data de validade é obrigatória. O lote não foi adicionado à lista.', true);
         expiryInput.focus();
         return;
@@ -538,9 +548,11 @@
       render();
     });
 
+    form.addEventListener('input', ({ target }) => target.removeAttribute('aria-invalid'));
     el('cancel-btn').addEventListener('click', () => {
       resetForm();
       showFeedback('Edição cancelada.');
+      nameInput.focus();
     });
 
     refDateInput.addEventListener('change', render);
@@ -548,6 +560,7 @@
     // Inicialização
     refDateInput.value = getLocalTodayIso();
     if (isDemo) {
+      el('stock-tools').hidden = false;
       refDateInput.value = '2026-11-23';
       lots = [
         { id: 1, name: 'Iogurte natural', expiry: '2026-11-22', qty: '2 potes', location: 'Prateleira de baixo' },

@@ -9,7 +9,7 @@ mo# Arquitetura Passo a Passo — Assistente de Estoque (IA)
 
 ## 1. Por que criar este experimento de IA?
 
-Durante os testes do **MVP manual da E3**, surgiu um atrito real da cozinha: **digitar manualmente todos os campos de cada insumo dá trabalho** na correria do dia a dia — exatamente o motivo pelo qual restaurantes pequenos abandonam ERPs complexos e voltam para o caderno (achado de `P02` na [E2](../E2.md)).
+Durante os testes do **MVP manual da E3**, surgiu um atrito real da cozinha: **digitar manualmente todos os campos de cada insumo dá trabalho** na correria do dia a dia — exatamente o motivo pelo qual restaurantes pequenos abandonam ERPs complexos e voltam para o caderno (achado de `P02` na [E2](../../desafios/E2.md)).
 
 O experimento testa se **descrever ou ditar o lote em linguagem natural** reduz o tempo de cadastro **sem perder confiabilidade** na data de validade.
 
