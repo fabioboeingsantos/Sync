@@ -12,3 +12,7 @@ dist/
 __pycache__/
 .DS_Store
 Thumbs.db
+
+# Vínculos locais com os projetos de implantação
+.vercel/
+supabase/.temp/

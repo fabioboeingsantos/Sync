@@ -488,3 +488,35 @@ html[data-theme="light"] .section .login-feedback { color: #9d211a; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* A abertura da Sync ocupa a primeira tela descontando o cabeçalho. */
+#inicio.hero {
+  min-height: calc(100svh - var(--altura-cabecalho-sync, 4.75rem));
+  padding-block: clamp(.5rem, 2svh, 1.5rem);
+}
+#inicio .hero-copy { padding-block: 0; }
+#inicio .scene {
+  width: min(100%, max(0px, calc((100svh - var(--altura-cabecalho-sync, 4.75rem) - 3rem) * 1.12)));
+  position: relative;
+  justify-self: center;
+}
+#inicio .owl { object-fit: contain; }
+body:has(#inicio.hero) section[id] {
+  scroll-margin-top: calc(var(--altura-cabecalho-sync, 5.5rem) + .5rem);
+}
+@media (max-width: 43rem) {
+  /* No celular, o texto e o botão vêm primeiro e a animação ocupa menos espaço. */
+  #inicio.hero {
+    min-height: calc(100svh - var(--altura-cabecalho-sync, 7.5rem));
+    align-content: center;
+    gap: .5rem;
+  }
+  #inicio .tagline { font-size: clamp(1.45rem, 6vw, 2.2rem); }
+  #inicio .hero-action > p { margin-block: .65rem .85rem; }
+  #inicio .scene { width: min(62vw, 25svh, 13rem); }
+}
+@media (max-height: 38rem) and (min-width: 43.01rem) {
+  #inicio h1 { font-size: clamp(2.5rem, 10svh, 4.5rem); }
+  #inicio .tagline { font-size: clamp(1.35rem, 5svh, 2.4rem); }
+  #inicio .hero-action > p { margin-block: .65rem .85rem; }
+}

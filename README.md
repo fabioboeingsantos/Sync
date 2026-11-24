@@ -13,7 +13,7 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Abra a [seção de acesso na landing page](http://127.0.0.1:4173/#prototipos) e entre com uma das contas de teste. Depois do login, a página abre o estoque em `/estoque/`. A senha compartilhada para essas contas fictícias é `visionchef-local`. Ao abrir `index.html` diretamente como arquivo, use **Abrir login local** para chegar a essa mesma seção pelo servidor.
+Abra a [seção de acesso na landing page](http://127.0.0.1:4173/#prototipos) e entre com uma das contas de teste. Depois do login, a página abre o estoque em `/estoque/`. A senha compartilhada para essas contas fictícias é `senha123`. Ao abrir `index.html` diretamente como arquivo, use **Abrir login local** para chegar a essa mesma seção pelo servidor.
 
 | Usuário | E-mail | O que permite verificar |
 | --- | --- | --- |
@@ -34,7 +34,9 @@ O servidor local usa PostgreSQL embarcado via PGlite e aplica as migrações em 
 - `npm.cmd test` roda os testes de cadastro, correção, abertura, ordenação por validade, repetição de envio, validação de quantidade e isolamento entre restaurantes. Os testes usam um banco descartável em memória.
 - `npm.cmd run build` gera a interface integrada em `dist/`. Use `.env.example` como modelo para `.env.local` e informe apenas a URL HTTPS e a chave pública `sb_publishable_` de um projeto Supabase de teste. A versão gerada usa Supabase Auth e a API do banco. A integração real com um projeto Supabase ainda precisa ser verificada.
 - Para validar o login por nome na versão integrada, aplique a migração `20261124000400_nomes_usuario.sql` no projeto de teste e vincule cada nome a uma conta do Auth em `public.nomes_usuario`. A função `login-usuario` deve estar disponível nesse projeto. Configure `VISIONCHEF_LOGIN_ORIGINS` na função com as origens exatas autorizadas, separadas por vírgula. O login por e-mail continua usando o Supabase Auth diretamente.
-- Baixas por uso ou descarte e gestão de convites estão previstas nas próximas entregas.
+- Use **Registrar uso** ou **Registrar descarte** na linha do lote. A quantidade sai do saldo e o dono consulta os descartes recentes do restaurante.
+- Em **Cadastrar lote**, abra **Preencher com assistente**, descreva o insumo e confira os campos sugeridos antes de salvar. Datas ambíguas exigem confirmação manual.
+- A configuração da prévia protegida está no [guia de implantação](docs/architecture/implantacao.md). Use um projeto Supabase de teste antes de convidar a equipe.
 
 Veja os [requisitos do piloto](docs/product/requirements.md), o [desenho técnico](docs/architecture/piloto.md) e as [futuras implantações](docs/futuras-implantacoes/README.md).
 

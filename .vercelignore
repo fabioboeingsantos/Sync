@@ -1,0 +1,12 @@
+# Dados do servidor local, credenciais e resultados de builds anteriores
+.dados-local/
+.env
+.env.*
+*.pem
+*.key
+node_modules/
+dist/
+.vercel/
+
+# O banco e a Edge Function são implantados pela CLI do Supabase.
+supabase/

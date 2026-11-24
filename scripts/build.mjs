@@ -63,6 +63,7 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
       },
     }),
     cp(resolve(raiz, 'piloto/estoque.js'), resolve(destino, 'estoque.js')),
+    cp(resolve(raiz, 'piloto/interpretar-lote.js'), resolve(destino, 'interpretar-lote.js')),
     cp(resolve(raiz, local ? 'scripts/api-local.js' : 'piloto/api.js'), resolve(destino, 'api.js')),
     cp(resolve(raiz, 'piloto/estoque.css'), resolve(destino, 'css/estoque.css')),
     ...arquivosPublicos.map((arquivo) => cp(resolve(raiz, arquivo), resolve(destino, arquivo))),

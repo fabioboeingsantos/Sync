@@ -1,4 +1,5 @@
 import { api } from './api.js';
+import { interpretarLote } from './interpretar-lote.js';
 
 // Controla os estados de acesso, consulta e movimentação da tela de estoque.
 const porId = (id) => document.getElementById(id);
@@ -22,6 +23,16 @@ const feedback = porId('feedback');
 const erroCadastro = porId('erro-cadastro');
 const mensagemLista = porId('mensagem-lista');
 const campos = formLote.elements;
+const dialogoSaida = porId('dialogo-saida');
+const formSaida = porId('form-saida');
+const cancelarSaida = porId('cancelar-saida');
+const erroSaida = porId('erro-saida');
+const painelDescartes = porId('painel-descartes');
+const historicoDescartes = porId('historico-descartes');
+const descricaoLote = porId('descricao-lote');
+const statusAssistente = porId('status-assistente');
+let parteEmSaida = null;
+let envioSaida = null;
 let restaurante = null;
 let envioPendente = null;
 let versaoConsulta = 0;
@@ -29,7 +40,7 @@ let loteEmCorrecao = null;
 let parteEmAbertura = null;
 let envioAbertura = null;
 
-const rotulos = { em_dia: 'Em dia', hoje: 'Vence hoje', vencido: 'Vencido' };
+const rotulos = { em_dia: 'Em dia', breve: 'Vence em até 3 dias', hoje: 'Vence hoje', vencido: 'Vencido' };
 
 function ocupado(botao, estado) {
   // Desabilitar o controle também impede o envio pelo teclado durante a operação.
@@ -62,6 +73,8 @@ async function mostrarSessao(focar = false) {
   if (!restaurante) {
     versaoConsulta += 1;
     porId('lotes').replaceChildren();
+    painelDescartes.hidden = true;
+    historicoDescartes.replaceChildren();
     porId('tabela-estoque').hidden = true;
     ocupado(recarregar, false);
     if (focar) porId(restaurantes === null ? 'titulo-entrada' : 'titulo-sem-restaurante').focus();
@@ -120,6 +133,11 @@ function mostrarLote(lote) {
   const condicao = document.createElement('small');
   condicao.textContent = lote.data_abertura ? `Aberto em ${formatarData(lote.data_abertura)}` : 'Fechado';
   insumo.append(condicao);
+  if (lote.local_armazenamento) {
+    const local = document.createElement('small');
+    local.textContent = 'Local: ' + lote.local_armazenamento;
+    insumo.append(local);
+  }
   adicionarCelula(linha, formatarSaldo(lote.saldo, lote.medida), 'Saldo');
   const validade = document.createElement('time');
   validade.dateTime = lote.validade_aplicavel;
@@ -141,6 +159,10 @@ function mostrarLote(lote) {
   if (!lote.data_abertura && lote.situacao !== 'vencido') {
     acoes.append(acaoDaParte(lote, 'Registrar abertura', 'abrir', iniciarAbertura));
   }
+  if (lote.situacao !== 'vencido') {
+    acoes.append(acaoDaParte(lote, 'Registrar uso', 'uso', (parte) => iniciarSaida(parte, 'uso')));
+  }
+  acoes.append(acaoDaParte(lote, 'Registrar descarte', 'descarte', (parte) => iniciarSaida(parte, 'descarte')));
   adicionarCelula(linha, acoes);
   return linha;
 }
@@ -177,6 +199,7 @@ async function atualizarEstoque() {
     porId('lotes').replaceChildren(...lotes.map(mostrarLote));
     porId('tabela-estoque').hidden = lotes.length === 0;
     mensagemLista.textContent = lotes.length === 0 ? 'Nenhum lote cadastrado.' : '';
+    void atualizarDescartes(restaurante.id, consulta);
     return lotes;
   } catch (erro) {
     if (consulta !== versaoConsulta) return;
@@ -194,6 +217,85 @@ async function atualizarEstoque() {
     if (consulta === versaoConsulta) ocupado(recarregar, false);
   }
 }
+
+async function atualizarDescartes(id, consulta) {
+  try {
+    const descartes = await api.descartes(id);
+    if (consulta !== versaoConsulta) return;
+    painelDescartes.hidden = descartes === null;
+    historicoDescartes.replaceChildren(...(descartes ?? []).map((saida) => {
+      const item = document.createElement('li');
+      const codigo = saida.codigo_fabricante ? ' · Lote ' + saida.codigo_fabricante : '';
+      const motivo = saida.motivo === 'vencimento' ? 'Vencimento' : 'Outro motivo';
+      const data = new Date(saida.registrado_em).toLocaleString('pt-BR');
+      item.textContent = saida.insumo + codigo + ' · ' + formatarSaldo(saida.quantidade, saida.medida) + ' · ' + motivo + ' · ' + data;
+      return item;
+    }));
+    porId('mensagem-descartes').textContent = descartes?.length ? '' : 'Nenhum descarte registrado.';
+  } catch {
+    if (consulta !== versaoConsulta) return;
+    historicoDescartes.replaceChildren();
+    porId('mensagem-descartes').textContent = 'Não foi possível consultar o histórico.';
+  }
+}
+
+function iniciarSaida(parte, tipo) {
+  parteEmSaida = { parte, tipo };
+  formSaida.reset();
+  erroSaida.textContent = '';
+  porId('titulo-saida').textContent = tipo === 'uso' ? 'Registrar uso' : 'Registrar descarte';
+  porId('lote-em-saida').textContent = parte.insumo;
+  porId('saldo-disponivel').textContent = 'Saldo: ' + formatarSaldo(parte.saldo, parte.medida);
+  porId('campo-motivo').hidden = tipo === 'uso';
+  formSaida.elements.motivo.value = parte.situacao === 'vencido' ? 'vencimento' : 'outro';
+  dialogoSaida.showModal();
+  formSaida.elements.quantidade.focus();
+}
+
+cancelarSaida.addEventListener('click', () => dialogoSaida.close());
+dialogoSaida.addEventListener('cancel', (evento) => {
+  if (cancelarSaida.disabled) evento.preventDefault();
+});
+dialogoSaida.addEventListener('close', () => {
+  if (parteEmSaida) focarAcao(parteEmSaida.parte.parte_id, parteEmSaida.tipo);
+  parteEmSaida = null;
+});
+
+formSaida.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const botao = formSaida.querySelector('[type="submit"]');
+  if (!restaurante || !parteEmSaida || botao.disabled) return;
+  const { parte, tipo } = parteEmSaida;
+  const campo = formSaida.elements.quantidade;
+  const quantidade = normalizarQuantidade(campo.value, parte.medida);
+  if (!quantidade) {
+    erroSaida.textContent = 'Informe uma quantidade válida na medida ' + parte.medida + '.';
+    campo.focus();
+    return;
+  }
+  const saida = {
+    p_restaurante_id: restaurante.id, p_lote_id: parte.lote_id, p_parte_id: parte.parte_id,
+    p_tipo: tipo, p_quantidade: quantidade, p_motivo: tipo === 'descarte' ? formSaida.elements.motivo.value : null,
+  };
+  // Repetir o mesmo envio após uma falha de rede conserva a chave da operação.
+  const conteudo = JSON.stringify(saida);
+  if (envioSaida?.conteudo !== conteudo) envioSaida = { conteudo, id: crypto.randomUUID() };
+  erroSaida.textContent = '';
+  for (const controle of formSaida.elements) controle.disabled = true;
+  ocupado(botao, true);
+  try {
+    await api.registrarSaida({ ...saida, p_operacao_id: envioSaida.id });
+    envioSaida = null;
+    feedback.textContent = tipo === 'descarte' ? 'Descarte registrado.' : 'Uso registrado.';
+    await atualizarEstoque();
+    dialogoSaida.close();
+  } catch (erro) {
+    erroSaida.textContent = mensagem(erro, 'Não foi possível registrar. Confira o saldo e a validade antes de tentar novamente.');
+  } finally {
+    for (const controle of formSaida.elements) controle.disabled = false;
+    ocupado(botao, false);
+  }
+});
 
 function mostrarValidadeAtual() {
   porId('validade-atual').textContent = `Validade atual da embalagem: ${formatarData(loteEmCorrecao.validade_embalagem)}`;
@@ -390,6 +492,9 @@ sair.addEventListener('click', async () => {
     limparErros();
     envioPendente = null;
     envioAbertura = null;
+    envioSaida = null;
+    descricaoLote.value = '';
+    statusAssistente.textContent = '';
     feedback.textContent = '';
     porId('lotes').replaceChildren();
     porId('tabela-estoque').hidden = true;
@@ -436,6 +541,7 @@ formLote.addEventListener('submit', async (evento) => {
     p_restaurante_id: restaurante.id,
     p_insumo: dados.insumo.trim(),
     p_codigo_fabricante: dados.codigo.trim() || null,
+    p_local: dados.local.trim() || null,
     p_validade: dados.validade,
     p_medida: dados.medida,
     p_quantidade: quantidade,
@@ -453,6 +559,9 @@ formLote.addEventListener('submit', async (evento) => {
     await api.cadastrar({ ...lote, p_operacao_id: envioPendente.id });
     envioPendente = null;
     formLote.reset();
+    descricaoLote.value = '';
+    statusAssistente.textContent = '';
+    formLote.querySelectorAll('.sugestao').forEach((campo) => campo.classList.remove('sugestao'));
     feedback.textContent = 'Lote cadastrado.';
     abrirCadastro.disabled = false;
     definirCadastro(false);
@@ -466,6 +575,71 @@ formLote.addEventListener('submit', async (evento) => {
     ocupado(botao, false);
   }
 });
+
+function preencherComAssistente() {
+  if (!descricaoLote.value.trim()) {
+    statusAssistente.textContent = 'Descreva o lote para receber sugestões.';
+    descricaoLote.focus();
+    return;
+  }
+  try {
+    const sugestao = interpretarLote(descricaoLote.value);
+    // Trocar a descrição remove apenas sugestões antigas. Uma data ambígua exige nova conferência.
+    for (const campo of formLote.querySelectorAll('.sugestao')) {
+      campo.value = campo.defaultValue ?? 'un';
+      campo.classList.remove('sugestao');
+    }
+    campos.validade.value = '';
+    for (const [nome, valor] of Object.entries(sugestao)) {
+      const campo = campos[nome];
+      if (!valor) continue;
+      campo.value = campo.maxLength > 0 ? valor.slice(0, campo.maxLength) : valor;
+      campo.classList.add('sugestao');
+    }
+    if (!sugestao.validade) {
+      statusAssistente.textContent = 'Informe uma data completa e válida antes de salvar.';
+      campos.validade.focus();
+    } else {
+      statusAssistente.textContent = 'Confira os campos sugeridos, complete os dados e clique em Salvar lote.';
+      const faltante = [campos.insumo, campos.quantidade].find((campo) => !campo.value);
+      (faltante ?? campos.insumo).focus();
+    }
+  } catch {
+    statusAssistente.textContent = 'Não foi possível interpretar a descrição. Preencha os campos manualmente.';
+  }
+}
+
+porId('sugerir-lote').addEventListener('click', preencherComAssistente);
+formLote.addEventListener('input', (evento) => evento.target.classList.remove('sugestao'));
+
+// Quando disponível, o navegador transforma a fala em texto para a mesma etapa de conferência.
+const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
+const ditar = porId('ditar-lote');
+if (Reconhecimento) {
+  ditar.hidden = false;
+  porId('aviso-ditado').hidden = false;
+  ditar.addEventListener('click', () => {
+    try {
+      const reconhecimento = new Reconhecimento();
+      reconhecimento.lang = 'pt-BR';
+      reconhecimento.onresult = (evento) => {
+        if (porId('painel-cadastro').hidden) return;
+        descricaoLote.value = evento.results[0][0].transcript.slice(0, 600);
+        preencherComAssistente();
+      };
+      reconhecimento.onerror = () => {
+        statusAssistente.textContent = 'Ditado indisponível. Você pode digitar ou preencher os campos manualmente.';
+      };
+      reconhecimento.onend = () => ocupado(ditar, false);
+      reconhecimento.start();
+      ocupado(ditar, true);
+      statusAssistente.textContent = 'Ouvindo…';
+    } catch {
+      ocupado(ditar, false);
+      statusAssistente.textContent = 'Ditado indisponível. Você pode digitar a descrição.';
+    }
+  });
+}
 
 if (api.modoLocal) {
   porId('ambiente-local').hidden = false;

@@ -26,4 +26,6 @@ export const api = {
   cadastrar: (lote) => solicitar('lotes', lote),
   corrigirValidade: (correcao) => solicitar('lotes/validade', correcao),
   registrarAbertura: (abertura) => solicitar('lotes/abertura', abertura),
+  registrarSaida: (saida) => solicitar('lotes/saida', saida),
+  descartes: (restaurante) => solicitar('descartes?restaurante=' + encodeURIComponent(restaurante)),
 };

@@ -9,3 +9,7 @@ A primeira versão terá um restaurante piloto. Desde o início, cada lote deve 
 Quando um segundo restaurante demonstrar interesse, cadastrá-lo manualmente e configurar o acesso da equipe ao próprio estoque. Antes de liberar o acesso, conferir com contas de teste que pessoas de um restaurante não conseguem ver nem alterar lotes do outro.
 
 Depois de testar esse processo, avaliar a necessidade de uma tela de cadastro de restaurantes.
+
+## Portfólio e divulgação da Sync
+
+O [plano de divulgação das soluções](portfolio-e-divulgacao-sync.md) reúne o calendário de apresentações e os materiais para anunciar a segunda solução.

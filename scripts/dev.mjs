@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { arquivosPublicos, montarPiloto, raiz } from './build.mjs';
 import {
   abrirBancoLocal, cadastrarLote, comoUsuario, corrigirValidade, encontrarContaLocal, listarEstoque, listarRestaurantes,
-  registrarAbertura, senhaLocal,
+  listarDescartes, registrarAbertura, registrarSaida, senhaLocal,
 } from './banco-local.mjs';
 
 // O servidor de desenvolvimento atende apenas os arquivos públicos listados aqui e as rotas de teste.
@@ -21,6 +21,7 @@ const arquivos = new Map([
   ['/estoque/', 'estoque/index.html'],
   ['/estoque/index.html', 'estoque/index.html'],
   ['/estoque.js', 'estoque.js'],
+  ['/interpretar-lote.js', 'interpretar-lote.js'],
   ['/entrada.js', 'entrada.js'],
   ['/api.js', 'api.js'],
   ['/css/estoque.css', 'css/estoque.css'],
@@ -117,6 +118,12 @@ export function criarServidorLocal(banco, pastaPublica) {
       } else if (req.method === 'POST' && url.pathname === '/demo/lotes/abertura') {
         const abertura = await lerJson(req);
         json(res, 200, await comoUsuario(banco, conta.id, (tx) => registrarAbertura(tx, abertura)));
+      } else if (req.method === 'POST' && url.pathname === '/demo/lotes/saida') {
+        const saida = await lerJson(req);
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => registrarSaida(tx, saida)));
+      } else if (req.method === 'GET' && url.pathname === '/demo/descartes') {
+        const restaurante = url.searchParams.get('restaurante');
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => listarDescartes(tx, restaurante)));
       } else {
         json(res, 404, { erro: 'Endereço indisponível.' });
       }

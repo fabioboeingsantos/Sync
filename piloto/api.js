@@ -36,9 +36,18 @@ export const api = {
     return retornar(await supabase.from('restaurantes').select('id,nome').order('nome').order('id'));
   },
   estoque: async (restaurante) => retornar(await supabase.from('estoque')
-    .select('lote_id,parte_id,insumo,codigo_fabricante,validade_aplicavel,medida,saldo,situacao,revisao_validade,data_abertura,validade_abertura,validade_embalagem')
+    .select('lote_id,parte_id,insumo,codigo_fabricante,validade_aplicavel,medida,saldo,situacao,revisao_validade,data_abertura,validade_abertura,validade_embalagem,local_armazenamento')
     .eq('restaurante_id', restaurante).order('validade_aplicavel').order('insumo').order('parte_id')),
   cadastrar: async (lote) => retornar(await supabase.rpc('cadastrar_lote', lote)),
   corrigirValidade: async (correcao) => retornar(await supabase.rpc('corrigir_validade', correcao)),
   registrarAbertura: async (abertura) => retornar(await supabase.rpc('registrar_abertura', abertura)),
+  registrarSaida: async (saida) => retornar(await supabase.rpc('registrar_saida', saida)),
+  descartes: async (restaurante) => {
+    // A RLS também restringe esta consulta no servidor.
+    const membro = retornar(await supabase.from('membros_restaurante').select('papel').eq('restaurante_id', restaurante).maybeSingle());
+    if (membro?.papel !== 'dono') return null;
+    return retornar(await supabase.from('saidas_estoque').select('insumo,codigo_fabricante,medida,quantidade,motivo,registrado_em')
+      .eq('restaurante_id', restaurante).eq('tipo', 'descarte')
+      .order('registrado_em', { ascending: false }).order('id', { ascending: false }).limit(50));
+  },
 };

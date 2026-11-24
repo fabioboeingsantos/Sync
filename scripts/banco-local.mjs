@@ -4,7 +4,7 @@ import { PGlite } from '@electric-sql/pglite';
 // O restaurante adicional permite verificar que o estoque fica isolado por vínculo da equipe.
 export const restaurantePiloto = '10000000-0000-4000-8000-000000000001';
 export const outroRestaurante = '10000000-0000-4000-8000-000000000002';
-export const senhaLocal = 'visionchef-local';
+export const senhaLocal = 'senha123';
 export const contas = new Map([
   ['dono@piloto.test', { id: '20000000-0000-4000-8000-000000000001', nome: 'dono.piloto', restaurante: restaurantePiloto, papel: 'dono' }],
   ['cozinha@piloto.test', { id: '20000000-0000-4000-8000-000000000002', nome: 'cozinha.piloto', restaurante: restaurantePiloto, papel: 'cozinheiro' }],
@@ -119,7 +119,7 @@ export async function listarEstoque(tx, restaurante) {
     select e.lote_id, e.parte_id, e.insumo, e.codigo_fabricante,
       e.validade_aplicavel::text as validade_aplicavel, e.medida, e.saldo, e.situacao, e.revisao_validade,
       e.data_abertura::text as data_abertura, e.validade_abertura::text as validade_abertura,
-      e.validade_embalagem::text as validade_embalagem
+      e.validade_embalagem::text as validade_embalagem, e.local_armazenamento
     from public.estoque as e where e.restaurante_id = $1
     order by e.validade_aplicavel, e.insumo, e.parte_id
   `, [restaurante]);
@@ -128,9 +128,9 @@ export async function listarEstoque(tx, restaurante) {
 
 export async function cadastrarLote(tx, lote) {
   const { rows: [registro] } = await tx.query(`
-    select public.cadastrar_lote($1, $2, $3, $4, $5, $6, $7) as id
+    select public.cadastrar_lote($1, $2, $3, $4, $5, $6, $7, $8) as id
   `, [lote.p_restaurante_id, lote.p_insumo, lote.p_codigo_fabricante, lote.p_validade,
-    lote.p_medida, lote.p_quantidade, lote.p_operacao_id]);
+    lote.p_medida, lote.p_quantidade, lote.p_operacao_id, lote.p_local ?? null]);
   return registro.id;
 }
 
@@ -149,4 +149,23 @@ export async function registrarAbertura(tx, abertura) {
     abertura.p_data_abertura, abertura.p_validade_abertura, abertura.p_operacao_id,
   ]);
   return registro.id;
+}
+
+// O piloto chama a mesma transação de baixa da versão hospedada.
+export async function registrarSaida(tx, s) {
+  const { rows: [registro] } = await tx.query('select public.registrar_saida($1, $2, $3, $4, $5, $6, $7) as id', [
+    s.p_restaurante_id, s.p_lote_id, s.p_parte_id, s.p_tipo, s.p_quantidade, s.p_motivo, s.p_operacao_id,
+  ]);
+  return registro.id;
+}
+
+export async function listarDescartes(tx, restaurante) {
+  // Um histórico vazio é diferente de uma conta sem acesso à visão do dono.
+  const { rows: [membro] } = await tx.query('select papel from public.membros_restaurante where restaurante_id = $1', [restaurante]);
+  if (membro?.papel !== 'dono') return null;
+  const { rows } = await tx.query(
+    "select insumo, codigo_fabricante, medida, quantidade::text, motivo, registrado_em from public.saidas_estoque where restaurante_id = $1 and tipo = 'descarte' order by registrado_em desc, id desc limit 50",
+    [restaurante],
+  );
+  return rows;
 }

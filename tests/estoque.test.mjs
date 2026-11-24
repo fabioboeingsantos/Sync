@@ -316,7 +316,7 @@ test('abertura mantém o saldo total, o código do lote e a menor das duas valid
   await assert.rejects(registrar({ ...abertura, p_parte_id: aberta, p_operacao_id: randomUUID() }), { code: 'PT404' });
   assert.deepEqual(await conferir(), [{
     ...fechado, parte_id: aberta, saldo: '1', data_abertura: datas.hoje,
-    validade_abertura: datas.curta, validade_aplicavel: datas.curta,
+    validade_abertura: datas.curta, validade_aplicavel: datas.curta, situacao: 'breve',
   }, { ...fechado, saldo: '9' }]);
 
   // Abrir todo o restante remove a linha fechada. A validade da embalagem ainda limita a parte aberta.

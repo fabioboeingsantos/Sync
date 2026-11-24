@@ -10,7 +10,7 @@ Sync/
 ├── dist/                       saída gerada da versão integrada
 ├── docs/
 │   ├── architecture/            desenho técnico e decisões de arquitetura
-│   ├── futuras-implantacoes/    melhorias previstas após o piloto
+│   ├── futuras-implantacoes/    evolução do piloto e divulgação do portfólio da Sync
 │   ├── product/                 escopo, requisitos e fluxos do piloto
 │   └── MAPA-DA-RAIZ.md          inventário e dependências de caminhos
 ├── frontend/                   componente React usado no acesso da landing
@@ -33,12 +33,14 @@ Sync/
 ├── tests/                      testes automatizados de estoque e migração local
 ├── .env.example                modelo de configuração pública do Supabase
 ├── .gitignore                  exclusões do Git
+├── .vercelignore               exclusões para o envio à Vercel
 ├── AGENTS.md                   regras para trabalhar no repositório
 ├── index.html                  página inicial do simulado
 ├── informacoes.html            informações sobre a versão do simulado
 ├── package-lock.json           versões exatas das dependências npm
 ├── package.json                dependências e comandos do piloto
-└── README.md                   entrada do repositório e instruções locais
+├── README.md                   entrada do repositório e instruções locais
+└── vercel.json                 configuração do build e da saída na Vercel
 ```
 
 ## Dependências de caminhos
@@ -46,7 +48,7 @@ Sync/
 - **Piloto e build.** O [script de build](../scripts/build.mjs) monta a landing a partir de `index.html`, compila em Vite o [acesso em React](../frontend/entrada.jsx), monta `/estoque/` a partir de `piloto/` e copia o [estilo compartilhado de botões](../css/botoes.css). A versão integrada fica em `dist/`. Os comandos estão no [manifesto npm](../package.json).
 - **Ambiente local.** O [servidor](../scripts/dev.mjs) monta a página local e guarda os dados em `.dados-local/`. O [banco local](../scripts/banco-local.mjs) lê as migrações de `supabase/migrations/`, também usadas nos [testes de estoque](../tests/estoque.test.mjs).
 - **Simulado.** A [página inicial](../index.html) e a [página de informações](../informacoes.html) continuam na raiz como pontos de entrada. Os estilos da SYNC, o alternador de tema e as mídias da abertura ficam em [abertura/](<../Insumo vencendo na cozinha/abertura/>). As entregas, os guias e os protótipos estão organizados no [índice do simulado](<../Insumo vencendo na cozinha/README.md>).
-- **Itens locais e gerados.** `.dados-local/`, `dist/`, `node_modules/` e `.env.local`, quando existir, estão cobertos pelo [.gitignore](../.gitignore). `.env.example` é o modelo compartilhado.
+- **Itens locais e gerados.** `.dados-local/`, `dist/`, `node_modules/`, `.env.local`, `.vercel/` e `supabase/.temp/`, quando existirem, estão cobertos pelo [.gitignore](../.gitignore). `.env.example` é o modelo compartilhado.
 
 ## Onde colocar mudanças
 

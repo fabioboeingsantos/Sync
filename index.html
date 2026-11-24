@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#060b1b">
-  <meta name="description" content="VisionChef, um produto da SYNC. Cadastre lotes, acompanhe validades e registre descartes na sua cozinha.">
-  <title>VisionChef | Controle de validade para cozinhas</title>
+  <meta name="description" content="A Sync desenvolve soluções digitais para simplificar o trabalho das equipes. Conheça o VisionChef, nossa primeira solução.">
+  <title>Sync | Soluções digitais para o dia a dia</title>
   <!-- Os recursos da abertura ficam junto aos materiais do simulado. -->
   <link rel="icon" type="image/png" sizes="128x128" href="Insumo%20vencendo%20na%20cozinha/abertura/imagens/coruja-sync-icone.png">
   <link rel="stylesheet" href="Insumo%20vencendo%20na%20cozinha/abertura/sync.css">
@@ -22,10 +22,8 @@
       <img class="brand-logo" src="Insumo%20vencendo%20na%20cozinha/abertura/imagens/coruja-sync-icone.png" width="128" height="128" alt="">
     </a>
     <nav class="site-nav" aria-label="Navegação principal">
-      <a class="header-link" href="#estoque">Estoque</a>
-      <a class="header-link" href="#como-funciona">Como funciona</a>
-      <a class="header-link" href="#assistente">Assistente</a>
-      <a class="header-link" href="#duvidas">Dúvidas</a>
+      <a class="header-link" href="#solucoes">Soluções</a>
+      <a class="header-link" href="#estoque">Demonstração</a>
     </nav>
     <div class="header-actions">
       <a class="header-link header-cta" href="#prototipos">Acessar VisionChef</a>
@@ -46,21 +44,30 @@
     <section class="hero frame" id="inicio" aria-labelledby="titulo">
       <div class="hero-copy">
         <div class="hero-title">
-          <p class="eyebrow">Gestão de estoque para cozinhas</p>
-          <h1 id="titulo">VisionChef</h1>
-          <p class="tagline">Saiba o que vence primeiro na sua cozinha.</p>
-          <p class="product-signature">Um produto da SYNC</p>
+          <h1 id="titulo">Sync</h1>
+          <p class="tagline">Criamos sistemas para simplificar o dia a dia das equipes.</p>
         </div>
         <div class="hero-action">
-          <p>Cadastre lotes, organize o estoque por validade e acompanhe os descartes.</p>
+          <p>Conheça nossas soluções para organizar rotinas, acompanhar informações e tomar decisões no trabalho.</p>
           <div class="actions">
-            <a class="botao botao-primario" href="#prototipos">Acessar VisionChef</a>
-            <a class="botao botao-secundario" href="#estoque">Consultar exemplo de estoque</a>
+            <a class="botao botao-primario" href="#solucoes">Conhecer soluções</a>
           </div>
         </div>
       </div>
       <div class="scene">
-        <video class="owl" src="Insumo%20vencendo%20na%20cozinha/abertura/imagens/sync-emblema-animado.mp4" poster="Insumo%20vencendo%20na%20cozinha/abertura/imagens/LogoOficial.png" autoplay loop muted playsinline aria-label="Animação do emblema da SYNC com uma coruja de olhos azuis e letras prateadas"></video>
+        <img class="owl" src="Insumo%20vencendo%20na%20cozinha/abertura/imagens/LogoOficial.png" alt="Emblema da Sync">
+      </div>
+    </section>
+    <!-- Cada solução tem sua própria apresentação antes da demonstração. -->
+    <section class="frame section" id="solucoes" aria-labelledby="titulo-solucoes">
+      <div class="section-intro">
+        <p class="eyebrow">Soluções da Sync</p>
+        <h2 id="titulo-solucoes">VisionChef</h2>
+        <p>Na hora de começar o preparo, sua equipe sabe quais insumos usar primeiro? O VisionChef organiza os lotes por validade, mostra o que precisa de atenção e registra o que foi usado ou descartado.</p>
+        <div class="actions">
+          <a class="botao botao-primario" href="#estoque">Ver exemplo de estoque</a>
+          <a class="botao botao-secundario" href="#prototipos">Acessar VisionChef</a>
+        </div>
       </div>
     </section>
     <section class="section-band" id="estoque" aria-labelledby="titulo-estoque">
@@ -162,7 +169,7 @@
     </section>
   </main>
   <footer class="site-footer frame">
-    <span>VisionChef · Um produto da SYNC</span>
+    <span>Sync · Soluções digitais</span>
     <nav aria-label="Informações do produto">
       <a href="informacoes.html#privacidade">Privacidade</a>
       <a href="informacoes.html#armazenamento">Cookies e armazenamento</a>
@@ -171,6 +178,12 @@
     </nav>
   </footer>
   <script>
+    // A altura real do cabeçalho também cobre quebras de linha e alterações de zoom.
+    const cabecalho = document.querySelector('.site-header');
+    new ResizeObserver(() => {
+      document.documentElement.style.setProperty('--altura-cabecalho-sync', cabecalho.getBoundingClientRect().height + 'px');
+    }).observe(cabecalho);
+
     const filters = document.querySelector('.filters');
     const buttons = filters.querySelectorAll('[data-filter]');
     const lots = document.querySelectorAll('.stock-grid [data-status]');

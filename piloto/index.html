@@ -38,7 +38,7 @@
           <li>Cozinheiro do piloto <strong>cozinha.piloto</strong> ou <strong>cozinha@piloto.test</strong></li>
           <li>Dono de outro restaurante <strong>dono.outro</strong> ou <strong>dono@outro.test</strong></li>
         </ul>
-        <p>Senha das contas de teste <code>visionchef-local</code></p>
+        <p>Senha das contas de teste <code>senha123</code></p>
       </details>
       <!-- contas-ficticias-fim -->
     </section>
@@ -61,6 +61,21 @@
       <p class="mensagem" id="feedback" role="status"></p>
       <section class="painel painel-cadastro" id="painel-cadastro" aria-labelledby="titulo-cadastro" hidden>
         <h2 id="titulo-cadastro">Novo lote</h2>
+        <!-- O assistente só preenche o formulário. A gravação continua no botão Salvar lote. -->
+        <details class="assistente" id="assistente-lote">
+          <summary>Preencher com assistente</summary>
+          <div class="formulario">
+            <label>Descrição do lote
+              <textarea id="descricao-lote" rows="3" maxlength="600" placeholder="Creme de leite, lote A12, 2 caixas, validade 19/11/2026, freezer"></textarea>
+            </label>
+            <div class="acoes">
+              <button class="botao botao-secundario" type="button" id="sugerir-lote">Preencher campos</button>
+              <button class="botao botao-secundario" type="button" id="ditar-lote" aria-describedby="aviso-ditado" hidden>Ditar texto</button>
+            </div>
+            <p id="aviso-ditado" hidden>O reconhecimento de voz pode usar o serviço do navegador.</p>
+            <p class="mensagem" id="status-assistente" role="status"></p>
+          </div>
+        </details>
         <form id="form-lote" class="formulario">
           <div class="grade-formulario">
             <label>Insumo <input name="insumo" maxlength="120" required></label>
@@ -73,6 +88,7 @@
               </select>
             </label>
             <label>Validade <input name="validade" type="date" required></label>
+            <label>Local de armazenamento <span>(opcional)</span> <input name="local" maxlength="120"></label>
           </div>
           <p id="erro-cadastro" class="mensagem erro" role="alert"></p>
           <div class="acoes">
@@ -94,6 +110,28 @@
           </table>
         </div>
       </section>
+      <!-- A visão do dono registra perdas pelo motivo informado na baixa. -->
+      <section class="painel painel-lista historico" id="painel-descartes" aria-labelledby="titulo-descartes" hidden>
+        <h2 id="titulo-descartes">Descartes recentes</h2>
+        <p id="mensagem-descartes" role="status"></p>
+        <ul id="historico-descartes"></ul>
+      </section>
+      <dialog id="dialogo-saida" class="painel dialogo-validade" aria-labelledby="titulo-saida">
+        <h2 id="titulo-saida">Registrar saída</h2>
+        <p id="lote-em-saida"></p>
+        <form id="form-saida" class="formulario">
+          <label>Quantidade <input name="quantidade" inputmode="decimal" required aria-describedby="saldo-disponivel"></label>
+          <p id="saldo-disponivel"></p>
+          <label id="campo-motivo">Motivo
+            <select name="motivo"><option value="vencimento">Vencimento</option><option value="outro">Outro motivo</option></select>
+          </label>
+          <p id="erro-saida" class="mensagem erro" role="alert"></p>
+          <div class="acoes">
+            <button type="submit" class="botao botao-primario">Confirmar saída</button>
+            <button type="button" class="botao botao-secundario" id="cancelar-saida">Cancelar</button>
+          </div>
+        </form>
+      </dialog>
       <!-- O diálogo mantém os demais controles inativos durante a correção. -->
       <dialog id="dialogo-validade" class="painel dialogo-validade" aria-labelledby="titulo-validade">
         <h2 id="titulo-validade">Corrigir validade</h2>
