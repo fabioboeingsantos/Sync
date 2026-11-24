@@ -24,6 +24,8 @@
 
 ---
 
+
+
 ## Checklist rápido de ensaio
 - [ ] **1 ideia por tela** e texto grande legível à distância (retroprojetor).
 - [ ] **Ensaiar falando e clicando** com cronômetro (meta: fechar em ~2min50s).
