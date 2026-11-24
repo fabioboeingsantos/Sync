@@ -7,19 +7,91 @@
   --lime: #cbff79;
   --line: #253b53;
   --control-line: #637e9d;
+  --surface: #101c32;
+  --band-bg: #0c1427;
+  --header-bg: rgb(6 11 27 / 84%);
+  --title-gradient: linear-gradient(175deg, #fff 15%, #bcc8d5 47%, #fff 56%, #96a6ba 100%);
   --ease-out: cubic-bezier(.16, 1, .3, 1);
   --mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
   font: 100%/1.5 system-ui, sans-serif;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --background: #f5f9f6;
+  --foreground: #12211b;
+  --muted: #3d5249;
+  --cyan: #1f6b4b;
+  --lime: #2f6b3b;
+  --line: #cfe0d6;
+  --control-line: #6f9480;
+  --surface: #ffffff;
+  --band-bg: #e9f2ec;
+  --header-bg: rgb(245 249 246 / 86%);
+  --title-gradient: linear-gradient(175deg, #10261b 12%, #24573c 52%, #132c1f 100%);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
+  position: relative;
   color: var(--foreground);
-  background: radial-gradient(ellipse at 76% 32%, #101d3a 0, transparent 55%), var(--background);
+  background: var(--background);
   --btn-foco: var(--lime);
+  transition: background-color 420ms ease, color 320ms ease;
 }
+html[data-theme="light"] body {
+  --btn-foco: #1F4D2E;
+}
+
+/* Simulação atmosférica de luz solar (modo claro) e luar estrelado (modo escuro) */
+.ambient-sky {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 78% 24%, rgba(82, 236, 255, 0.14) 0%, rgba(16, 29, 58, 0.55) 38%, transparent 70%),
+    radial-gradient(circle at 18% 12%, rgba(170, 205, 255, 0.08) 0%, transparent 42%);
+  transition: background 520ms ease, opacity 420ms ease;
+}
+.ambient-sky::before,
+.ambient-sky::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transition: opacity 520ms ease, transform 640ms var(--ease-out);
+}
+.ambient-sky::before {
+  /* Céu noturno com micro-estrelas sutis */
+  opacity: 0.7;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1px 1px at 28% 10%, rgba(210, 235, 255, 0.65), transparent),
+    radial-gradient(1.5px 1.5px at 64% 14%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 84% 22%, rgba(203, 255, 121, 0.55), transparent),
+    radial-gradient(1.2px 1.2px at 46% 28%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 92% 12%, rgba(82, 236, 255, 0.6), transparent);
+}
+.ambient-sky::after {
+  /* Raios solares suaves (ativos no modo claro) */
+  opacity: 0;
+  transform: scale(0.92);
+  background:
+    radial-gradient(circle at 82% 8%, rgba(255, 214, 102, 0.42) 0%, rgba(255, 186, 56, 0.16) 28%, transparent 58%),
+    conic-gradient(from 195deg at 82% 8%, transparent 0deg, rgba(255, 236, 173, 0.22) 14deg, transparent 28deg, rgba(255, 236, 173, 0.16) 44deg, transparent 62deg);
+}
+html[data-theme="light"] .ambient-sky {
+  background:
+    radial-gradient(ellipse at 82% 10%, rgba(255, 226, 138, 0.45) 0%, rgba(255, 244, 206, 0.22) 34%, transparent 64%),
+    radial-gradient(ellipse at 14% 28%, rgba(164, 218, 255, 0.24) 0%, transparent 52%);
+}
+html[data-theme="light"] .ambient-sky::before { opacity: 0; }
+html[data-theme="light"] .ambient-sky::after { opacity: 1; transform: scale(1); }
+
+main, .site-footer { position: relative; z-index: 1; }
 a { color: inherit; }
 a:not(.botao):focus-visible, button:not(.botao):focus-visible, summary:focus-visible { outline: 2px solid var(--lime); outline-offset: 5px; }
 .frame { width: min(100% - clamp(2rem, 10vw, 10rem), 80rem); margin-inline: auto; }
@@ -36,13 +108,15 @@ a:not(.botao):focus-visible, button:not(.botao):focus-visible, summary:focus-vis
   justify-content: space-between;
   align-items: center;
   gap: .5rem 1.25rem;
-  background: rgb(6 11 27 / 84%);
+  background: var(--header-bg);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
+  transition: background-color 360ms ease, border-color 360ms ease;
 }
 .site-header.frame {
   width: 100%;
   padding-inline: max(clamp(1rem, 5vw, 5rem), calc((100% - 80rem) / 2));
+  padding-right: max(7.25rem, calc((100% - 80rem) / 2));
 }
 section[id] { scroll-margin-top: 5.5rem; }
 .brand, .header-link { display: inline-flex; align-items: center; min-height: 2.75rem; text-decoration: none; }
@@ -56,7 +130,123 @@ section[id] { scroll-margin-top: 5.5rem; }
 .header-link { color: var(--muted); font: 500 .875rem var(--mono); }
 .header-link:hover { color: var(--cyan); }
 .site-nav { display: flex; flex-wrap: wrap; gap: 0 clamp(.8rem, 2.5vw, 2rem); }
+.header-actions { display: inline-flex; align-items: center; gap: .75rem; }
 .header-cta { padding-inline: .9rem; border: 1px solid var(--control-line); border-radius: .35rem; color: var(--foreground); }
+
+/* Alternador compacto de tema claro/escuro com Sol e Lua ultra-realistas */
+.theme-toggle {
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  width: 5.25rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 1px solid rgba(130, 175, 225, 0.42);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.25);
+  transition: border-color 320ms ease, box-shadow 320ms ease;
+}
+html[data-theme="light"] .theme-toggle {
+  border-color: rgba(45, 138, 220, 0.55);
+  box-shadow: inset 0 2px 6px rgba(15, 76, 145, 0.28), 0 3px 12px rgba(255, 185, 50, 0.28);
+}
+.sky-track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #050a1a 0%, #0f1f44 58%, #1d3566 100%);
+  transition: background 480ms ease;
+}
+html[data-theme="light"] .sky-track {
+  background: linear-gradient(135deg, #2181e6 0%, #5cb5ff 56%, #bce4ff 100%);
+}
+.sky-stars,
+.sky-clouds,
+.sky-rays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 420ms ease, transform 480ms var(--ease-out);
+}
+.sky-stars {
+  opacity: 1;
+  background-image:
+    radial-gradient(1.4px 1.4px at 18% 30%, #fff, transparent),
+    radial-gradient(1.1px 1.1px at 34% 68%, #d7ecff, transparent),
+    radial-gradient(1.3px 1.3px at 48% 26%, #fff, transparent),
+    radial-gradient(1px 1px at 26% 52%, #cbff79, transparent),
+    radial-gradient(1px 1px at 42% 76%, #52ecff, transparent);
+}
+html[data-theme="light"] .sky-stars {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.sky-clouds {
+  opacity: 0;
+  transform: translateY(6px);
+  background-image:
+    radial-gradient(circle at 72% 76%, rgba(255, 255, 255, 0.92) 0 8px, transparent 9px),
+    radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.88) 0 10px, transparent 11px),
+    radial-gradient(circle at 64% 84%, rgba(255, 255, 255, 0.85) 0 7px, transparent 8px);
+}
+html[data-theme="light"] .sky-clouds {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sky-rays {
+  opacity: 0;
+  background: radial-gradient(circle at 26% 50%, rgba(255, 224, 118, 0.65) 0%, rgba(255, 179, 44, 0.22) 38%, transparent 66%);
+}
+html[data-theme="light"] .sky-rays { opacity: 1; }
+.celestial-thumb {
+  position: absolute;
+  top: 50%;
+  left: .2rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  transform: translate(2.65rem, -50%);
+  box-shadow: 0 0 12px rgba(190, 225, 255, 0.78), 0 0 22px rgba(110, 170, 255, 0.36);
+  transition: transform 480ms cubic-bezier(.22, 1, .36, 1), box-shadow 420ms ease;
+}
+html[data-theme="light"] .celestial-thumb {
+  transform: translate(0, -50%);
+  box-shadow: 0 0 14px rgba(255, 195, 65, 0.98), 0 0 26px rgba(255, 140, 18, 0.65);
+}
+.celestial-thumb .orb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: opacity 420ms ease, transform 520ms cubic-bezier(.22, 1, .36, 1);
+}
+.celestial-thumb .orb-moon {
+  opacity: 1;
+  transform: scale(1.18) rotate(0deg);
+}
+.celestial-thumb .orb-sun {
+  opacity: 0;
+  transform: scale(0.75) rotate(-45deg);
+}
+html[data-theme="light"] .celestial-thumb .orb-moon {
+  opacity: 0;
+  transform: scale(0.75) rotate(45deg);
+}
+html[data-theme="light"] .celestial-thumb .orb-sun {
+  opacity: 1;
+  transform: scale(1.18) rotate(0deg);
+}
 
 .hero {
   display: grid;
@@ -76,10 +266,18 @@ section[id] { scroll-margin-top: 5.5rem; }
   margin: .21em 0 .18em -.055em;
   font: 900 clamp(2.75rem, 6.75vw, 6.5rem)/1 'Arial Black', system-ui, sans-serif;
   letter-spacing: -.065em;
-  color: #fff;
-  background: linear-gradient(175deg, #fff 15%, #bcc8d5 47%, #fff 56%, #96a6ba 100%);
+  color: var(--foreground);
+  background-image: var(--title-gradient);
+  -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+html[data-theme="light"] .hero h1 {
+  background-image: linear-gradient(175deg, #0b1c14 10%, #1f4d2e 48%, #2f6b3b 68%, #0f2419 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 6px rgba(18, 33, 27, 0.12));
 }
 .tagline {
   margin: .8rem 0 0;
@@ -95,7 +293,22 @@ section[id] { scroll-margin-top: 5.5rem; }
 .hero-action { animation: rise 560ms 240ms var(--ease-out) both; }
 .hero-copy:focus-within > * { animation: none; }
 
-.scene { display: grid; place-items: center; width: 100%; aspect-ratio: 1.12; overflow: hidden; }
+.scene {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1.12;
+  overflow: hidden;
+  transition: background 420ms ease, box-shadow 420ms ease, border-radius 420ms ease;
+}
+html[data-theme="light"] .scene {
+  max-width: 28rem;
+  aspect-ratio: 1;
+  justify-self: center;
+  border-radius: 50%;
+  background: radial-gradient(circle, #102042 0%, #060b1b 72%);
+  box-shadow: 0 20px 50px rgba(18, 33, 27, 0.22), 0 0 0 4px rgba(255, 255, 255, 0.72);
+}
 .owl {
   display: block;
   width: 100%;
@@ -107,7 +320,7 @@ section[id] { scroll-margin-top: 5.5rem; }
 }
 
 .section { padding-block: clamp(2.75rem, 6vw, 5.25rem); }
-.section-band { background: #0c1427; border-block: 1px solid var(--line); }
+.section-band { background: var(--band-bg); border-block: 1px solid var(--line); transition: background-color 360ms ease, border-color 360ms ease; }
 .section h2 { margin: 0; font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.12; letter-spacing: -.045em; }
 .section p { color: var(--muted); }
 .section-intro p { margin-bottom: 1.5rem; }
@@ -133,7 +346,13 @@ section[id] { scroll-margin-top: 5.5rem; }
   padding: 1.25rem;
   border: 1px solid var(--line);
   border-radius: .6rem;
-  background: #101c32;
+  background: var(--surface);
+  transition: background-color 360ms ease, border-color 360ms ease, box-shadow 360ms ease;
+}
+html[data-theme="light"] .stock-grid li,
+html[data-theme="light"] .assistant-example,
+html[data-theme="light"] .prototype-card {
+  box-shadow: 0 2px 10px rgba(18, 33, 27, 0.06);
 }
 .stock-grid li { border-left: 3px solid var(--cyan); }
 .stock-grid h3 { margin: .65rem 0 .2rem; font-size: 1.2rem; }
@@ -145,6 +364,7 @@ section[id] { scroll-margin-top: 5.5rem; }
 [data-status="hoje"] .lot-status { background: #f5b841; color: #1c1404; }
 [data-status="breve"] { border-left-color: var(--lime); }
 [data-status="breve"] .lot-status { background: var(--lime); color: #0b1905; }
+html[data-theme="light"] [data-status="breve"] .lot-status { color: #ffffff; }
 .section-split, .prototypes {
   display: grid;
   grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr);
@@ -222,6 +442,8 @@ section[id] { scroll-margin-top: 5.5rem; }
 
 @media (max-width: 43rem) {
   .site-header { min-height: 4rem; flex-wrap: wrap; padding-top: .5rem; }
+  .site-header.frame { padding-right: clamp(1rem, 5vw, 5rem); }
+  .theme-toggle { position: relative; right: auto; top: auto; transform: none; }
   section[id] { scroll-margin-top: 7.5rem; }
   .brand-logo { height: 2.75rem; }
   .site-nav { order: 1; width: 100%; }

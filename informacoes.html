@@ -7,12 +7,27 @@
   <link rel="icon" type="image/png" sizes="128x128" href="imagens/coruja-sync-icone.png">
   <link rel="stylesheet" href="css/sync.css">
   <link rel="stylesheet" href="css/botoes.css">
+  <script src="js/tema.js"></script>
 </head>
 <body>
+  <div class="ambient-sky" aria-hidden="true"></div>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
   <header class="site-header frame">
     <a class="brand" href="index.html" aria-label="SYNC, início"><img class="brand-logo" src="imagens/coruja-sync-icone.png" width="128" height="128" alt=""></a>
-    <a class="header-link" href="index.html#prototipos">Acessar VisionChef</a>
+    <div class="header-actions">
+      <a class="header-link header-cta" href="index.html#prototipos">Acessar VisionChef</a>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Modo escuro ativo (Lua). Clique para ativar modo claro (Sol).">
+        <span class="sky-track" aria-hidden="true">
+          <span class="sky-stars"></span>
+          <span class="sky-clouds"></span>
+          <span class="sky-rays"></span>
+          <span class="celestial-thumb">
+            <img class="orb orb-sun" src="imagens/sol-realista.jpg" alt="" width="40" height="40">
+            <img class="orb orb-moon" src="imagens/lua-realista.jpg" alt="" width="40" height="40">
+          </span>
+        </span>
+      </button>
+    </div>
   </header>
   <main class="frame section information" id="conteudo" tabindex="-1">
     <h1>Privacidade e termos de uso</h1>
