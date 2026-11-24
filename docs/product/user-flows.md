@@ -4,11 +4,11 @@
 
 | Tela ou ação | Quem usa | Caminho principal e estados a revisar |
 | --- | --- | --- |
-| Entrar | Dono e cozinheiro | Entrar com conta individual e abrir o estoque. Se a sessão expirar, orientar a entrar novamente. Se a conta não tiver acesso, informar que o estoque está indisponível para ela. |
-| Estoque | Dono e cozinheiro | Consultar o saldo e a validade aplicável. Identificar as partes abertas e fechadas pelo texto. Se estiver vazio, oferecer o cadastro do primeiro lote. Se houver falha de conexão, permitir nova tentativa. |
-| Cadastrar ou corrigir lote | Dono e cozinheiro | Informar insumo, quantidade, medida e validade no cadastro. Corrigir os dados quando necessário. Mostrar os campos inválidos e confirmar quando o registro for salvo. |
-| Registrar abertura ou fracionamento | Dono e cozinheiro | Selecionar o lote, indicar quanto foi aberto ou fracionado, a data da operação e a validade aplicável. Conferir no estoque a quantidade aberta e a fechada, com suas respectivas datas. |
-| Registrar uso ou descarte | Dono e cozinheiro | Selecionar a parte do lote, o tipo de saída e a quantidade na medida cadastrada. Mostrar o saldo atualizado. Se a quantidade exceder o saldo, explicar o erro e permitir correção. |
+| Entrar | Dono e funcionário | Entrar com conta individual e abrir o estoque. Se a sessão expirar, orientar a entrar novamente. Se a conta não tiver acesso, informar que o estoque está indisponível para ela. |
+| Estoque | Dono e funcionário | Consultar o saldo e a validade aplicável. Identificar as partes abertas e fechadas pelo texto. Se estiver vazio, oferecer o cadastro do primeiro lote. Se houver falha de conexão, permitir nova tentativa. |
+| Cadastrar ou corrigir lote | Dono e funcionário | Informar insumo, quantidade, medida e validade no cadastro. Corrigir os dados quando necessário. Mostrar os campos inválidos e confirmar quando o registro for salvo. |
+| Registrar abertura ou fracionamento | Dono e funcionário | Selecionar o lote, indicar quanto foi aberto ou fracionado, a data da operação e a validade aplicável. Conferir no estoque a quantidade aberta e a fechada, com suas respectivas datas. |
+| Registrar uso ou descarte | Dono e funcionário | Selecionar a parte do lote, o tipo de saída e a quantidade na medida cadastrada. Mostrar o saldo atualizado. Se a quantidade exceder o saldo, explicar o erro e permitir correção. |
 | Acessos da equipe | Dono | Convidar pessoas e remover acessos. Mostrar o resultado da ação e indicar como tentar novamente se houver erro. |
 
 ## Revisão no celular e no computador

@@ -1,41 +1,63 @@
-# Prévia do VisionChef na Vercel e no Supabase
+# Implantação do VisionChef na Vercel e no Supabase
 
-A prévia usa dados fictícios em um projeto Supabase de teste e uma implantação Preview protegida na Vercel. O projeto de produção e o convite da equipe do restaurante ficam para depois dos testes de aceite.
+Este roteiro ativa o backend Node da Vercel, a autenticação gerenciada pelo Supabase e a limitação de tentativas compartilhada no PostgreSQL. O build local, a publicação das migrações/funções e o deploy são etapas distintas.
 
-## 1. Preparar o banco de teste
+## 1. Variáveis da Vercel
 
-1. Na conta do VisionChef, crie um projeto Supabase de teste. Copie o identificador do projeto, a URL HTTPS e a chave publicável `sb_publishable_`.
-2. Autentique a CLI do Supabase e, na raiz do repositório, vincule o projeto. Troque `REF_DO_PROJETO_DE_TESTE` pelo identificador copiado. Confira o destino e a lista de migrações na simulação antes de aplicar.
+No projeto `sync-solucoes` da Vercel, abra **Settings → Environment Variables** e configure os valores abaixo para **Production** e **Preview**. `HTTP_PORT` só é usado pelo servidor de desenvolvimento local, não precisa ser cadastrado na Vercel.
 
-   ```powershell
-   supabase link --project-ref REF_DO_PROJETO_DE_TESTE
-   supabase db push --dry-run --remote
-   supabase db push --remote
-   supabase functions deploy login-usuario --project-ref REF_DO_PROJETO_DE_TESTE
-   ```
+| Variável | Valor / regra |
+| --- | --- |
+| `VISIONCHEF_SUPABASE_URL` | URL HTTPS do projeto Supabase `visionchef` |
+| `VISIONCHEF_SUPABASE_PUBLISHABLE_KEY` | Chave `sb_publishable_` desse mesmo projeto |
+| `JWT_SECRET_KEY` | Segredo aleatório local com ao menos 32 caracteres; use o mesmo valor no Supabase Edge Function Secrets |
+| `JWT_ALGORITHM` | `HS256` |
+| `JWT_EXPIRATION_MINUTES` | `1440` |
+| `JWT_COOKIE_NAME` | `access_token` |
+| `JWT_COOKIE_SECURE` | `true` em todos os ambientes Vercel com HTTPS |
+| `AUTH_LOGIN_LIMIT` | `5` |
+| `AUTH_SIGNUP_LIMIT` | `3` |
+| `AUTH_RATE_WINDOW_SECONDS` | `900` |
+| `AUTH_BLOCK_SECONDS` | `900` |
 
-3. No painel do Auth, desative cadastro público e acesso anônimo. Em **Authentication → Users**, crie contas individuais de teste com endereços controlados pela equipe e senhas exclusivas. Para o teste de isolamento, crie um restaurante fictício adicional e uma terceira conta.
-4. Pelo SQL Editor do projeto de teste, cadastre os restaurantes em `public.restaurantes` com o fuso `America/Sao_Paulo`. Use os UUIDs do Auth para inserir os vínculos em `public.membros_restaurante` com os papéis `dono` e `cozinheiro`. Cadastre um nome único para cada conta em `public.nomes_usuario`. Os testes locais criam registros fictícios automaticamente. O Supabase hospedado usa contas criadas no próprio Auth.
+Use `.env.example` apenas como modelo. Não cole o segredo em chats, Git, arquivos públicos ou variáveis `VITE_*`. A produção exige novo deploy depois de alterar variáveis. O valor local `JWT_COOKIE_SECURE=false` é apenas para HTTP em `127.0.0.1`.
 
-[Fluxo de migrações do Supabase](https://supabase.com/docs/guides/local-development/cli-workflows) · [Configuração do Supabase Auth](https://supabase.com/docs/guides/auth/general-configuration)
+## 2. Publicar no Supabase
 
-## 2. Gerar a prévia protegida
+Na raiz do projeto, confira se a CLI está vinculada a `dqztfllfillntrewutrr` (projeto `visionchef`) antes de aplicar qualquer alteração:
 
-1. Na conta do VisionChef na Vercel, vincule a raiz do repositório local a um projeto novo com a CLI. Configure Node.js 24.x e habilite Vercel Authentication para Preview em **Deployment Protection**. Use o envio manual da prévia nesta etapa, com a integração automática com o GitHub desativada.
-2. Em **Environment Variables**, selecione **Preview** para as duas variáveis abaixo. A saída estática expõe esses dois valores ao navegador.
+```powershell
+npx supabase link --project-ref dqztfllfillntrewutrr
+npx supabase db push --dry-run --remote
+npx supabase db push --remote
+npx supabase functions deploy login-usuario --project-ref dqztfllfillntrewutrr
+npx supabase functions deploy limitar-autenticacao --project-ref dqztfllfillntrewutrr
+```
 
-   | Nome | Valor |
-   | --- | --- |
-   | `VISIONCHEF_SUPABASE_URL` | URL HTTPS do projeto de teste |
-   | `VISIONCHEF_SUPABASE_PUBLISHABLE_KEY` | Chave `sb_publishable_` do mesmo projeto |
+O dry-run deve listar apenas migrações ainda pendentes para o VisionChef. Interrompa se o destino mostrar outro projeto, como `Cesta do Vale`. Na área de Secrets das Edge Functions, configure:
 
-3. Na raiz, execute `vercel deploy --environment=preview`. Confirme no painel que a implantação está em Preview. O arquivo [vercel.json](../../vercel.json) instala as dependências do build, gera `dist/` e preserva a barra final de `/estoque/`. O [.vercelignore](../../.vercelignore) exclui os dados e as configurações locais do envio.
-4. Em **Edge Functions → Secrets** do Supabase de teste, defina `VISIONCHEF_LOGIN_ORIGINS` com a origem HTTPS exata da prévia, sem caminho nem barra final. Quando houver mais de uma origem autorizada, separe-as por vírgula. Use a mesma URL ao testar o login por nome.
+- `JWT_SECRET_KEY`: o mesmo segredo cadastrado na Vercel.
+- `VISIONCHEF_LOGIN_ORIGINS`: `https://sync-solucoes.vercel.app` (origem completa, sem barra final).
 
-[Configuração da Vercel](https://vercel.com/docs/project-configuration/vercel-json) · [Proteção da prévia](https://vercel.com/docs/deployment-protection) · [Comando de implantação](https://vercel.com/docs/cli/deploy)
+A função de login por nome recebe somente chamadas com HMAC do backend; a função do limitador segue o mesmo mecanismo. Elas ficam com verificação JWT desativada porque validam essa assinatura HMAC própria. Nunca exponha `JWT_SECRET_KEY` ou uma chave administrativa ao navegador.
 
-## 3. Validar antes de convidar a equipe
+## 3. Build e deploy
 
-- Em uma janela privada, confirme que a prévia exige autenticação da Vercel. Depois de autorizado, abra `/#prototipos`, entre por nome e por e-mail com a mesma conta e recarregue `/estoque/` diretamente.
-- Com as contas fictícias, cadastre e corrija um lote, registre abertura, uso e descarte, confira o saldo e o histórico com o dono e confirme o isolamento da conta do outro restaurante.
-- Registre o resultado da verificação de permissões, limitação de tentativas e escopo da sessão no projeto hospedado. O cliente integrado ainda usa `sessionStorage`. Confira os requisitos de sessão, convite e recuperação em [segurança de contas](seguranca-contas.md) antes de convidar a equipe.
+O projeto Vercel usa a raiz do repositório, framework `Other`, comando `npm run build` e saída `dist/`. As rotas `api/` são funções Node runtime. O build gera arquivos estáticos e não precisa das variáveis privadas; as funções exigem variáveis definidas no runtime da Vercel.
+
+Depois de configurar os valores e confirmar migrações/funções, publique usando o fluxo de deploy escolhido para o projeto. Para conferir localmente apenas a compilação, execute `npm.cmd run build`; isso não publica código nem modifica o Supabase.
+
+## 4. Auth, e-mail e validação
+
+Em **Authentication → URL Configuration**, mantenha `https://sync-solucoes.vercel.app` como Site URL e como URL autorizada. Em **Sign In / Providers**, cadastro por e-mail e confirmação de e-mail precisam estar ligados. Configure SMTP próprio antes de convidar pessoas reais; os limites de envio padrão do Supabase não servem como serviço de e-mail de produção.
+
+O cadastro cria uma conta Auth e nome único, mas não concede vínculo com restaurante. O dono precisa liberar o vínculo separadamente. A recuperação deve voltar à origem autorizada da Sync.
+
+Após o deploy, valide: login por nome e e-mail; cookie `HttpOnly`, `SameSite=Strict` e `Secure`; expiração/renovação e saída; cadastro com confirmação; bloqueio depois do limite; isolamento por restaurante; e recusa das funções Edge quando a assinatura interna é inválida. Cadastre contas de teste e confirme que o estoque não aparece sem vínculo ativo.
+
+## 5. O que permanece pendente
+
+- SMTP próprio e fluxo de e-mail verificado.
+- Migrações `20261124000600` a `20261124000800` e funções Edge publicadas no projeto correto.
+- Valores privados cadastrados em Production e Preview na Vercel e segredo HMAC configurado no Supabase.
+- Deploy posterior e validação integrada no domínio de produção.

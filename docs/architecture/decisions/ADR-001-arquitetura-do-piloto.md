@@ -14,6 +14,17 @@ O [desenho técnico do piloto](../piloto.md) detalha os registros, as regras de 
 
 O [levantamento de segurança de contas](../seguranca-contas.md) registra os controles existentes, os critérios para convite e recuperação e as decisões pendentes sobre senha e sessão.
 
+## Integração do aplicativo com o banco
+
+**Decisão —** O frontend Vite usa a biblioteca oficial do Supabase e a Data API para acessar o PostgreSQL hospedado no Supabase. O acesso a cada tabela depende de RLS e de políticas testadas por restaurante, conta e papel. As migrações do repositório continuam em SQL, versionadas em `supabase/migrations/`.
+
+A chave publicável pode ser usada pelo navegador. Senhas do banco, chaves secretas e credenciais administrativas ficam apenas em ambientes privados do servidor. Não usar a string PostgreSQL Direct como variável do frontend.
+
+**Conexão de backend —** Se uma operação precisar de servidor próprio, criar endpoints de backend e manter a autenticação e autorização nessa camada. Para acesso PostgreSQL em funções serverless da Vercel, avaliar o pooler em modo transaction e guardar a string de conexão como segredo. Reservar a conexão Direct para migrações, ferramentas administrativas ou serviços persistentes quando apropriado.
+
+**Condição para reavaliar —** Considerar acesso PostgreSQL próprio quando a lógica de negócio, integrações ou processos em segundo plano exigirem uma API de servidor. Antes de implementar, decidir como validar a identidade, o vínculo ativo com restaurante e o papel em cada endpoint, e testar que RLS e permissões continuam protegendo dados entre restaurantes.
+
+
 ## Alternativas consideradas
 
 O pedido de adaptar o acesso da landing levou à adoção de React e Vite nessa seção. O componente reaproveita o adaptador de autenticação e mantém a rota `/estoque/`. Uma API FastAPI separada pode ser reavaliada se surgirem integrações ou processos que peçam um serviço próprio.

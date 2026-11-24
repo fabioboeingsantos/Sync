@@ -1,0 +1,313 @@
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+
+// Lê e valida toda configuração privada no servidor, sem incorporá-la ao JavaScript público.
+function configuracao() {
+  const ambiente = process.env;
+  const numero = (nome, padrao, minimo, maximo) => {
+    const valor = Number(ambiente[nome] ?? padrao);
+    if (!Number.isInteger(valor) || valor < minimo || valor > maximo) throw new Error(`Configuração inválida: ${nome}.`);
+    return valor;
+  };
+  const url = ambiente.VISIONCHEF_SUPABASE_URL?.trim();
+  const chavePublica = ambiente.VISIONCHEF_SUPABASE_PUBLISHABLE_KEY?.trim();
+  const jwtSecret = ambiente.JWT_SECRET_KEY ?? '';
+  if (!url?.startsWith('https://') || !chavePublica?.startsWith('sb_publishable_') || jwtSecret.length < 32) {
+    throw new Error('Configuração do backend ausente ou inválida.');
+  }
+  if ((ambiente.JWT_ALGORITHM ?? 'HS256') !== 'HS256') throw new Error('O backend aceita somente JWT HS256.');
+  return {
+    url: url.replace(/\/$/, ''), chavePublica, jwtSecret,
+    expiraMinutos: numero('JWT_EXPIRATION_MINUTES', 1440, 15, 10080),
+    nomeCookie: ambiente.JWT_COOKIE_NAME ?? 'access_token',
+    cookieSeguro: ambiente.JWT_COOKIE_SECURE === 'true',
+    limiteLogin: numero('AUTH_LOGIN_LIMIT', 5, 1, 100),
+    limiteCadastro: numero('AUTH_SIGNUP_LIMIT', 3, 1, 100),
+    janela: numero('AUTH_RATE_WINDOW_SECONDS', 900, 30, 86400),
+    bloqueio: numero('AUTH_BLOCK_SECONDS', 900, 30, 86400),
+  };
+}
+
+// Padroniza respostas JSON e impede que páginas ou caches guardem dados autenticados.
+function resposta(dados, status = 200, cabecalhos = {}) {
+  return Response.json(dados, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...cabecalhos } });
+}
+
+// Assina o JWT da aplicação com HS256 e inclui a sessão Supabase para chamadas protegidas por RLS.
+function assinarSessao(sessao, cfg, iat = Math.floor(Date.now() / 1000), exp = iat + cfg.expiraMinutos * 60) {
+  const cabecalho = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const corpo = Buffer.from(JSON.stringify({
+    iss: 'sync-visionchef', sub: sessao.user.id, email: sessao.user.email,
+    access_token: sessao.access_token, refresh_token: sessao.refresh_token,
+    auth_exp: sessao.expires_at ?? Math.floor(Date.now() / 1000) + (sessao.expires_in ?? 3600), iat, exp,
+  })).toString('base64url');
+  const mensagem = `${cabecalho}.${corpo}`;
+  const assinatura = createHmac('sha256', cfg.jwtSecret).update(mensagem).digest('base64url');
+  return `${mensagem}.${assinatura}`;
+}
+
+// Verifica assinatura, algoritmo, emissor e validade antes de confiar nos dados do cookie.
+function verificarSessao(token, cfg) {
+  try {
+    const [cabecalho, corpo, assinatura] = token.split('.');
+    if (!cabecalho || !corpo || !assinatura) return null;
+    const valorEsperado = createHmac('sha256', cfg.jwtSecret).update(`${cabecalho}.${corpo}`).digest();
+    const valorRecebido = Buffer.from(assinatura, 'base64url');
+    if (valorEsperado.length !== valorRecebido.length || !timingSafeEqual(valorEsperado, valorRecebido)) return null;
+    const dadosCabecalho = JSON.parse(Buffer.from(cabecalho, 'base64url').toString());
+    const dados = JSON.parse(Buffer.from(corpo, 'base64url').toString());
+    if (dadosCabecalho.alg !== 'HS256' || dados.iss !== 'sync-visionchef' || !dados.sub || dados.exp <= Date.now() / 1000) return null;
+    return dados;
+  } catch {
+    return null;
+  }
+}
+
+// O cookie só trafega por HTTPS no domínio publicado e nunca fica disponível ao JavaScript da página.
+function cookieSessao(token, cfg, requisicao) {
+  const segura = cfg.cookieSeguro || new URL(requisicao.url).protocol === 'https:';
+  return `${cfg.nomeCookie}=${token}; Path=/api; HttpOnly; SameSite=Strict; Max-Age=${cfg.expiraMinutos * 60}${segura ? '; Secure' : ''}`;
+}
+
+// Apaga a sessão no mesmo escopo em que o cookie foi criado.
+function cookieRemovido(cfg, requisicao) {
+  const segura = cfg.cookieSeguro || new URL(requisicao.url).protocol === 'https:';
+  return `${cfg.nomeCookie}=; Path=/api; HttpOnly; SameSite=Strict; Max-Age=0${segura ? '; Secure' : ''}`;
+}
+
+// Lê JSON com limite de tamanho para rejeitar corpos grandes antes de processar credenciais.
+async function jsonEntrada(requisicao, limite = 32768) {
+  const texto = await requisicao.text();
+  if (texto.length > limite) throw Object.assign(new Error('Corpo muito grande.'), { status: 413 });
+  return texto ? JSON.parse(texto) : {};
+}
+
+// Chama Auth ou PostgREST com a chave pública e o token individual do usuário, preservando RLS.
+async function supabase(cfg, caminho, { metodo = 'GET', corpo, token, cabecalhos = {} } = {}) {
+  const cab = { apikey: cfg.chavePublica, ...cabecalhos };
+  if (token) cab.Authorization = `Bearer ${token}`;
+  if (corpo !== undefined) cab['Content-Type'] = 'application/json';
+  const respostaRemota = await fetch(new URL(caminho, `${cfg.url}/`), {
+    method: metodo, headers: cab, body: corpo === undefined ? undefined : JSON.stringify(corpo),
+  });
+  const texto = await respostaRemota.text();
+  let dados;
+  try { dados = texto ? JSON.parse(texto) : null; } catch { dados = null; }
+  return { ok: respostaRemota.ok, status: respostaRemota.status, dados };
+}
+
+// Gera uma chave de limite sem persistir e-mail, nome de usuário ou endereço IP no banco.
+function chaveLimite(ip, categoria, identificador = '') {
+  return createHash('sha256').update(`${categoria}|${ip}|${identificador}`).digest('hex');
+}
+
+// Pede ao Supabase uma contagem compartilhada entre instâncias da Vercel, assinando a chamada interna.
+async function controlarLimite(cfg, operacao, chave, acao = 'verificar') {
+  const corpo = JSON.stringify({
+    acao, operacao, chave,
+    limite: operacao === 'login' ? cfg.limiteLogin : cfg.limiteCadastro,
+    janela_segundos: cfg.janela, bloqueio_segundos: cfg.bloqueio,
+  });
+  const horario = String(Math.floor(Date.now() / 1000));
+  const assinatura = createHmac('sha256', cfg.jwtSecret).update(`${horario}.${corpo}`).digest('hex');
+  const remoto = await fetch(new URL('/functions/v1/limitar-autenticacao', cfg.url), {
+    method: 'POST',
+    headers: {
+      apikey: cfg.chavePublica, 'Content-Type': 'application/json',
+      'x-vc-timestamp': horario, 'x-vc-signature': assinatura,
+    },
+    body: corpo,
+  });
+  if (!remoto.ok) throw Object.assign(new Error('Controle de tentativas indisponível.'), { status: 503 });
+  return remoto.json();
+}
+
+// Extrai a sessão do cookie e atualiza tokens Supabase perto do vencimento.
+async function obterSessao(requisicao, cfg) {
+  const cookies = requisicao.headers.get('cookie') ?? '';
+  const valor = cookies.split(';').map((parte) => parte.trim()).find((parte) => parte.startsWith(`${cfg.nomeCookie}=`))?.slice(cfg.nomeCookie.length + 1);
+  const sessao = valor ? verificarSessao(decodeURIComponent(valor), cfg) : null;
+  if (!sessao) return { sessao: null, limpar: Boolean(valor) };
+  if (sessao.auth_exp > Date.now() / 1000 + 60) return { sessao, limpar: false };
+
+  const renovada = await supabase(cfg, '/auth/v1/token?grant_type=refresh_token', {
+    metodo: 'POST', corpo: { refresh_token: sessao.refresh_token },
+  });
+  if (!renovada.ok || !renovada.dados?.access_token) return { sessao: null, limpar: true };
+  const atualizada = {
+    ...sessao,
+    access_token: renovada.dados.access_token,
+    refresh_token: renovada.dados.refresh_token,
+    auth_exp: renovada.dados.expires_at ?? Math.floor(Date.now() / 1000) + (renovada.dados.expires_in ?? 3600),
+  };
+  return { sessao: atualizada, limpar: false, renovarCookie: assinarSessao(atualizada, cfg, sessao.iat, sessao.exp) };
+}
+
+// Transforma erros conhecidos do PostgREST em mensagens úteis sem expor detalhes internos.
+function erroBanco(remoto) {
+  const codigo = remoto.dados?.code;
+  const mensagem = codigo === '42501' ? 'Sua conta não tem acesso a esse estoque.'
+    : codigo === '23505' ? 'Este registro já foi enviado com outros dados.'
+      : remoto.status === 401 ? 'Entre novamente para continuar.'
+        : 'Não foi possível concluir a operação. Confira os dados e tente novamente.';
+  return resposta({ erro: mensagem, codigo }, remoto.status || 503);
+}
+
+// Atende login, cadastro, sessão e dados do estoque sem entregar tokens Supabase ao navegador.
+export async function tratarApi(requisicao) {
+  let cfg;
+  try { cfg = configuracao(); } catch { return resposta({ erro: 'Backend não configurado.' }, 503); }
+  const url = new URL(requisicao.url);
+  const caminho = url.pathname.replace(/^\/api\/?/, '');
+  const origem = requisicao.headers.get('origin');
+  if (requisicao.method !== 'GET' && requisicao.method !== 'HEAD' && origem !== url.origin) {
+    return resposta({ erro: 'Origem não autorizada.' }, 403);
+  }
+
+  try {
+    if (caminho === 'auth/login' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 8192);
+      const identificador = typeof dados.identificador === 'string' ? dados.identificador.trim().toLowerCase() : '';
+      const senha = dados.senha;
+      if (!identificador || typeof senha !== 'string' || !senha || senha.length > 256) return resposta({ erro: 'Confira o usuário ou e-mail e a senha.' }, 401);
+      const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
+      const chave = chaveLimite(ip, 'login', identificador);
+      const limite = await controlarLimite(cfg, 'login', chave);
+      if (!limite.permitido) return resposta({ erro: 'Muitas tentativas. Aguarde e tente novamente.' }, 429, { 'Retry-After': String(limite.retry_after ?? cfg.bloqueio) });
+
+      let remoto;
+      if (identificador.includes('@')) {
+        remoto = await supabase(cfg, '/auth/v1/token?grant_type=password', { metodo: 'POST', corpo: { email: identificador, password: senha } });
+      } else {
+        // O e-mail associado ao nome é resolvido pela função protegida do Supabase.
+        const corpo = JSON.stringify({ nome: identificador, senha });
+        const horario = String(Math.floor(Date.now() / 1000));
+        const assinatura = createHmac('sha256', cfg.jwtSecret).update(`${horario}.${corpo}`).digest('hex');
+        const respostaNome = await fetch(new URL('/functions/v1/login-usuario', cfg.url), {
+          method: 'POST',
+          headers: {
+            apikey: cfg.chavePublica, 'Content-Type': 'application/json', Origin: origem,
+            'x-vc-timestamp': horario, 'x-vc-signature': assinatura,
+          },
+          body: corpo,
+        });
+        remoto = { ok: respostaNome.ok, status: respostaNome.status, dados: await respostaNome.json().catch(() => null) };
+      }
+      if (!remoto.ok || !remoto.dados?.access_token || !remoto.dados?.refresh_token) {
+        return resposta({ erro: remoto.status === 429 ? 'Muitas tentativas. Aguarde e tente novamente.' : 'Confira o usuário ou e-mail e a senha.' }, remoto.status === 429 ? 429 : remoto.status >= 500 ? 503 : 401);
+      }
+      await controlarLimite(cfg, 'login', chave, 'reset').catch(() => null);
+      const token = assinarSessao(remoto.dados, cfg);
+      return resposta({ autenticado: true }, 200, { 'Set-Cookie': cookieSessao(token, cfg, requisicao) });
+    }
+
+    if (caminho === 'auth/signup' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 8192);
+      const nome = typeof dados.nomeUsuario === 'string' ? dados.nomeUsuario.trim().toLowerCase() : '';
+      const email = typeof dados.email === 'string' ? dados.email.trim().toLowerCase() : '';
+      const senha = dados.senha;
+      if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || typeof senha !== 'string' || senha.length < 15 || senha.length > 128) {
+        return resposta({ erro: 'Confira o usuário, o e-mail e a senha.' }, 400);
+      }
+      const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
+      const chave = chaveLimite(ip, 'cadastro');
+      const limite = await controlarLimite(cfg, 'cadastro', chave);
+      if (!limite.permitido) return resposta({ erro: 'Muitos cadastros em sequência. Aguarde e tente novamente.' }, 429, { 'Retry-After': String(limite.retry_after ?? cfg.bloqueio) });
+      const cadastro = await supabase(cfg, `/auth/v1/signup?redirect_to=${encodeURIComponent(url.origin)}`, {
+        metodo: 'POST', corpo: { email, password: senha, data: { nome_usuario: nome } },
+      });
+      if (!cadastro.ok) return resposta({ erro: 'Não foi possível criar a conta. Confira os dados ou tente outro usuário e e-mail.' }, cadastro.status >= 500 ? 503 : cadastro.status);
+      return resposta({ criada: true, mensagem: 'Conta criada. Confirme o e-mail e solicite ao dono a liberação do restaurante.' }, 201);
+    }
+
+    if (caminho === 'auth/recover' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 4096);
+      const email = typeof dados.email === 'string' ? dados.email.trim().toLowerCase() : '';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return resposta({ erro: 'Informe um e-mail válido.' }, 400);
+      const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
+      const chave = chaveLimite(ip, 'login', email);
+      const limite = await controlarLimite(cfg, 'login', chave);
+      if (!limite.permitido) return resposta({ erro: 'Muitas solicitações. Aguarde e tente novamente.' }, 429);
+      const remoto = await supabase(cfg, `/auth/v1/recover?redirect_to=${encodeURIComponent(url.origin)}`, { metodo: 'POST', corpo: { email } });
+      if (!remoto.ok) return resposta({ erro: 'Não foi possível solicitar a recuperação agora.' }, remoto.status >= 500 ? 503 : remoto.status);
+      return resposta({ enviada: true, mensagem: 'Se houver uma conta para esse e-mail, enviaremos um link de recuperação.' });
+    }
+
+    if (caminho === 'auth/update-password' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 8192);
+      const tokenRecuperacao = typeof dados.access_token === 'string' ? dados.access_token : '';
+      if (!tokenRecuperacao || typeof dados.senha !== 'string' || dados.senha.length < 15 || dados.senha.length > 128) return resposta({ erro: 'O link expirou ou a senha não atende à política.' }, 400);
+      const remoto = await supabase(cfg, '/auth/v1/user', { metodo: 'PUT', token: tokenRecuperacao, corpo: { password: dados.senha } });
+      if (!remoto.ok) return resposta({ erro: 'O link pode ter expirado. Solicite uma nova recuperação.' }, remoto.status === 401 ? 401 : 400);
+      return resposta({ atualizada: true }, 200, { 'Set-Cookie': cookieRemovido(cfg, requisicao) });
+    }
+
+    if (caminho === 'auth/logout' && requisicao.method === 'POST') {
+      const estado = await obterSessao(requisicao, cfg);
+      if (estado.sessao) await supabase(cfg, '/auth/v1/logout?scope=local', { metodo: 'POST', token: estado.sessao.access_token }).catch(() => null);
+      return resposta({ autenticado: false }, 200, { 'Set-Cookie': cookieRemovido(cfg, requisicao) });
+    }
+
+    const estado = await obterSessao(requisicao, cfg);
+    if (!estado.sessao) {
+      const cabecalhos = estado.limpar ? { 'Set-Cookie': cookieRemovido(cfg, requisicao) } : {};
+      if (caminho === 'auth/session' && requisicao.method === 'GET') return resposta({ user: null, restaurantes: null }, 200, cabecalhos);
+      return resposta({ erro: 'Entre novamente para continuar.' }, 401, cabecalhos);
+    }
+    const cookieAtualizado = estado.renovarCookie ? { 'Set-Cookie': cookieSessao(estado.renovarCookie, cfg, requisicao) } : {};
+    const token = estado.sessao.access_token;
+
+    if (caminho === 'auth/session' && requisicao.method === 'GET') {
+      const [usuario, restaurantes] = await Promise.all([
+        supabase(cfg, '/auth/v1/user', { token }),
+        supabase(cfg, '/rest/v1/restaurantes?select=id,nome&order=nome.asc,id.asc', { token }),
+      ]);
+      if (!usuario.ok) return resposta({ erro: 'Entre novamente para continuar.' }, 401, { ...cookieAtualizado, 'Set-Cookie': cookieRemovido(cfg, requisicao) });
+      if (!restaurantes.ok) return erroBanco(restaurantes);
+      return resposta({ user: usuario.dados, restaurantes: restaurantes.dados }, 200, cookieAtualizado);
+    }
+
+    if (caminho === 'restaurantes' && requisicao.method === 'GET') {
+      const remoto = await supabase(cfg, '/rest/v1/restaurantes?select=id,nome&order=nome.asc,id.asc', { token });
+      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    if (caminho === 'estoque' && requisicao.method === 'GET') {
+      const restaurante = url.searchParams.get('restaurante') ?? '';
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante)) return resposta({ erro: 'Restaurante inválido.' }, 400);
+      const campos = 'lote_id,parte_id,insumo,codigo_fabricante,validade_aplicavel,medida,saldo,situacao,revisao_validade,data_abertura,validade_abertura,validade_embalagem,local_armazenamento';
+      const consulta = new URLSearchParams({ select: campos, restaurante_id: `eq.${restaurante}`, order: 'validade_aplicavel.asc,insumo.asc,parte_id.asc' });
+      const remoto = await supabase(cfg, `/rest/v1/estoque?${consulta}`, { token });
+      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    if (caminho === 'descartes' && requisicao.method === 'GET') {
+      const restaurante = url.searchParams.get('restaurante') ?? '';
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante)) return resposta({ erro: 'Restaurante inválido.' }, 400);
+      const membro = await supabase(cfg, `/rest/v1/membros_restaurante?select=papel&restaurante_id=eq.${restaurante}&limit=1`, { token });
+      if (!membro.ok) return erroBanco(membro);
+      if (membro.dados?.[0]?.papel !== 'dono') return resposta(null, 200, cookieAtualizado);
+      const consulta = new URLSearchParams({ select: 'insumo,codigo_fabricante,medida,quantidade,motivo,registrado_em', restaurante_id: `eq.${restaurante}`, tipo: 'eq.descarte', order: 'registrado_em.desc,id.desc', limit: '50' });
+      const remoto = await supabase(cfg, `/rest/v1/saidas_estoque?${consulta}`, { token });
+      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    const rotasRpc = {
+      'estoque/cadastrar': 'cadastrar_lote',
+      'estoque/corrigir-validade': 'corrigir_validade',
+      'estoque/registrar-abertura': 'registrar_abertura',
+      'estoque/registrar-saida': 'registrar_saida',
+    };
+    const nomeRpc = rotasRpc[caminho];
+    if (nomeRpc && requisicao.method === 'POST') {
+      const corpo = await jsonEntrada(requisicao);
+      const remoto = await supabase(cfg, `/rest/v1/rpc/${nomeRpc}`, { metodo: 'POST', corpo, token, cabecalhos: { Prefer: 'return=representation' } });
+      return remoto.ok ? resposta(remoto.dados, remoto.status, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    return resposta({ erro: 'Rota não encontrada.' }, 404, cookieAtualizado);
+  } catch (erro) {
+    if (erro.status === 413) return resposta({ erro: 'Dados enviados excedem o limite permitido.' }, 413);
+    if (erro instanceof SyntaxError) return resposta({ erro: 'Envie dados em formato JSON válido.' }, 400);
+    return resposta({ erro: 'O servidor não conseguiu concluir a solicitação.' }, 503);
+  }
+}

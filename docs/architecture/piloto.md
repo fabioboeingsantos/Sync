@@ -7,9 +7,9 @@
 | Registro | O que o VisionChef precisa guardar | Quem tem acesso |
 | --- | --- | --- |
 | Restaurante | Identificador, nome e fuso horário usado para comparar validades com o dia corrente. | Equipe vinculada ao restaurante. |
-| Vínculo da equipe | Conta, restaurante, papel de dono ou cozinheiro e situação do acesso. O e-mail é tratado no fluxo de conta e convite. | Cada pessoa pode consultar o próprio vínculo. O dono administra os acessos da própria equipe. |
-| Lote de origem | Restaurante, insumo, código do fabricante quando informado, validade original, medida e quantidade inicial. | Dono e cozinheiro do restaurante. |
-| Parte do lote | Vínculo com o lote de origem, saldo, condição de abertura e, quando aplicáveis, data de abertura ou fracionamento e validade informada pela equipe. | Dono e cozinheiro do restaurante. |
+| Vínculo da equipe | Conta, restaurante, papel de dono ou funcionário e situação do acesso. O e-mail é tratado no fluxo de conta e convite. | Cada pessoa pode consultar o próprio vínculo. O dono administra os acessos da própria equipe. |
+| Lote de origem | Restaurante, insumo, código do fabricante quando informado, validade original, medida e quantidade inicial. | Dono e funcionário do restaurante. |
+| Parte do lote | Vínculo com o lote de origem, saldo, condição de abertura e, quando aplicáveis, data de abertura ou fracionamento e validade informada pela equipe. | Dono e funcionário do restaurante. |
 | Movimentação | Parte afetada, tipo de operação, quantidade, conta que registrou e horário. | Equipe autorizada do restaurante, conforme a consulta que a interface disponibilizar. |
 
 Validar com o piloto o fuso do estabelecimento. Definir retenção e procedimento de exclusão dos dados de acesso e operação antes de usar dados reais.

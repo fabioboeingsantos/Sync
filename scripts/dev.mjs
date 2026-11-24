@@ -157,10 +157,11 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     await banco.close();
     process.exitCode = 1;
   });
-  servidor.listen(Number(process.env.VISIONCHEF_PORT || 4173), '127.0.0.1', () => {
+  servidor.listen(Number(process.env.HTTP_PORT || process.env.VISIONCHEF_PORT || 8080), '127.0.0.1', () => {
     console.log(`VisionChef local: http://127.0.0.1:${servidor.address().port}`);
   });
   const encerrar = () => servidor.close(() => banco.close());
   process.once('SIGINT', encerrar);
   process.once('SIGTERM', encerrar);
 }
+

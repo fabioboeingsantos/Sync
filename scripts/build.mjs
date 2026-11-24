@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build as compilarReact } from 'vite';
@@ -24,14 +24,9 @@ export const arquivosPublicos = [
 
 // Monta a landing e o estoque na mesma origem e escolhe o adaptador de dados de cada ambiente.
 export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = false } = {}) {
-  const supabaseUrl = local ? '' : process.env.VISIONCHEF_SUPABASE_URL?.trim();
-  const chavePublica = local ? '' : process.env.VISIONCHEF_SUPABASE_PUBLISHABLE_KEY?.trim();
-
-  // A versão integrada envia a configuração ao navegador, por isso exige uma chave publicável.
-  if (!local && (!supabaseUrl?.startsWith('https://') || !chavePublica?.startsWith('sb_publishable_'))) {
-    throw new Error('Informe a URL HTTPS e a chave sb_publishable_ do Supabase para gerar a versão integrada.');
-  }
-
+  // Segredos e URL do Supabase são lidos pelas funções Node em runtime, nunca pelo build do navegador.
+  // Apaga sobras do build anterior, que ainda continha o cliente Supabase no navegador.
+  if (!local) await Promise.all(['config.js', 'supabase.js'].map((arquivo) => rm(resolve(destino, arquivo), { force: true })));
   const [landing, estoque] = await Promise.all([
     readFile(resolve(raiz, 'index.html'), 'utf8'),
     readFile(resolve(raiz, 'piloto/index.html'), 'utf8'),
@@ -42,7 +37,7 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
   const paginaInicial = landing
     .replace('<!-- login-piloto-modulo -->', '<script type="module" src="entrada.js"></script>')
     .replace('<!-- login-piloto-contas -->', contasLocais)
-    .replace('href="http://127.0.0.1:4173/#prototipos">Abrir login local', 'href="estoque/">Abrir tela de login');
+    .replace('href="http://127.0.0.1:8080/#prototipos">Abrir login local', 'href="estoque/">Abrir tela de login');
   const paginaEstoque = local ? estoque : estoque.replace(blocoContas, '');
   await mkdir(resolve(destino, 'estoque'), { recursive: true });
   await Promise.all([
@@ -69,17 +64,6 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
     ...arquivosPublicos.map((arquivo) => cp(resolve(raiz, arquivo), resolve(destino, arquivo))),
   ]);
 
-  if (!local) {
-    // Reaproveita a distribuição oficial do SDK como um módulo da página estática.
-    const pacote = resolve(raiz, 'node_modules/@supabase/supabase-js');
-    const sdk = await readFile(resolve(pacote, 'dist/umd/supabase.js'), 'utf8');
-    const configuracao = `export const url = ${JSON.stringify(supabaseUrl)};\n` +
-      `export const chavePublica = ${JSON.stringify(chavePublica)};\n`;
-    await Promise.all([
-      writeFile(resolve(destino, 'config.js'), configuracao),
-      writeFile(resolve(destino, 'supabase.js'), `${sdk}\nexport const createClient = supabase.createClient;\n`),
-    ]);
-  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

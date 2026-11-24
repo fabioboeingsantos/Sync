@@ -6,6 +6,7 @@ Inventário de 24/11/2026 do repositório `Sync`. A árvore lista os itens obser
 Sync/
 ├── .dados-local/                banco, arquivos servidos e cache do ambiente local
 ├── .git/                       metadados do Git
+├── api/                        funções Vercel Node para autenticação, sessão e estoque
 ├── css/                        estilo de botões compartilhado pelo piloto e pelo simulado
 ├── dist/                       saída gerada da versão integrada
 ├── docs/
@@ -27,11 +28,12 @@ Sync/
 ├── piloto/                     HTML, CSS, JavaScript e cliente Supabase do piloto
 ├── scripts/                    servidor local, banco de teste e geração de dist/
 ├── supabase/
-│   ├── functions/              função de servidor para login por nome de usuário
+│   ├── functions/              funções de servidor para login por usuário e limitação de tentativas
 │   ├── migrations/             alterações versionadas do banco em SQL
 │   └── config.toml             configuração local do Supabase CLI e da função
 ├── tests/                      testes automatizados de estoque e migração local
-├── .env.example                modelo de configuração pública do Supabase
+├── site.txt                    endereço público da landing da Sync
+├── .env.example                modelo das variáveis de ambiente do piloto
 ├── .gitignore                  exclusões do Git
 ├── .vercelignore               exclusões para o envio à Vercel
 ├── AGENTS.md                   regras para trabalhar no repositório
@@ -45,14 +47,14 @@ Sync/
 
 ## Dependências de caminhos
 
-- **Piloto e build.** O [script de build](../scripts/build.mjs) monta a landing a partir de `index.html`, compila em Vite o [acesso em React](../frontend/entrada.jsx), monta `/estoque/` a partir de `piloto/` e copia o [estilo compartilhado de botões](../css/botoes.css). A versão integrada fica em `dist/`. Os comandos estão no [manifesto npm](../package.json).
+- **Piloto e build.** O [script de build](../scripts/build.mjs) monta a landing a partir de `index.html`, compila em Vite o [acesso em React](../frontend/entrada.jsx), monta `/estoque/` a partir de `piloto/` e publica as funções Node de `api/`. O backend consulta o Supabase e mantém a sessão em cookie HttpOnly. A versão integrada fica em `dist/`; a configuração privada é lida pelas funções em runtime. Os comandos estão no [manifesto npm](../package.json).
 - **Ambiente local.** O [servidor](../scripts/dev.mjs) monta a página local e guarda os dados em `.dados-local/`. O [banco local](../scripts/banco-local.mjs) lê as migrações de `supabase/migrations/`, também usadas nos [testes de estoque](../tests/estoque.test.mjs).
 - **Simulado.** A [página inicial](../index.html) e a [página de informações](../informacoes.html) continuam na raiz como pontos de entrada. Os estilos da SYNC, o alternador de tema e as mídias da abertura ficam em [abertura/](<../Insumo vencendo na cozinha/abertura/>). As entregas, os guias e os protótipos estão organizados no [índice do simulado](<../Insumo vencendo na cozinha/README.md>).
 - **Itens locais e gerados.** `.dados-local/`, `dist/`, `node_modules/`, `.env.local`, `.vercel/` e `supabase/.temp/`, quando existirem, estão cobertos pelo [.gitignore](../.gitignore). `.env.example` é o modelo compartilhado.
 
 ## Onde colocar mudanças
 
-- Componentes React da landing em `frontend/`, tela de estoque em `piloto/`, scripts em `scripts/`, migrações em `supabase/migrations/` e testes em `tests/`.
+- Componentes React da landing em `frontend/`, funções de backend em `api/`, tela de estoque em `piloto/`, scripts em `scripts/`, migrações em `supabase/migrations/` e testes em `tests/`.
 - Requisitos e telas em `docs/product/`, decisões técnicas em `docs/architecture/` e melhorias futuras em `docs/futuras-implantacoes/`.
 - Materiais do simulado em `Insumo vencendo na cozinha/`. O estilo de botões usado pelos dois projetos fica em `css/botoes.css`.
 - Ao criar, mover ou renomear um item listado, atualize este mapa e os caminhos afetados na mesma mudança. O [README](../README.md) é o ponto de entrada do repositório.

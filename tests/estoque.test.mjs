@@ -32,7 +32,7 @@ function lote(dados = {}) {
   };
 }
 
-test('dono e cozinheiro compartilham o estoque em ordem de validade, incluindo correções', async (t) => {
+test('dono e funcionário compartilham o estoque em ordem de validade, incluindo correções', async (t) => {
   // Cada cookie representa uma sessão independente. As leituras passam pelas rotas que a tela usa no modo local.
   const temporarios = resolve(tmpdir());
   const prefixo = 'visionchef-teste-';
@@ -58,7 +58,8 @@ test('dono e cozinheiro compartilham o estoque em ordem de validade, incluindo c
   assert.match(htmlLanding, /<script type="module" src="entrada\.js"><\/script>/);
   // A versão aberta pelo arquivo mantém um caminho para a mesma seção no servidor local.
   const htmlArquivo = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(htmlArquivo, /href="http:\/\/127\.0\.0\.1:4173\/#prototipos"/);
+  // O link de ajuda precisa acompanhar a porta HTTP_PORT usada pelo servidor local.
+  assert.match(htmlArquivo, /href="http:\/\/127\.0\.0\.1:8080\/#prototipos"/);
   const moduloEntrada = await fetch(`${origem}/entrada.js`);
   assert.equal(moduloEntrada.status, 200);
   const codigoEntrada = await moduloEntrada.text();
@@ -96,26 +97,26 @@ test('dono e cozinheiro compartilham o estoque em ordem de validade, incluindo c
   assert.equal((await chamada(caminho)).status, 401);
 
   const dono = await entrar('dono@piloto.test');
-  const cozinheiro = await entrar('  Cozinha.PILOTO  ');
+  const funcionário = await entrar('  Funcionario.PILOTO  ');
   const outroDono = await entrar('dono.outro');
   const restaurantes = await (await chamada('restaurantes', { cookie: dono })).json();
   assert.equal(restaurantes[0].id, restaurantePiloto);
-  assert.deepEqual(await (await chamada('restaurantes', { cookie: cozinheiro })).json(), restaurantes);
+  assert.deepEqual(await (await chamada('restaurantes', { cookie: funcionário })).json(), restaurantes);
   const identificadorInexistente = await chamada('entrar', { dados: { identificador: 'cozinha.inexistente', senha: senhaLocal } });
-  const senhaIncorreta = await chamada('entrar', { dados: { identificador: 'cozinha.piloto', senha: 'senha-incorreta' } });
+  const senhaIncorreta = await chamada('entrar', { dados: { identificador: 'funcionário.piloto', senha: 'senha-incorreta' } });
   assert.equal(identificadorInexistente.status, 401);
   assert.equal(senhaIncorreta.status, 401);
   assert.deepEqual(await identificadorInexistente.json(), await senhaIncorreta.json());
   // Cadastra em ordem inversa de vencimento para provar que a consulta ordena por data.
   const primeiro = await chamada('lotes', { cookie: dono, dados: lote() });
   const segundo = await chamada('lotes', {
-    cookie: cozinheiro,
+    cookie: funcionário,
     dados: lote({ p_insumo: 'Queijo', p_validade: '2030-01-31', p_medida: 'kg' }),
   });
   assert.equal(primeiro.status, 200);
   assert.equal(segundo.status, 200);
 
-  const outraConsulta = await chamada(caminho, { cookie: cozinheiro });
+  const outraConsulta = await chamada(caminho, { cookie: funcionário });
   const estoque = await outraConsulta.json();
   assert.deepEqual(estoque.map(({ insumo, saldo }) => [insumo, saldo]), [['Queijo', '1.25'], ['Leite', '1.25']]);
   assert.deepEqual(estoque.map(({ validade_aplicavel }) => validade_aplicavel), ['2030-01-31', '2030-02-01']);
@@ -123,7 +124,7 @@ test('dono e cozinheiro compartilham o estoque em ordem de validade, incluindo c
   assert.deepEqual(await (await chamada(caminho, { cookie: outroDono })).json(), []);
   assert.equal((await chamada('lotes', { cookie: outroDono, dados: lote() })).status, 403);
 
-  // O cozinheiro corrige o lote do dono. Uma nova leitura mantém os identificadores e o saldo.
+  // O funcionário corrige o lote do dono. Uma nova leitura mantém os identificadores e o saldo.
   const original = estoque[1];
   const dados = {
     p_restaurante_id: restaurantePiloto,
@@ -134,12 +135,12 @@ test('dono e cozinheiro compartilham o estoque em ordem de validade, incluindo c
   const corrigir = (cookie, correcao = dados) => chamada('lotes/validade', { cookie, dados: correcao });
   assert.equal((await corrigir(outroDono)).status, 403);
   assert.equal((await corrigir(outroDono, { ...dados, p_restaurante_id: outroRestaurante })).status, 404);
-  const corrigido = await corrigir(cozinheiro);
+  const corrigido = await corrigir(funcionário);
   assert.equal(corrigido.status, 200);
   assert.equal(await corrigido.json(), original.lote_id);
 
   // O reenvio da mesma correção é seguro, enquanto uma edição desatualizada recebe conflito.
-  assert.equal((await corrigir(cozinheiro)).status, 200);
+  assert.equal((await corrigir(funcionário)).status, 200);
   const conflito = await corrigir(dono, { ...dados, p_validade: '2030-02-02' });
   assert.equal(conflito.status, 409);
   assert.equal((await conflito.json()).codigo, 'PT409');
@@ -152,12 +153,12 @@ test('dono e cozinheiro compartilham o estoque em ordem de validade, incluindo c
 
   assert.equal((await corrigir(dono, { ...dados, p_validade: null, p_revisao: 1 })).status, 400);
   assert.equal((await corrigir(dono, { ...dados, p_validade: '2030-02-02', p_revisao: 1 })).status, 200);
-  const resultado = await (await chamada(caminho, { cookie: cozinheiro })).json();
+  const resultado = await (await chamada(caminho, { cookie: funcionário })).json();
   assert.deepEqual(resultado.map(({ validade_aplicavel }) => validade_aplicavel), ['2030-01-31', '2030-02-02']);
 
   // Exercita a rota usada pelo formulário também com uma quantidade fracionária em litros.
   const { rows: [{ hoje }] } = await banco.query("select ((now() at time zone 'America/Sao_Paulo')::date)::text as hoje");
-  const respostaAbertura = await chamada('lotes/abertura', { cookie: cozinheiro, dados: {
+  const respostaAbertura = await chamada('lotes/abertura', { cookie: funcionário, dados: {
     p_restaurante_id: restaurantePiloto, p_lote_id: original.lote_id, p_parte_id: original.parte_id,
     p_quantidade: '0.5', p_data_abertura: hoje, p_validade_abertura: hoje, p_operacao_id: randomUUID(),
   } });
@@ -166,8 +167,8 @@ test('dono e cozinheiro compartilham o estoque em ordem de validade, incluindo c
   const partes = estoqueDepois.filter((parte) => parte.lote_id === original.lote_id);
   assert.deepEqual(partes.map(({ saldo, data_abertura }) => [saldo, data_abertura]), [['0.5', hoje], ['0.75', null]]);
 
-  await chamada('sair', { cookie: cozinheiro, dados: {} });
-  assert.equal((await chamada(caminho, { cookie: cozinheiro })).status, 401);
+  await chamada('sair', { cookie: funcionário, dados: {} });
+  assert.equal((await chamada(caminho, { cookie: funcionário })).status, 401);
 });
 
 test('cadastro repetido retorna o mesmo lote e bloqueia a reutilização da chave com outros dados', async () => {
@@ -286,7 +287,7 @@ test('o banco local da primeira versão é atualizado sem perder os lotes existe
 
 test('abertura mantém o saldo total, o código do lote e a menor das duas validades', async () => {
   const dono = contas.get('dono@piloto.test').id;
-  const cozinha = contas.get('cozinha@piloto.test').id;
+  const cozinha = contas.get('funcionário@piloto.test').id;
   const outro = contas.get('dono@outro.test').id;
   // Usa o mesmo dia civil do restaurante para o cenário continuar válido com o passar do tempo.
   const { rows: [datas] } = await banco.query(`

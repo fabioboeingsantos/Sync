@@ -13,3 +13,8 @@ Depois de testar esse processo, avaliar a necessidade de uma tela de cadastro de
 ## Portfólio e divulgação da Sync
 
 O [plano de divulgação das soluções](portfolio-e-divulgacao-sync.md) reúne o calendário de apresentações e os materiais para anunciar a segunda solução.
+## Categorias profissionais da equipe
+
+**Status** — Planejado para uma etapa posterior ao piloto.
+
+No piloto, public.membros_restaurante usa os papéis de acesso dono e funcionario. As categorias profissionais serão modeladas em tabelas próprias quando forem definidas, sem alterar a finalidade dos papéis de acesso.

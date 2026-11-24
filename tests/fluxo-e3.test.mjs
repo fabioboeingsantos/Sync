@@ -24,7 +24,7 @@ test('baixas preservam histórico, respeitam o saldo e bloqueiam uso de vencidos
   const banco = await abrirBancoLocal();
   t.after(() => banco.close());
   const dono = contas.get('dono@piloto.test').id;
-  const cozinheiro = contas.get('cozinha@piloto.test').id;
+  const funcionario = contas.get('funcionario@piloto.test').id;
   const outro = contas.get('dono@outro.test').id;
   const { rows: [datas] } = await banco.query(
     "select (current_date + 7)::text as boa, (current_date - 2)::text as vencida",
@@ -45,9 +45,9 @@ test('baixas preservam histórico, respeitam o saldo e bloqueiam uso de vencidos
     p_restaurante_id: restaurantePiloto, p_lote_id: parte.lote_id, p_parte_id: parte.parte_id,
     p_tipo: tipo, p_quantidade: quantidade, p_motivo: motivo, p_operacao_id: randomUUID(),
   });
-  const registrar = (dados, id = cozinheiro) => comoUsuario(banco, id, (tx) => registrarSaida(tx, dados));
+  const registrar = (dados, id = funcionario) => comoUsuario(banco, id, (tx) => registrarSaida(tx, dados));
 
-  // O cozinheiro pode movimentar o próprio estoque. Um reenvio mantém o saldo e o histórico.
+  // O funcionário pode movimentar o próprio estoque. Um reenvio mantém o saldo e o histórico.
   const uso = saida(ativo, 'uso', '3');
   assert.equal(await registrar(uso), await registrar(uso));
   await registrar(saida(ativo, 'descarte', '2', 'outro'));
@@ -64,8 +64,8 @@ test('baixas preservam histórico, respeitam o saldo e bloqueiam uso de vencidos
   assert.deepEqual((await historico(dono)).map(({ motivo, quantidade }) => [motivo, quantidade]), [
     ['vencimento', '10'], ['outro', '2'],
   ]);
-  assert.equal(await historico(cozinheiro), null);
+  assert.equal(await historico(funcionario), null);
   assert.equal(await historico(outro), null);
   // A restrição também vale para quem tenta consultar a tabela diretamente.
-  assert.deepEqual((await comoUsuario(banco, cozinheiro, (tx) => tx.query('select id from public.saidas_estoque'))).rows, []);
+  assert.deepEqual((await comoUsuario(banco, funcionario, (tx) => tx.query('select id from public.saidas_estoque'))).rows, []);
 });

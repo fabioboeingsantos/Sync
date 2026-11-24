@@ -13,12 +13,12 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Abra a [seção de acesso na landing page](http://127.0.0.1:4173/#prototipos) e entre com uma das contas de teste. Depois do login, a página abre o estoque em `/estoque/`. A senha compartilhada para essas contas fictícias é `senha123`. Ao abrir `index.html` diretamente como arquivo, use **Abrir login local** para chegar a essa mesma seção pelo servidor.
+Abra a [seção de acesso na landing page](http://127.0.0.1:8080/#prototipos) e entre com uma das contas de teste. Depois do login, a página abre o estoque em `/estoque/`. A senha compartilhada para essas contas fictícias é `senha123`. Ao abrir `index.html` diretamente como arquivo, use **Abrir login local** para chegar a essa mesma seção pelo servidor.
 
 | Usuário | E-mail | O que permite verificar |
 | --- | --- | --- |
 | `dono.piloto` | `dono@piloto.test` | Cadastra e consulta os lotes do restaurante piloto. |
-| `cozinha.piloto` | `cozinha@piloto.test` | Acessa o mesmo estoque do dono com outra conta. |
+| `funcionario.piloto` | `funcionario@piloto.test` | Acessa o mesmo estoque do dono com outra conta. |
 | `dono.outro` | `dono@outro.test` | Acessa apenas o estoque de outro restaurante fictício. |
 
 O campo **Usuário ou e-mail** aceita qualquer uma das duas opções para a mesma conta. O nome de usuário tem de 3 a 32 caracteres. Pode conter letras sem acento, números, ponto, hífen e sublinhado e deve começar por letra ou número. A exclusividade vale em todo o sistema e ignora maiúsculas e minúsculas.
@@ -32,8 +32,8 @@ O servidor local usa PostgreSQL embarcado via PGlite e aplica as migrações em 
 ## Verificações e integração
 
 - `npm.cmd test` roda os testes de cadastro, correção, abertura, ordenação por validade, repetição de envio, validação de quantidade e isolamento entre restaurantes. Os testes usam um banco descartável em memória.
-- `npm.cmd run build` gera a interface integrada em `dist/`. Use `.env.example` como modelo para `.env.local` e informe apenas a URL HTTPS e a chave pública `sb_publishable_` de um projeto Supabase de teste. A versão gerada usa Supabase Auth e a API do banco. A integração real com um projeto Supabase ainda precisa ser verificada.
-- Para validar o login por nome na versão integrada, aplique a migração `20261124000400_nomes_usuario.sql` no projeto de teste e vincule cada nome a uma conta do Auth em `public.nomes_usuario`. A função `login-usuario` deve estar disponível nesse projeto. Configure `VISIONCHEF_LOGIN_ORIGINS` na função com as origens exatas autorizadas, separadas por vírgula. O login por e-mail continua usando o Supabase Auth diretamente.
+- `npm.cmd run build` gera a interface integrada em `dist/`. As funções Node da Vercel leem as variáveis privadas em runtime; o build não incorpora URL, chave Supabase ou segredo JWT ao JavaScript do navegador.
+- O acesso integrado passa por `/api`, que mantém a sessão em cookie HttpOnly e encaminha as operações ao Supabase com o token individual do usuário. Login por nome e limitação de tentativas usam funções Edge assinadas e migrações PostgreSQL. Consulte a lista de configuração no [guia de implantação](docs/architecture/implantacao.md); publicar migrações e funções continua sendo uma etapa separada do build.
 - Use **Registrar uso** ou **Registrar descarte** na linha do lote. A quantidade sai do saldo e o dono consulta os descartes recentes do restaurante.
 - Em **Cadastrar lote**, abra **Preencher com assistente**, descreva o insumo e confira os campos sugeridos antes de salvar. Datas ambíguas exigem confirmação manual.
 - A configuração da prévia protegida está no [guia de implantação](docs/architecture/implantacao.md). Use um projeto Supabase de teste antes de convidar a equipe.
@@ -42,4 +42,4 @@ Veja os [requisitos do piloto](docs/product/requirements.md), o [desenho técnic
 
 ## Configuração do projeto
 
-O `package.json` define os comandos acima. O Vite compila o componente React para a seção de acesso. O cliente JavaScript do Supabase é usado na versão integrada. O PGlite roda o banco local e os testes. O `package-lock.json` fixa as versões instaladas por `npm.cmd ci`.
+O `package.json` define os comandos acima. O Vite compila o componente React para a seção de acesso. O Supabase é acessado pelo backend Node da Vercel na versão integrada. O PGlite roda o banco local e os testes. O `package-lock.json` fixa as versões instaladas por `npm.cmd ci`.

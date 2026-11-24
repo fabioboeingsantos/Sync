@@ -7,7 +7,7 @@ export const outroRestaurante = '10000000-0000-4000-8000-000000000002';
 export const senhaLocal = 'senha123';
 export const contas = new Map([
   ['dono@piloto.test', { id: '20000000-0000-4000-8000-000000000001', nome: 'dono.piloto', restaurante: restaurantePiloto, papel: 'dono' }],
-  ['cozinha@piloto.test', { id: '20000000-0000-4000-8000-000000000002', nome: 'cozinha.piloto', restaurante: restaurantePiloto, papel: 'cozinheiro' }],
+  ['funcionario@piloto.test', { id: '20000000-0000-4000-8000-000000000002', nome: 'funcionario.piloto', restaurante: restaurantePiloto, papel: 'funcionario' }],
   ['dono@outro.test', { id: '20000000-0000-4000-8000-000000000003', nome: 'dono.outro', restaurante: outroRestaurante, papel: 'dono' }],
 ]);
 
@@ -54,6 +54,8 @@ export async function abrirBancoLocal(diretorio) {
       create schema if not exists auth;
       create table if not exists auth.users(id uuid primary key);
       alter table auth.users add column if not exists email text;
+      -- O banco local espelha os metadados que o Auth real usa no trigger de nome único.
+      alter table auth.users add column if not exists raw_user_meta_data jsonb default '{}'::jsonb;
       create or replace function auth.uid() returns uuid language sql stable as $$
         select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
       $$;
@@ -169,3 +171,4 @@ export async function listarDescartes(tx, restaurante) {
   );
   return rows;
 }
+

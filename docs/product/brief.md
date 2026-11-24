@@ -4,13 +4,13 @@
 
 ## Problema e público
 
-Donos e cozinheiros de restaurantes pequenos precisam identificar os lotes que vencem primeiro sem interromper o preparo para procurar datas no caderno. O problema veio do enunciado do simulado. As entrevistas registradas até aqui foram simuladas. Veja a [definição do desafio](<../../Insumo vencendo na cozinha/desafios/E1.md>) e a [proposta do protótipo](<../../Insumo vencendo na cozinha/desafios/E3.md>).
+Donos e funcionários de restaurantes pequenos precisam identificar os lotes que vencem primeiro sem interromper o preparo para procurar datas no caderno. O problema veio do enunciado do simulado. As entrevistas registradas até aqui foram simuladas. Veja a [definição do desafio](<../../Insumo vencendo na cozinha/desafios/E1.md>) e a [proposta do protótipo](<../../Insumo vencendo na cozinha/desafios/E3.md>).
 
 ## Decisões do piloto
 
 - Começar com um restaurante. Cada lote pertence a um restaurante, de modo que outros estabelecimentos possam ter estoques separados no futuro.
 - Hospedar o site na Vercel e armazenar os registros no Supabase.
-- Usar contas individuais. Dono e cozinheiro podem consultar, cadastrar e corrigir lotes. O dono pode convidar pessoas e remover acessos.
+- Usar contas individuais. Dono e funcionário podem consultar, cadastrar e corrigir lotes. O dono pode convidar pessoas e remover acessos.
 - Registrar uso e descarte de lotes, inclusive parciais. O lote permanece na lista de estoque ativo enquanto houver saldo.
 - Manter a validade original informada na embalagem. Quando houver abertura ou fracionamento, a equipe registra a data da operação e a validade aplicável. A lista considera a mais próxima entre a validade original e a informada após a abertura ou o fracionamento.
 - Quando apenas parte do lote for aberta ou fracionada, mostrar as quantidades abertas e fechadas separadamente. Ambas ficam vinculadas ao mesmo lote de origem e mantêm o código do fabricante quando informado.
