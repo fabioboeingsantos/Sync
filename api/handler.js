@@ -578,6 +578,55 @@ export async function tratarApi(requisicao) {
       return remoto.ok ? resposta({ removido: Boolean(remoto.dados) }, 200, cookieAtualizado) : erroBanco(remoto);
     }
 
+    if (caminho === 'fornecedores' && requisicao.method === 'GET') {
+      const restaurante = url.searchParams.get('restaurante') ?? '';
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante)) return resposta({ erro: 'Restaurante inválido.' }, 400, cookieAtualizado);
+      const remoto = await supabase(cfg, '/rest/v1/rpc/listar_fornecedores_restaurante', {
+        metodo: 'POST', corpo: { p_restaurante_id: restaurante }, token,
+      });
+      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    if (caminho === 'fornecedores/salvar' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 8192);
+      const restaurante = typeof dados.p_restaurante_id === 'string' ? dados.p_restaurante_id : '';
+      const fornecedorId = typeof dados.p_fornecedor_id === 'string' && dados.p_fornecedor_id ? dados.p_fornecedor_id : null;
+      const nome = typeof dados.p_nome === 'string' ? dados.p_nome.trim() : '';
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante) || (fornecedorId && !/^[0-9a-f-]{36}$/i.test(fornecedorId)) || nome.length < 1 || nome.length > 120) {
+        return resposta({ erro: 'Confira o nome e os dados do fornecedor.' }, 400, cookieAtualizado);
+      }
+      const remoto = await supabase(cfg, '/rest/v1/rpc/salvar_fornecedor_restaurante', {
+        metodo: 'POST',
+        corpo: {
+          p_restaurante_id: restaurante,
+          p_fornecedor_id: fornecedorId,
+          p_nome: nome,
+          p_categoria: typeof dados.p_categoria === 'string' ? dados.p_categoria.trim().slice(0, 80) : null,
+          p_contato: typeof dados.p_contato === 'string' ? dados.p_contato.trim().slice(0, 120) : null,
+          p_email: typeof dados.p_email === 'string' ? dados.p_email.trim().slice(0, 254) : null,
+          p_observacoes: typeof dados.p_observacoes === 'string' ? dados.p_observacoes.trim().slice(0, 400) : null,
+        },
+        token,
+      });
+      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    if (caminho === 'fornecedores/status' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 4096);
+      const restaurante = typeof dados.p_restaurante_id === 'string' ? dados.p_restaurante_id : '';
+      const fornecedorId = typeof dados.p_fornecedor_id === 'string' ? dados.p_fornecedor_id : '';
+      const ativo = typeof dados.p_ativo === 'boolean' ? dados.p_ativo : null;
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante) || !/^[0-9a-f-]{36}$/i.test(fornecedorId) || ativo === null) {
+        return resposta({ erro: 'Confira os dados do fornecedor selecionado.' }, 400, cookieAtualizado);
+      }
+      const remoto = await supabase(cfg, '/rest/v1/rpc/alterar_status_fornecedor', {
+        metodo: 'POST',
+        corpo: { p_restaurante_id: restaurante, p_fornecedor_id: fornecedorId, p_ativo: ativo },
+        token,
+      });
+      return remoto.ok ? resposta({ ativo: Boolean(remoto.dados) }, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
     const rotasRpc = {
       'estoque/cadastrar': 'cadastrar_lote',
       'estoque/corrigir-validade': 'corrigir_validade',

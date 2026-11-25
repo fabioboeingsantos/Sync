@@ -31,4 +31,7 @@ export const api = {
   equipe: (restaurante) => solicitar('equipe?restaurante=' + encodeURIComponent(restaurante)),
   vincularMembro: (dados) => solicitar('equipe/vincular', dados),
   removerMembro: (dados) => solicitar('equipe/remover', dados),
+  fornecedores: (restaurante) => solicitar('fornecedores?restaurante=' + encodeURIComponent(restaurante)),
+  salvarFornecedor: (dados) => solicitar('fornecedores/salvar', dados),
+  alterarStatusFornecedor: (dados) => solicitar('fornecedores/status', dados),
 };

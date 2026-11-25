@@ -792,3 +792,107 @@ td small { display: block; color: var(--est-muted); font-size: .875rem; font-wei
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Barra administrativa unificada (Estoque, Equipe, Fornecedores) e painel destacado do assistente Vision. */
+.painel-admin-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .85rem 1.25rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--est-divider);
+}
+.identidade-restaurante {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .65rem;
+}
+.identidade-restaurante .restaurante { margin: 0; font-size: 1.05rem; }
+.perfil-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: .22rem .65rem;
+  border-radius: 999px;
+  border: 1px solid var(--est-border);
+  background: var(--est-surface);
+  color: var(--est-heading);
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.nav-modulos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+}
+.nav-modulos .botao {
+  min-height: 44px;
+  padding: 9px 18px;
+}
+.subtitulo-modulo {
+  margin-top: .35rem;
+  color: var(--est-muted);
+  font-size: .95rem;
+}
+.cabecalho-cadastro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .75rem;
+}
+.modo-cadastro-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+.modo-cadastro-tabs .botao {
+  min-height: 40px;
+  padding: 7px 14px;
+  font-size: .9rem;
+}
+.bloco-vision {
+  margin-top: .5rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: .9rem;
+  border: 1.5px solid #2a7f8e;
+  background: linear-gradient(155deg, rgba(42, 127, 142, 0.14) 0%, rgba(15, 76, 92, 0.08) 100%);
+}
+.vision-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+}
+.vision-cabecalho h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--est-heading);
+}
+.vision-cabecalho p {
+  margin-top: .25rem;
+  font-size: .92rem;
+  color: var(--est-muted);
+}
+.vision-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: .35rem .75rem;
+  border-radius: 999px;
+  background: linear-gradient(160deg, #2a7f8e 0%, #0f4c5c 100%);
+  color: #ffffff;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.aviso-vision {
+  color: var(--est-muted);
+  font-size: .86rem;
+}

@@ -5,9 +5,9 @@ import { extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { arquivosPublicos, montarPiloto, raiz } from './build.mjs';
 import {
-  abrirBancoLocal, autenticarContaLocal, cadastrarLote, comoUsuario, corrigirValidade, criarContaLocal,
-  listarEquipe, listarEstoque, listarRestaurantes, listarDescartes, redefinirSenhaLocal,
-  registrarAbertura, registrarSaida, removerMembro, vincularMembro,
+  abrirBancoLocal, alterarStatusFornecedor, autenticarContaLocal, cadastrarLote, comoUsuario, corrigirValidade,
+  criarContaLocal, listarEquipe, listarEstoque, listarFornecedores, listarRestaurantes, listarDescartes,
+  redefinirSenhaLocal, registrarAbertura, registrarSaida, removerMembro, salvarFornecedor, vincularMembro,
 } from './banco-local.mjs';
 
 // O servidor de desenvolvimento atende apenas os arquivos públicos listados aqui e as rotas de teste.
@@ -181,6 +181,15 @@ export function criarServidorLocal(banco, pastaPublica) {
       } else if (req.method === 'POST' && url.pathname === '/demo/equipe/remover') {
         const dados = await lerJson(req);
         json(res, 200, await comoUsuario(banco, conta.id, (tx) => removerMembro(tx, dados)));
+      } else if (req.method === 'GET' && url.pathname === '/demo/fornecedores') {
+        const restaurante = url.searchParams.get('restaurante');
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => listarFornecedores(tx, restaurante)));
+      } else if (req.method === 'POST' && url.pathname === '/demo/fornecedores/salvar') {
+        const dados = await lerJson(req);
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => salvarFornecedor(tx, dados)));
+      } else if (req.method === 'POST' && url.pathname === '/demo/fornecedores/status') {
+        const dados = await lerJson(req);
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => alterarStatusFornecedor(tx, dados)));
       } else {
         json(res, 404, { erro: 'Endereço indisponível.' });
       }

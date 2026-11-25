@@ -31,6 +31,42 @@ const botaoConfirmarEmail = porId('solicitar-confirmacao-email');
 const sairTodosDispositivos = porId('sair-todos-dispositivos');
 const fecharConta = porId('fechar-conta');
 const abrirCadastro = porId('abrir-cadastro');
+const abrirVision = porId('abrir-vision');
+const modoVision = porId('modo-vision');
+const modoManual = porId('modo-manual');
+const blocoVision = porId('assistente-lote');
+const exemploVision = porId('exemplo-vision');
+const perfilBadge = porId('perfil-badge');
+const navModulos = porId('nav-modulos');
+const abaEstoque = porId('aba-estoque');
+const abaEquipe = porId('aba-equipe');
+const abaFornecedores = porId('aba-fornecedores');
+const moduloEstoque = porId('modulo-estoque');
+const moduloEquipe = porId('modulo-equipe');
+const moduloFornecedores = porId('modulo-fornecedores');
+const formEquipePainel = porId('form-equipe-painel');
+const erroEquipePainel = porId('erro-equipe-painel');
+const feedbackEquipe = porId('feedback-equipe');
+const mensagemEquipeLista = porId('mensagem-equipe-lista');
+const tabelaEquipePainel = porId('tabela-equipe-painel');
+const corpoEquipePainel = porId('corpo-equipe-painel');
+const dialogoRemoverMembro = porId('dialogo-remover-membro');
+const textoRemoverMembro = porId('texto-remover-membro');
+const erroRemoverMembro = porId('erro-remover-membro');
+const confirmarRemoverMembro = porId('confirmar-remover-membro');
+const cancelarRemoverMembro = porId('cancelar-remover-membro');
+const abrirFornecedor = porId('abrir-fornecedor');
+const painelFornecedor = porId('painel-fornecedor');
+const tituloFormFornecedor = porId('titulo-form-fornecedor');
+const formFornecedor = porId('form-fornecedor');
+const cancelarFornecedor = porId('cancelar-fornecedor');
+const erroFornecedor = porId('erro-fornecedor');
+const feedbackFornecedores = porId('feedback-fornecedores');
+const subtituloFornecedores = porId('subtitulo-fornecedores');
+const mensagemFornecedores = porId('mensagem-fornecedores');
+const tabelaFornecedores = porId('tabela-fornecedores');
+const corpoFornecedores = porId('corpo-fornecedores');
+const colAcoesFornecedores = porId('col-acoes-fornecedores');
 const recarregar = porId('recarregar');
 const mensagemSessao = porId('situacao-sessao');
 const feedback = porId('feedback');
@@ -49,6 +85,9 @@ const barraFiltrosEstoque = porId('barra-filtros-estoque');
 const filtrosEstoque = porId('filtros-estoque');
 const contagemEstoque = porId('contagem-estoque');
 let filtroSituacao = 'todos';
+let moduloAtivo = 'estoque';
+let ehDonoAtual = false;
+let membroEmRemocao = null;
 let lotesCarregados = [];
 let duplicadoConfirmado = null;
 let parteEmSaida = null;
@@ -120,8 +159,12 @@ async function mostrarSessao(focar = false) {
 
   if (!restaurante) {
     versaoConsulta += 1;
+    ehDonoAtual = false;
     porId('lotes').replaceChildren();
     if (linkEquipe) linkEquipe.hidden = true;
+    if (abaEquipe) abaEquipe.hidden = true;
+    if (perfilBadge) perfilBadge.hidden = true;
+    if (abrirFornecedor) abrirFornecedor.hidden = true;
     painelDescartes.hidden = true;
     historicoDescartes.replaceChildren();
     porId('tabela-estoque').hidden = true;
@@ -132,6 +175,7 @@ async function mostrarSessao(focar = false) {
   }
 
   porId('restaurante').textContent = restaurante.nome;
+  alternarModulo('estoque', false);
   if (focar) porId('titulo-estoque').focus();
   await atualizarEstoque();
 }
@@ -306,10 +350,23 @@ async function atualizarDescartes(id, consulta) {
   try {
     const descartes = await api.descartes(id);
     if (consulta !== versaoConsulta) return;
-    // O acesso à lista de descartes e à tela /equipe/ é exclusivo do dono ativo do restaurante.
-    const ehDono = descartes !== null;
-    if (linkEquipe) linkEquipe.hidden = !ehDono;
-    painelDescartes.hidden = !ehDono;
+    // O acesso à lista de descartes, gestão de equipe e edição de fornecedores é exclusivo do dono ativo.
+    ehDonoAtual = descartes !== null;
+    if (linkEquipe) linkEquipe.hidden = !ehDonoAtual;
+    if (abaEquipe) abaEquipe.hidden = !ehDonoAtual;
+    if (abrirFornecedor) abrirFornecedor.hidden = !ehDonoAtual;
+    if (colAcoesFornecedores) colAcoesFornecedores.hidden = !ehDonoAtual;
+    if (perfilBadge) {
+      perfilBadge.textContent = ehDonoAtual ? 'Perfil: Dono' : 'Perfil: Funcionário';
+      perfilBadge.hidden = false;
+    }
+    if (subtituloFornecedores) {
+      subtituloFornecedores.textContent = ehDonoAtual
+        ? 'Cadastre, edite e organize os fornecedores do restaurante.'
+        : 'Consulta dos fornecedores ativos cadastrados pelo dono do restaurante.';
+    }
+    painelDescartes.hidden = !ehDonoAtual;
+    if (!ehDonoAtual && moduloAtivo === 'equipe') alternarModulo('estoque', false);
     historicoDescartes.replaceChildren(...(descartes ?? []).map((saida) => {
       const item = document.createElement('li');
       const codigo = saida.codigo_fabricante ? ' · Lote ' + saida.codigo_fabricante : '';
@@ -540,12 +597,308 @@ function erroNoCampo(campo, texto) {
   campo.focus();
 }
 
-function definirCadastro(aberto) {
-  porId('painel-cadastro').hidden = !aberto;
-  abrirCadastro.setAttribute('aria-expanded', String(aberto));
-  if (aberto) campos.insumo.focus();
-  else abrirCadastro.focus();
+function definirModoCadastro(modo = 'manual') {
+  const usarVision = modo === 'vision';
+  if (blocoVision) blocoVision.hidden = !usarVision;
+  if (modoVision) modoVision.setAttribute('aria-pressed', String(usarVision));
+  if (modoManual) modoManual.setAttribute('aria-pressed', String(!usarVision));
+  if (usarVision) descricaoLote?.focus();
+  else campos.insumo.focus();
 }
+
+function definirCadastro(aberto, modo = 'manual') {
+  porId('painel-cadastro').hidden = !aberto;
+  abrirCadastro.setAttribute('aria-expanded', String(aberto && modo === 'manual'));
+  if (abrirVision) abrirVision.setAttribute('aria-expanded', String(aberto && modo === 'vision'));
+  if (aberto) definirModoCadastro(modo);
+  else (modo === 'vision' && abrirVision ? abrirVision : abrirCadastro).focus();
+}
+
+// Alterna entre os módulos administrativos dentro da conta (Estoque, Equipe e Fornecedores).
+function alternarModulo(destino, carregar = true) {
+  if (destino === 'equipe' && !ehDonoAtual) destino = 'estoque';
+  moduloAtivo = destino;
+  if (moduloEstoque) moduloEstoque.hidden = destino !== 'estoque';
+  if (moduloEquipe) moduloEquipe.hidden = destino !== 'equipe';
+  if (moduloFornecedores) moduloFornecedores.hidden = destino !== 'fornecedores';
+  for (const botao of navModulos?.querySelectorAll('[data-modulo]') ?? []) {
+    botao.setAttribute('aria-pressed', String(botao.dataset.modulo === destino));
+  }
+  if (!carregar || !restaurante) return;
+  if (destino === 'equipe') void carregarEquipePainel();
+  if (destino === 'fornecedores') void carregarFornecedoresPainel();
+}
+
+navModulos?.addEventListener('click', (evento) => {
+  const botao = evento.target.closest('button[data-modulo]');
+  if (!botao) return;
+  alternarModulo(botao.dataset.modulo, true);
+});
+
+// O botão Equipe no cabeçalho também abre diretamente a aba Equipe dentro da conta.
+linkEquipe?.addEventListener('click', (evento) => {
+  if (!restaurante || !ehDonoAtual) return;
+  evento.preventDefault();
+  alternarModulo('equipe', true);
+  porId('titulo-equipe-painel')?.focus();
+});
+
+// ---------- MÓDULO EQUIPE INTEGRADO (EXCLUSIVO DONO) ----------
+async function carregarEquipePainel() {
+  if (!restaurante || !ehDonoAtual) return;
+  mensagemEquipeLista.textContent = 'Carregando equipe…';
+  mensagemEquipeLista.classList.remove('erro');
+  try {
+    const membros = await api.equipe(restaurante.id);
+    const totalDonosAtivos = membros.filter((m) => m.ativo && m.papel === 'dono').length;
+    corpoEquipePainel.replaceChildren(...membros.map((membro) => {
+      const linha = document.createElement('tr');
+      linha.setAttribute('role', 'row');
+      const nome = membro.nome_usuario || membro.email || 'Conta cadastrada';
+      const celPessoa = adicionarCelula(linha, nome);
+      if (membro.email && membro.nome_usuario) {
+        const sub = document.createElement('small');
+        sub.textContent = membro.email;
+        celPessoa.append(sub);
+      }
+      adicionarCelula(linha, membro.papel === 'dono' ? 'Dono' : 'Funcionário', 'Perfil');
+      const badge = document.createElement('span');
+      badge.className = 'estado';
+      badge.dataset.situacao = membro.ativo ? 'em_dia' : 'vencido';
+      badge.textContent = membro.ativo ? 'Ativo' : 'Acesso removido';
+      adicionarCelula(linha, badge, 'Situação');
+
+      const acoes = document.createElement('div');
+      acoes.className = 'acoes';
+      const unicoDono = membro.ativo && membro.papel === 'dono' && totalDonosAtivos <= 1;
+      if (membro.ativo && !unicoDono) {
+        const btnRem = document.createElement('button');
+        btnRem.type = 'button';
+        btnRem.className = 'botao botao-secundario danger';
+        btnRem.textContent = 'Remover acesso';
+        btnRem.addEventListener('click', () => {
+          membroEmRemocao = membro;
+          erroRemoverMembro.textContent = '';
+          textoRemoverMembro.textContent = `Remover o acesso de ${membro.nome_usuario ? `${membro.nome_usuario} (${membro.email})` : membro.email}?`;
+          dialogoRemoverMembro.showModal();
+          confirmarRemoverMembro.focus();
+        });
+        acoes.append(btnRem);
+      } else if (!membro.ativo) {
+        const btnReat = document.createElement('button');
+        btnReat.type = 'button';
+        btnReat.className = 'botao botao-secundario';
+        btnReat.textContent = 'Reativar acesso';
+        btnReat.addEventListener('click', async () => {
+          ocupado(btnReat, true);
+          try {
+            await api.vincularMembro({
+              p_restaurante_id: restaurante.id,
+              p_identificador: membro.email || membro.nome_usuario,
+              p_papel: membro.papel,
+            });
+            feedbackEquipe.textContent = 'Acesso reativado.';
+            await carregarEquipePainel();
+          } catch (erro) {
+            feedbackEquipe.textContent = erro.message || 'Não foi possível reativar o acesso.';
+          } finally {
+            ocupado(btnReat, false);
+          }
+        });
+        acoes.append(btnReat);
+      } else {
+        const nota = document.createElement('small');
+        nota.textContent = 'Dono principal ativo';
+        acoes.append(nota);
+      }
+      adicionarCelula(linha, acoes);
+      return linha;
+    }));
+    tabelaEquipePainel.hidden = membros.length === 0;
+    mensagemEquipeLista.textContent = membros.length === 0 ? 'Nenhuma pessoa vinculada a este restaurante.' : '';
+  } catch (erro) {
+    tabelaEquipePainel.hidden = true;
+    mensagemEquipeLista.classList.add('erro');
+    mensagemEquipeLista.textContent = erro.message || 'Não foi possível carregar a equipe.';
+  }
+}
+
+formEquipePainel?.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const botao = formEquipePainel.querySelector('[type="submit"]');
+  if (!restaurante || !ehDonoAtual || botao.disabled) return;
+  const dados = Object.fromEntries(new FormData(formEquipePainel));
+  const identificador = String(dados.identificador ?? '').trim();
+  if (identificador.length < 3) {
+    erroEquipePainel.textContent = 'Informe o usuário ou e-mail da conta cadastrada.';
+    return;
+  }
+  erroEquipePainel.textContent = '';
+  feedbackEquipe.textContent = '';
+  ocupado(botao, true);
+  try {
+    const vinculado = await api.vincularMembro({
+      p_restaurante_id: restaurante.id,
+      p_identificador: identificador,
+      p_papel: dados.papel || 'funcionario',
+    });
+    formEquipePainel.reset();
+    feedbackEquipe.textContent = `Acesso liberado para ${vinculado?.nome_usuario || vinculado?.email || identificador}.`;
+    await carregarEquipePainel();
+  } catch (erro) {
+    erroEquipePainel.textContent = erro.message || 'Não foi possível liberar o acesso.';
+  } finally {
+    ocupado(botao, false);
+  }
+});
+
+cancelarRemoverMembro?.addEventListener('click', () => dialogoRemoverMembro.close());
+confirmarRemoverMembro?.addEventListener('click', async () => {
+  if (!restaurante || !membroEmRemocao || confirmarRemoverMembro.disabled) return;
+  erroRemoverMembro.textContent = '';
+  ocupado(confirmarRemoverMembro, true);
+  try {
+    await api.removerMembro({ p_restaurante_id: restaurante.id, p_usuario_id: membroEmRemocao.usuario_id });
+    feedbackEquipe.textContent = 'Acesso removido imediatamente.';
+    dialogoRemoverMembro.close();
+    membroEmRemocao = null;
+    await carregarEquipePainel();
+  } catch (erro) {
+    erroRemoverMembro.textContent = erro.message || 'Não foi possível remover o acesso.';
+  } finally {
+    ocupado(confirmarRemoverMembro, false);
+  }
+});
+
+// ---------- MÓDULO FORNECEDORES INTEGRADO (DONO GERENCIA · FUNCIONÁRIO CONSULTA) ----------
+function abrirFormularioFornecedor(fornecedor = null) {
+  if (!ehDonoAtual) return;
+  formFornecedor.reset();
+  erroFornecedor.textContent = '';
+  formFornecedor.elements.id.value = fornecedor?.id ?? '';
+  formFornecedor.elements.nome.value = fornecedor?.nome ?? '';
+  formFornecedor.elements.categoria.value = fornecedor?.categoria ?? '';
+  formFornecedor.elements.contato.value = fornecedor?.contato ?? '';
+  formFornecedor.elements.email.value = fornecedor?.email ?? '';
+  formFornecedor.elements.observacoes.value = fornecedor?.observacoes ?? '';
+  tituloFormFornecedor.textContent = fornecedor ? 'Editar fornecedor' : 'Novo fornecedor';
+  painelFornecedor.hidden = false;
+  formFornecedor.elements.nome.focus();
+}
+
+abrirFornecedor?.addEventListener('click', () => abrirFormularioFornecedor(null));
+cancelarFornecedor?.addEventListener('click', () => {
+  formFornecedor.reset();
+  erroFornecedor.textContent = '';
+  painelFornecedor.hidden = true;
+});
+
+async function carregarFornecedoresPainel() {
+  if (!restaurante) return;
+  mensagemFornecedores.textContent = 'Carregando fornecedores…';
+  mensagemFornecedores.classList.remove('erro');
+  try {
+    const lista = await api.fornecedores(restaurante.id);
+    corpoFornecedores.replaceChildren(...lista.map((item) => {
+      const linha = document.createElement('tr');
+      linha.setAttribute('role', 'row');
+      const celNome = adicionarCelula(linha, item.nome);
+      if (item.observacoes) {
+        const obs = document.createElement('small');
+        obs.textContent = item.observacoes;
+        celNome.append(obs);
+      }
+      adicionarCelula(linha, item.categoria || '—', 'Categoria');
+      const celContato = adicionarCelula(linha, item.contato || item.email || '—', 'Contato');
+      if (item.contato && item.email) {
+        const mail = document.createElement('small');
+        mail.textContent = item.email;
+        celContato.append(mail);
+      }
+      const badge = document.createElement('span');
+      badge.className = 'estado';
+      badge.dataset.situacao = item.ativo ? 'em_dia' : 'vencido';
+      badge.textContent = item.ativo ? 'Ativo' : 'Inativo';
+      adicionarCelula(linha, badge, 'Situação');
+
+      if (ehDonoAtual) {
+        const acoes = document.createElement('div');
+        acoes.className = 'acoes';
+        const btnEditar = document.createElement('button');
+        btnEditar.type = 'button';
+        btnEditar.className = 'botao botao-secundario';
+        btnEditar.textContent = 'Editar';
+        btnEditar.addEventListener('click', () => abrirFormularioFornecedor(item));
+        const btnStatus = document.createElement('button');
+        btnStatus.type = 'button';
+        btnStatus.className = item.ativo ? 'botao botao-secundario danger' : 'botao botao-secundario';
+        btnStatus.textContent = item.ativo ? 'Desativar' : 'Reativar';
+        btnStatus.addEventListener('click', async () => {
+          ocupado(btnStatus, true);
+          try {
+            await api.alterarStatusFornecedor({
+              p_restaurante_id: restaurante.id,
+              p_fornecedor_id: item.id,
+              p_ativo: !item.ativo,
+            });
+            feedbackFornecedores.textContent = item.ativo ? 'Fornecedor desativado.' : 'Fornecedor reativado.';
+            await carregarFornecedoresPainel();
+          } catch (erro) {
+            feedbackFornecedores.textContent = erro.message || 'Não foi possível atualizar o fornecedor.';
+          } finally {
+            ocupado(btnStatus, false);
+          }
+        });
+        acoes.append(btnEditar, btnStatus);
+        adicionarCelula(linha, acoes);
+      }
+      return linha;
+    }));
+    tabelaFornecedores.hidden = lista.length === 0;
+    mensagemFornecedores.textContent = lista.length === 0
+      ? (ehDonoAtual ? 'Nenhum fornecedor cadastrado. Use “Novo fornecedor” para começar.' : 'Nenhum fornecedor ativo cadastrado pelo restaurante.')
+      : '';
+  } catch (erro) {
+    tabelaFornecedores.hidden = true;
+    mensagemFornecedores.classList.add('erro');
+    mensagemFornecedores.textContent = erro.message || 'Não foi possível carregar os fornecedores.';
+  }
+}
+
+formFornecedor?.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const botao = formFornecedor.querySelector('[type="submit"]');
+  if (!restaurante || !ehDonoAtual || botao.disabled) return;
+  const dados = Object.fromEntries(new FormData(formFornecedor));
+  const nome = String(dados.nome ?? '').trim();
+  if (!nome) {
+    erroFornecedor.textContent = 'Informe o nome do fornecedor.';
+    formFornecedor.elements.nome.focus();
+    return;
+  }
+  erroFornecedor.textContent = '';
+  feedbackFornecedores.textContent = '';
+  ocupado(botao, true);
+  try {
+    await api.salvarFornecedor({
+      p_restaurante_id: restaurante.id,
+      p_fornecedor_id: dados.id || null,
+      p_nome: nome,
+      p_categoria: dados.categoria || null,
+      p_contato: dados.contato || null,
+      p_email: dados.email || null,
+      p_observacoes: dados.observacoes || null,
+    });
+    formFornecedor.reset();
+    painelFornecedor.hidden = true;
+    feedbackFornecedores.textContent = dados.id ? 'Fornecedor atualizado.' : 'Fornecedor cadastrado.';
+    await carregarFornecedoresPainel();
+  } catch (erro) {
+    erroFornecedor.textContent = erro.message || 'Não foi possível salvar o fornecedor.';
+  } finally {
+    ocupado(botao, false);
+  }
+});
 
 // Alterna visibilidade da senha na tela direta /estoque/ com o botão compacto de olho.
 alternarSenhaEntrada?.addEventListener('click', () => {
@@ -673,7 +1026,17 @@ sairTodosDispositivos?.addEventListener('click', () => encerrarSessao(sairTodosD
 
 abrirCadastro.addEventListener('click', () => {
   feedback.textContent = '';
-  definirCadastro(true);
+  definirCadastro(true, 'manual');
+});
+abrirVision?.addEventListener('click', () => {
+  feedback.textContent = '';
+  definirCadastro(true, 'vision');
+});
+modoVision?.addEventListener('click', () => definirModoCadastro('vision'));
+modoManual?.addEventListener('click', () => definirModoCadastro('manual'));
+exemploVision?.addEventListener('click', () => {
+  descricaoLote.value = 'Creme de leite, lote A12, 2 caixas, validade 30/11/2026, freezer';
+  preencherComAssistente();
 });
 porId('cancelar-cadastro').addEventListener('click', () => {
   formLote.reset();
@@ -773,7 +1136,7 @@ formLote.addEventListener('submit', async (evento) => {
 
 function preencherComAssistente() {
   if (!descricaoLote.value.trim()) {
-    statusAssistente.textContent = 'Descreva o lote para receber sugestões.';
+    statusAssistente.textContent = 'Descreva o lote para o Vision preencher os campos.';
     descricaoLote.focus();
     return;
   }
@@ -792,15 +1155,15 @@ function preencherComAssistente() {
       campo.classList.add('sugestao');
     }
     if (!sugestao.validade) {
-      statusAssistente.textContent = 'Informe uma data completa e válida antes de salvar.';
+      statusAssistente.textContent = 'Vision: informe uma data completa e válida antes de salvar.';
       campos.validade.focus();
     } else {
-      statusAssistente.textContent = 'Confira os campos sugeridos, complete os dados e clique em Salvar lote.';
+      statusAssistente.textContent = 'Vision preencheu os campos destacados. Confira os dados e clique em Salvar lote.';
       const faltante = [campos.insumo, campos.quantidade].find((campo) => !campo.value);
       (faltante ?? campos.insumo).focus();
     }
   } catch {
-    statusAssistente.textContent = 'Não foi possível interpretar a descrição. Preencha os campos manualmente.';
+    statusAssistente.textContent = 'O Vision não conseguiu interpretar essa descrição. Preencha os campos manualmente.';
   }
 }
 
@@ -810,34 +1173,35 @@ formLote.addEventListener('input', (evento) => {
   duplicadoConfirmado = null;
 });
 
-// Quando disponível, o navegador transforma a fala em texto para a mesma etapa de conferência.
+// Quando disponível, o navegador transforma a fala em texto para o assistente Vision conferir.
 const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
 const ditar = porId('ditar-lote');
-if (Reconhecimento) {
-  ditar.hidden = false;
-  porId('aviso-ditado').hidden = false;
-  ditar.addEventListener('click', () => {
-    try {
-      const reconhecimento = new Reconhecimento();
-      reconhecimento.lang = 'pt-BR';
-      reconhecimento.onresult = (evento) => {
-        if (porId('painel-cadastro').hidden) return;
-        descricaoLote.value = evento.results[0][0].transcript.slice(0, 600);
-        preencherComAssistente();
-      };
-      reconhecimento.onerror = () => {
-        statusAssistente.textContent = 'Ditado indisponível. Você pode digitar ou preencher os campos manualmente.';
-      };
-      reconhecimento.onend = () => ocupado(ditar, false);
-      reconhecimento.start();
-      ocupado(ditar, true);
-      statusAssistente.textContent = 'Ouvindo…';
-    } catch {
-      ocupado(ditar, false);
-      statusAssistente.textContent = 'Ditado indisponível. Você pode digitar a descrição.';
-    }
-  });
-}
+ditar?.addEventListener('click', () => {
+  if (!Reconhecimento) {
+    statusAssistente.textContent = 'Seu navegador não suporta ditado por voz. Digite a descrição acima para o Vision preencher.';
+    descricaoLote.focus();
+    return;
+  }
+  try {
+    const reconhecimento = new Reconhecimento();
+    reconhecimento.lang = 'pt-BR';
+    reconhecimento.onresult = (evento) => {
+      if (porId('painel-cadastro').hidden) return;
+      descricaoLote.value = evento.results[0][0].transcript.slice(0, 600);
+      preencherComAssistente();
+    };
+    reconhecimento.onerror = () => {
+      statusAssistente.textContent = 'Ditado indisponível agora. Digite a descrição para o Vision ou preencha manualmente.';
+    };
+    reconhecimento.onend = () => ocupado(ditar, false);
+    reconhecimento.start();
+    ocupado(ditar, true);
+    statusAssistente.textContent = 'Vision ouvindo… fale o insumo, quantidade e validade.';
+  } catch {
+    ocupado(ditar, false);
+    statusAssistente.textContent = 'Ditado indisponível. Você pode digitar a descrição para o Vision.';
+  }
+});
 
 if (api.modoLocal) {
   porId('ambiente-local').hidden = false;

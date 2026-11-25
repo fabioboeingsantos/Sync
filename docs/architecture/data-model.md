@@ -111,3 +111,4 @@ erDiagram
 - `20261124001000` / `20261124001100`: `public.email_cadastrado` (verificação prévia na recuperação de senha, restrita a `service_role`).
 - `20261124001200`: backfill e autoprovisionamento de `public.nomes_usuario` para contas criadas direto no Auth.
 - `20261124001300`: RPCs de gestão de equipe (`listar_equipe_restaurante`, `vincular_membro_restaurante`, `remover_membro_restaurante`).
+- `20261124001400`: tabela `public.fornecedores` com RLS e RPCs (`listar_fornecedores_restaurante`, `salvar_fornecedor_restaurante`, `alterar_status_fornecedor`).

@@ -406,3 +406,39 @@ paths:
         "403": { description: Acesso restrito ao dono ativo }
         "404": { description: Membro não encontrado neste restaurante (PT404) }
         "409": { description: Tentativa de remover o único dono ativo (PT409) }
+
+  /api/fornecedores:
+    get:
+      summary: Listar fornecedores do restaurante (dono vê todos; funcionário vê apenas ativos)
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: restaurante
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Lista de fornecedores }
+        "401": { description: Sessão necessária }
+        "403": { description: Sem vínculo ativo com o restaurante }
+
+  /api/fornecedores/salvar:
+    post:
+      summary: Criar ou atualizar fornecedor do restaurante (exclusivo para dono ativo)
+      security:
+        - sessionCookie: []
+      responses:
+        "200": { description: Fornecedor salvo }
+        "400": { description: Dados inválidos }
+        "403": { description: Acesso restrito ao dono ativo }
+        "404": { description: Fornecedor não encontrado para edição }
+
+  /api/fornecedores/status:
+    post:
+      summary: Ativar ou desativar fornecedor do restaurante (exclusivo para dono ativo)
+      security:
+        - sessionCookie: []
+      responses:
+        "200": { description: Novo status do fornecedor }
+        "403": { description: Acesso restrito ao dono ativo }
+        "404": { description: Fornecedor não encontrado }

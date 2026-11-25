@@ -121,83 +121,211 @@
     </dialog>
 
     <section id="aplicacao" aria-labelledby="titulo-estoque" hidden>
-      <div class="cabecalho-estoque">
-        <div>
+      <!-- Cabeçalho do restaurante e navegação administrativa por perfil (Dono: Estoque, Equipe, Fornecedores; Funcionário: Estoque, Fornecedores). -->
+      <div class="painel-admin-topo">
+        <div class="identidade-restaurante">
           <p class="restaurante" id="restaurante"></p>
-          <h1 id="titulo-estoque" tabindex="-1">Estoque</h1>
+          <span class="perfil-badge" id="perfil-badge" hidden></span>
         </div>
-        <button class="botao botao-primario" id="abrir-cadastro" type="button" aria-expanded="false" aria-controls="painel-cadastro">Cadastrar lote</button>
+        <nav class="nav-modulos" id="nav-modulos" aria-label="Administração do restaurante">
+          <button type="button" class="botao botao-secundario" id="aba-estoque" data-modulo="estoque" aria-pressed="true">Estoque</button>
+          <button type="button" class="botao botao-secundario" id="aba-equipe" data-modulo="equipe" aria-pressed="false" hidden>Equipe</button>
+          <button type="button" class="botao botao-secundario" id="aba-fornecedores" data-modulo="fornecedores" aria-pressed="false">Fornecedores</button>
+        </nav>
       </div>
 
-      <!-- As mensagens de status anunciam o resultado sem exigir que a pessoa mude de foco. -->
-      <p class="mensagem" id="feedback" role="status"></p>
-      <section class="painel painel-cadastro" id="painel-cadastro" aria-labelledby="titulo-cadastro" hidden>
-        <h2 id="titulo-cadastro">Novo lote</h2>
-        <!-- O assistente só preenche o formulário. A gravação continua no botão Salvar lote. -->
-        <details class="assistente" id="assistente-lote">
-          <summary>Preencher com assistente</summary>
-          <div class="formulario">
-            <label>Descrição do lote
-              <textarea id="descricao-lote" rows="3" maxlength="600" placeholder="Creme de leite, lote A12, 2 caixas, validade 19/11/2026, freezer"></textarea>
-            </label>
-            <div class="acoes">
-              <button class="botao botao-secundario" type="button" id="sugerir-lote">Preencher campos</button>
-              <button class="botao botao-secundario" type="button" id="ditar-lote" aria-describedby="aviso-ditado" hidden>Ditar texto</button>
-            </div>
-            <p id="aviso-ditado" hidden>O reconhecimento de voz pode usar o serviço do navegador.</p>
-            <p class="mensagem" id="status-assistente" role="status"></p>
+      <!-- MÓDULO 1: ESTOQUE + ASSISTENTE VISION -->
+      <div id="modulo-estoque">
+        <div class="cabecalho-estoque">
+          <div>
+            <h1 id="titulo-estoque" tabindex="-1">Estoque</h1>
+            <p class="subtitulo-modulo">Lotes ordenados por vencimento (PVPS). Cadastre manualmente ou com o assistente <strong>Vision</strong>.</p>
           </div>
-        </details>
-        <form id="form-lote" class="formulario">
-          <div class="grade-formulario">
-            <label>Insumo <input name="insumo" maxlength="120" required></label>
-            <label>Código do fabricante <span>(opcional)</span> <input name="codigo" maxlength="80"></label>
-            <!-- O teclado decimal atende quilos e litros. O JavaScript valida a quantidade conforme a medida. -->
-            <label>Quantidade <input name="quantidade" inputmode="decimal" required></label>
-            <label>Medida
-              <select name="medida">
-                <option value="un">Unidade</option><option value="kg">Quilo (kg)</option><option value="L">Litro (L)</option>
-              </select>
-            </label>
-            <label>Validade <input name="validade" type="date" required></label>
-            <label>Local de armazenamento <span>(opcional)</span> <input name="local" maxlength="120"></label>
-          </div>
-          <p id="erro-cadastro" class="mensagem erro" role="alert"></p>
           <div class="acoes">
-            <button type="submit" class="botao botao-primario">Salvar lote</button>
-            <button type="button" class="botao botao-secundario" id="cancelar-cadastro">Cancelar</button>
+            <button class="botao botao-primario" id="abrir-vision" type="button" aria-expanded="false" aria-controls="painel-cadastro">Cadastrar com Vision</button>
+            <button class="botao botao-secundario" id="abrir-cadastro" type="button" aria-expanded="false" aria-controls="painel-cadastro">Cadastrar manual</button>
           </div>
-        </form>
-      </section>
+        </div>
 
-      <section class="painel painel-lista" aria-labelledby="titulo-lista">
-        <h2 id="titulo-lista" tabindex="-1">Lotes por validade</h2>
-        <div class="barra-filtros-estoque" id="barra-filtros-estoque" hidden>
-          <div class="filtros-estoque" id="filtros-estoque" role="group" aria-label="Filtrar lotes por validade">
-            <button type="button" class="botao botao-secundario" data-filtro-estoque="todos" aria-pressed="true">Todos</button>
-            <button type="button" class="botao botao-secundario" data-filtro-estoque="vencido" aria-pressed="false">Vencido</button>
-            <button type="button" class="botao botao-secundario" data-filtro-estoque="hoje" aria-pressed="false">Vence hoje</button>
-            <button type="button" class="botao botao-secundario" data-filtro-estoque="breve" aria-pressed="false">Vence em breve</button>
-            <button type="button" class="botao botao-secundario" data-filtro-estoque="em_dia" aria-pressed="false">Dentro do prazo</button>
+        <!-- As mensagens de status anunciam o resultado sem exigir que a pessoa mude de foco. -->
+        <p class="mensagem" id="feedback" role="status"></p>
+        <section class="painel painel-cadastro" id="painel-cadastro" aria-labelledby="titulo-cadastro" hidden>
+          <div class="cabecalho-cadastro">
+            <h2 id="titulo-cadastro">Novo lote</h2>
+            <div class="modo-cadastro-tabs" role="group" aria-label="Modo de cadastro">
+              <button type="button" class="botao botao-secundario" id="modo-vision" aria-pressed="false">Assistente Vision</button>
+              <button type="button" class="botao botao-secundario" id="modo-manual" aria-pressed="true">Manual</button>
+            </div>
           </div>
-          <p class="contagem-estoque" id="contagem-estoque" role="status"></p>
+
+          <!-- O assistente Vision interpreta texto ou voz e preenche o formulário para conferência antes de salvar. -->
+          <div class="bloco-vision" id="assistente-lote" hidden>
+            <div class="vision-cabecalho">
+              <span class="vision-badge">Vision</span>
+              <div>
+                <h3>Assistente Vision · Texto ou voz</h3>
+                <p>Descreva o insumo como na rotina da cozinha. O <strong>Vision</strong> preenche os campos abaixo para você conferir e salvar.</p>
+              </div>
+            </div>
+            <div class="formulario">
+              <label>Descreva o lote para o Vision
+                <textarea id="descricao-lote" rows="3" maxlength="600" placeholder="Ex.: Creme de leite, lote A12, 2 caixas, validade 30/11/2026, freezer"></textarea>
+              </label>
+              <div class="acoes">
+                <button class="botao botao-primario" type="button" id="sugerir-lote">Preencher com Vision</button>
+                <button class="botao botao-secundario" type="button" id="ditar-lote" aria-describedby="aviso-ditado">Ditar para o Vision</button>
+                <button class="botao botao-secundario" type="button" id="exemplo-vision">Usar exemplo</button>
+              </div>
+              <p id="aviso-ditado" class="aviso-vision">O ditado usa o microfone do aparelho e pode envolver o serviço de voz do navegador. Você também pode digitar.</p>
+              <p class="mensagem" id="status-assistente" role="status"></p>
+            </div>
+          </div>
+
+          <form id="form-lote" class="formulario">
+            <div class="grade-formulario">
+              <label>Insumo <input name="insumo" maxlength="120" required></label>
+              <label>Código do fabricante <span>(opcional)</span> <input name="codigo" maxlength="80"></label>
+              <!-- O teclado decimal atende quilos e litros. O JavaScript valida a quantidade conforme a medida. -->
+              <label>Quantidade <input name="quantidade" inputmode="decimal" required></label>
+              <label>Medida
+                <select name="medida">
+                  <option value="un">Unidade</option><option value="kg">Quilo (kg)</option><option value="L">Litro (L)</option>
+                </select>
+              </label>
+              <label>Validade <input name="validade" type="date" required></label>
+              <label>Local de armazenamento <span>(opcional)</span> <input name="local" maxlength="120"></label>
+            </div>
+            <p id="erro-cadastro" class="mensagem erro" role="alert"></p>
+            <div class="acoes">
+              <button type="submit" class="botao botao-primario">Salvar lote</button>
+              <button type="button" class="botao botao-secundario" id="cancelar-cadastro">Cancelar</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="painel painel-lista" aria-labelledby="titulo-lista">
+          <h2 id="titulo-lista" tabindex="-1">Lotes por validade</h2>
+          <div class="barra-filtros-estoque" id="barra-filtros-estoque" hidden>
+            <div class="filtros-estoque" id="filtros-estoque" role="group" aria-label="Filtrar lotes por validade">
+              <button type="button" class="botao botao-secundario" data-filtro-estoque="todos" aria-pressed="true">Todos</button>
+              <button type="button" class="botao botao-secundario" data-filtro-estoque="vencido" aria-pressed="false">Vencido</button>
+              <button type="button" class="botao botao-secundario" data-filtro-estoque="hoje" aria-pressed="false">Vence hoje</button>
+              <button type="button" class="botao botao-secundario" data-filtro-estoque="breve" aria-pressed="false">Vence em breve</button>
+              <button type="button" class="botao botao-secundario" data-filtro-estoque="em_dia" aria-pressed="false">Dentro do prazo</button>
+            </div>
+            <p class="contagem-estoque" id="contagem-estoque" role="status"></p>
+          </div>
+          <p id="mensagem-lista" class="mensagem" role="status"></p>
+          <button type="button" class="botao botao-secundario" id="recarregar" hidden>Tentar novamente</button>
+          <div id="tabela-estoque" hidden>
+            <!-- Os papéis mantêm a semântica de tabela quando o CSS empilha os lotes no celular. -->
+            <table role="table" aria-labelledby="titulo-lista">
+              <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Insumo</th><th role="columnheader" scope="col">Saldo</th><th role="columnheader" scope="col">Validade</th><th role="columnheader" scope="col">Situação</th><th role="columnheader" scope="col">Ações</th></tr></thead>
+              <tbody id="lotes" role="rowgroup"></tbody>
+            </table>
+          </div>
+        </section>
+        <!-- A visão do dono registra perdas pelo motivo informado na baixa. -->
+        <section class="painel painel-lista historico" id="painel-descartes" aria-labelledby="titulo-descartes" hidden>
+          <h2 id="titulo-descartes">Descartes recentes</h2>
+          <p id="mensagem-descartes" role="status"></p>
+          <ul id="historico-descartes"></ul>
+        </section>
+      </div>
+
+      <!-- MÓDULO 2: EQUIPE (EXCLUSIVO PARA DONO, INTEGRADO NA CONTA) -->
+      <div id="modulo-equipe" hidden>
+        <div class="cabecalho-estoque">
+          <div>
+            <h1 id="titulo-equipe-painel" tabindex="-1">Equipe</h1>
+            <p class="subtitulo-modulo">Libere acesso para pessoas já cadastradas e revogue vínculos imediatamente.</p>
+          </div>
+          <a class="botao botao-secundario" href="../equipe/">Abrir página dedicada</a>
         </div>
-        <p id="mensagem-lista" class="mensagem" role="status"></p>
-        <button type="button" class="botao botao-secundario" id="recarregar" hidden>Tentar novamente</button>
-        <div id="tabela-estoque" hidden>
-          <!-- Os papéis mantêm a semântica de tabela quando o CSS empilha os lotes no celular. -->
-          <table role="table" aria-labelledby="titulo-lista">
-            <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Insumo</th><th role="columnheader" scope="col">Saldo</th><th role="columnheader" scope="col">Validade</th><th role="columnheader" scope="col">Situação</th><th role="columnheader" scope="col">Ações</th></tr></thead>
-            <tbody id="lotes" role="rowgroup"></tbody>
-          </table>
+        <p class="mensagem" id="feedback-equipe" role="status"></p>
+        <section class="painel painel-cadastro" aria-labelledby="titulo-vincular-painel">
+          <h2 id="titulo-vincular-painel">Liberar acesso ao restaurante</h2>
+          <form id="form-equipe-painel" class="formulario">
+            <div class="grade-formulario">
+              <label>Usuário ou e-mail
+                <input name="identificador" type="text" maxlength="254" placeholder="ex.: cozinha.maria ou maria@exemplo.com" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+              </label>
+              <label>Perfil de acesso
+                <select name="papel">
+                  <option value="funcionario">Funcionário (estoque e consulta de fornecedores)</option>
+                  <option value="dono">Dono (estoque, equipe e fornecedores)</option>
+                </select>
+              </label>
+            </div>
+            <p id="erro-equipe-painel" class="mensagem erro" role="alert"></p>
+            <div class="acoes">
+              <button type="submit" class="botao botao-primario">Liberar acesso</button>
+            </div>
+          </form>
+        </section>
+        <section class="painel painel-lista" aria-labelledby="titulo-lista-equipe">
+          <h2 id="titulo-lista-equipe">Membros do restaurante</h2>
+          <p id="mensagem-equipe-lista" class="mensagem" role="status"></p>
+          <div id="tabela-equipe-painel" hidden>
+            <table role="table" aria-labelledby="titulo-lista-equipe">
+              <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Pessoa</th><th role="columnheader" scope="col">Perfil</th><th role="columnheader" scope="col">Situação</th><th role="columnheader" scope="col">Ações</th></tr></thead>
+              <tbody id="corpo-equipe-painel" role="rowgroup"></tbody>
+            </table>
+          </div>
+        </section>
+        <dialog id="dialogo-remover-membro" class="painel dialogo-validade" aria-labelledby="titulo-remover-membro">
+          <h2 id="titulo-remover-membro">Remover acesso ao estoque</h2>
+          <p id="texto-remover-membro" style="margin-top: .75rem;"></p>
+          <p class="aviso-vision" style="margin-top: .5rem;">A revogação vale imediatamente: mesmo com a sessão aberta, a pessoa perde acesso ao restaurante.</p>
+          <p id="erro-remover-membro" class="mensagem erro" role="alert"></p>
+          <div class="acoes" style="margin-top: 1rem;">
+            <button type="button" class="botao botao-secundario danger" id="confirmar-remover-membro">Confirmar remoção</button>
+            <button type="button" class="botao botao-secundario" id="cancelar-remover-membro">Cancelar</button>
+          </div>
+        </dialog>
+      </div>
+
+      <!-- MÓDULO 3: FORNECEDORES (DONO GERENCIA · FUNCIONÁRIO CONSULTA ATIVOS) -->
+      <div id="modulo-fornecedores" hidden>
+        <div class="cabecalho-estoque">
+          <div>
+            <h1 id="titulo-fornecedores" tabindex="-1">Fornecedores</h1>
+            <p class="subtitulo-modulo" id="subtitulo-fornecedores">Contatos e categorias dos fornecedores do restaurante.</p>
+          </div>
+          <button class="botao botao-primario" id="abrir-fornecedor" type="button" hidden>Novo fornecedor</button>
         </div>
-      </section>
-      <!-- A visão do dono registra perdas pelo motivo informado na baixa. -->
-      <section class="painel painel-lista historico" id="painel-descartes" aria-labelledby="titulo-descartes" hidden>
-        <h2 id="titulo-descartes">Descartes recentes</h2>
-        <p id="mensagem-descartes" role="status"></p>
-        <ul id="historico-descartes"></ul>
-      </section>
+        <p class="mensagem" id="feedback-fornecedores" role="status"></p>
+        <section class="painel painel-cadastro" id="painel-fornecedor" aria-labelledby="titulo-form-fornecedor" hidden>
+          <h2 id="titulo-form-fornecedor">Novo fornecedor</h2>
+          <form id="form-fornecedor" class="formulario">
+            <input type="hidden" name="id" value="">
+            <div class="grade-formulario">
+              <label>Nome do fornecedor <input name="nome" maxlength="120" placeholder="Ex.: Laticínios do Vale" required></label>
+              <label>Categoria / insumos <span>(opcional)</span> <input name="categoria" maxlength="80" placeholder="Ex.: Laticínios e frios"></label>
+              <label>Telefone ou WhatsApp <span>(opcional)</span> <input name="contato" maxlength="120" placeholder="Ex.: (47) 99999-0000"></label>
+              <label>E-mail <span>(opcional)</span> <input name="email" type="email" maxlength="254" placeholder="Ex.: pedidos@fornecedor.com"></label>
+            </div>
+            <label>Observações <span>(opcional)</span>
+              <textarea name="observacoes" rows="2" maxlength="400" placeholder="Ex.: Entregas às segundas e quintas pela manhã"></textarea>
+            </label>
+            <p id="erro-fornecedor" class="mensagem erro" role="alert"></p>
+            <div class="acoes">
+              <button type="submit" class="botao botao-primario">Salvar fornecedor</button>
+              <button type="button" class="botao botao-secundario" id="cancelar-fornecedor">Cancelar</button>
+            </div>
+          </form>
+        </section>
+        <section class="painel painel-lista" aria-labelledby="titulo-lista-fornecedores">
+          <h2 id="titulo-lista-fornecedores">Lista de fornecedores</h2>
+          <p id="mensagem-fornecedores" class="mensagem" role="status"></p>
+          <div id="tabela-fornecedores" hidden>
+            <table role="table" aria-labelledby="titulo-lista-fornecedores">
+              <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Fornecedor</th><th role="columnheader" scope="col">Categoria</th><th role="columnheader" scope="col">Contato</th><th role="columnheader" scope="col">Situação</th><th role="columnheader" scope="col" id="col-acoes-fornecedores">Ações</th></tr></thead>
+              <tbody id="corpo-fornecedores" role="rowgroup"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
       <dialog id="dialogo-saida" class="painel dialogo-validade" aria-labelledby="titulo-saida">
         <h2 id="titulo-saida">Registrar saída</h2>
         <p id="lote-em-saida"></p>

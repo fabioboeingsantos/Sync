@@ -289,3 +289,35 @@ export async function removerMembro(tx, dados) {
   return { removido: Boolean(registro.removido) };
 }
 
+// Consulta fornecedores do restaurante respeitando perfil (dono vê todos; funcionário apenas ativos).
+export async function listarFornecedores(tx, restaurante) {
+  const { rows } = await tx.query('select * from public.listar_fornecedores_restaurante($1)', [restaurante]);
+  return rows;
+}
+
+// Cria ou atualiza um fornecedor no restaurante (restrito ao dono ativo).
+export async function salvarFornecedor(tx, dados) {
+  const { rows: [registro] } = await tx.query(
+    'select public.salvar_fornecedor_restaurante($1, $2, $3, $4, $5, $6, $7) as fornecedor',
+    [
+      dados.p_restaurante_id,
+      dados.p_fornecedor_id ?? null,
+      dados.p_nome ?? null,
+      dados.p_categoria ?? null,
+      dados.p_contato ?? null,
+      dados.p_email ?? null,
+      dados.p_observacoes ?? null,
+    ],
+  );
+  return registro.fornecedor;
+}
+
+// Ativa ou desativa um fornecedor do restaurante (restrito ao dono ativo).
+export async function alterarStatusFornecedor(tx, dados) {
+  const { rows: [registro] } = await tx.query(
+    'select public.alterar_status_fornecedor($1, $2, $3) as ativo',
+    [dados.p_restaurante_id, dados.p_fornecedor_id, dados.p_ativo],
+  );
+  return { ativo: Boolean(registro.ativo) };
+}
+
