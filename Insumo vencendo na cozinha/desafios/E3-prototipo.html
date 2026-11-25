@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VisionChef · Protótipo E3</title>
+  <!-- O favicon usa o emblema da abertura do simulado. -->
+  <link rel="icon" type="image/png" sizes="128x128" href="../abertura/imagens/coruja-sync-icone.png">
+  <style>
+    /* Paleta Aço Inox e estados de validade para o teste em sala. */
+    :root {
+      --fonte-interface: Arial, sans-serif;
+      --cor-primaria: #0f4c5c;
+      --cor-fundo: #f4f6f7;
+      --cor-superficie: #ffffff;
+      --cor-texto: #182327;
+      --cor-secundaria: #2a7f8e;
+      --cor-alerta: #b3261e;
+      --cor-destaque: #a8d5dd;
+      --cor-foco: var(--cor-primaria);
+      --st-vencido-cor: #7e22ce;
+      --st-vencido-borda: rgba(126, 34, 206, 0.42);
+      --st-vencido-fundo: #faf5ff;
+      --st-vencido-badge-bg: #f3e8ff;
+      --st-vencido-badge-borda: #a855f7;
+      --st-vencido-badge-txt: #581c87;
+      --st-hoje-cor: #dc2626;
+      --st-hoje-borda: rgba(220, 38, 38, 0.62);
+      --st-hoje-fundo: #fef2f2;
+      --st-hoje-badge-bg: #dc2626;
+      --st-hoje-badge-borda: #b91c1c;
+      --st-hoje-badge-txt: #ffffff;
+      --st-hoje-glow: rgba(220, 38, 38, 0.34);
+      --st-breve-cor: #ea580c;
+      --st-breve-borda: rgba(234, 88, 12, 0.46);
+      --st-breve-fundo: #fff7ed;
+      --st-breve-badge-bg: #ffedd5;
+      --st-breve-badge-borda: #f97316;
+      --st-breve-badge-txt: #9a3412;
+      --st-prazo-cor: #0284c7;
+      --st-prazo-borda: rgba(2, 132, 199, 0.42);
+      --st-prazo-fundo: #f0f9ff;
+      --st-prazo-badge-bg: #e0f2fe;
+      --st-prazo-badge-borda: #38bdf8;
+      --st-prazo-badge-txt: #075985;
+      font: 100%/1.5 var(--fonte-interface);
+      color-scheme: light;
+      color: var(--cor-texto);
+      background: var(--cor-fundo);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--cor-foco);
+      outline-offset: 2px;
+    }
+
+    /* =========================================================================
+       ESTILOS GERAIS DO MVP MANUAL (E3)
+       - Paleta de alto contraste com fonte Arial para uso rápido no celular.
+       ========================================================================= */
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--cor-fundo); color: var(--cor-texto); }
+
+    header {
+      background: #0f4c5c;
+      color: #ffffff;
+    }
+    html[data-theme="dark"] header {
+      background: #081424;
+      border-bottom: 1px solid rgba(42, 127, 142, 0.4);
+    }
+    .topbar { max-width: 68rem; margin: auto; padding: .25rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: .25rem .5rem; flex-wrap: wrap; }
+    .product-brand { display: flex; align-items: center; gap: .5rem; }
+    .product-logo { display: block; width: 4.5rem; height: auto; border-radius: .3rem; }
+    /* Garante contraste do foco no cabeçalho escuro. */
+    .topbar { --btn-foco: #a8d5dd; }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 1rem; line-height: 1.5; }
+
+    main {
+      max-width: 68rem;
+      margin: 0 auto;
+      padding: 1.3rem 1rem 3rem;
+    }
+
+    /* Grade responsiva: 2 colunas no desktop e 1 coluna no celular */
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      align-items: start;
+    }
+
+    section {
+      background: var(--cor-superficie);
+      border: 1px solid var(--cor-secundaria);
+      border-radius: 1rem;
+      padding: 1rem;
+    }
+
+    h2 { font-size: 1rem; margin-bottom: .8rem; color: var(--cor-primaria); }
+    label { display: block; font-weight: 700; margin-top: .75rem; font-size: 1rem; }
+
+    input, textarea {
+      font: inherit;
+      border-radius: .5rem;
+      min-height: 2.75rem;
+    }
+
+    input, textarea {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--cor-secundaria);
+      padding: .45rem .65rem;
+      color: inherit;
+      background: var(--cor-superficie);
+      margin-top: .25rem;
+    }
+
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+
+    /* Os dois modos compartilham o formulário. A Vision ocupa um painel próprio. */
+    .mode-picker, .vision-panel { padding: .75rem; border: 1px solid var(--cor-secundaria); border-radius: .75rem; }
+    .mode-picker { margin: .75rem 0 0; min-width: 0; }
+    .mode-picker legend { padding-inline: .25rem; font-weight: 700; }
+    .mode-picker .actions { margin: 0; }
+    .vision-panel { margin-top: .75rem; background: var(--cor-fundo); }
+    .vision-panel h3 { font-size: 1rem; }
+    .vision-heading { display: flex; align-items: center; gap: .65rem; }
+    /* O avatar enquadra só o símbolo do logo original, que inclui o nome VisionChef na parte inferior. */
+    .vision-avatar { display: grid; place-items: center; flex: none; width: 3.5rem; height: 3.5rem; border: 1px solid var(--cor-destaque); border-radius: 50%; background: var(--cor-superficie); }
+    .vision-avatar-symbol { position: relative; display: block; width: 2.9rem; height: 2.13rem; overflow: hidden; }
+    .vision-avatar-symbol img { position: absolute; top: 0; left: 50%; width: 5.45rem; height: auto; transform: translateX(-50%); }
+    .vision-panel textarea { resize: vertical; }
+    /* A cápsula expande para a esquerda, como na demonstração do site. */
+    .vision-controls { align-items: center; }
+    .vision-controls .voice-pill { margin-inline-start: auto; }
+    /* Os atalhos de exemplo são controles compactos com o acabamento global Aço Inox. */
+    .vision-examples { margin-top: .75rem; }
+    .vision-example-buttons { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .3rem; }
+    .vision-example-buttons .botao { min-height: 36px; padding: 6px 10px; font-size: .875rem; }
+    #vision-status:not(:empty) { margin-top: .5rem; font-weight: 700; }
+    #vision-status[data-error="true"] { color: var(--cor-alerta); }
+
+    /* Resumo rápido para o cozinheiro e o dono */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .6rem;
+      margin: .9rem 0 1rem;
+    }
+
+    .metric {
+      background: var(--cor-fundo);
+      border-radius: .7rem;
+      padding: .65rem .75rem;
+      text-align: center;
+      border: 1px solid var(--cor-secundaria);
+    }
+
+    .metric strong { display: block; font-size: 1rem; line-height: 1.5; }
+    .metric span { font-size: 1rem; color: var(--cor-texto); }
+    .metric.alert { background: var(--st-hoje-fundo); border-color: var(--st-hoje-borda); color: var(--st-hoje-cor); }
+    .metric.warn { background: var(--st-breve-fundo); border-color: var(--st-breve-borda); color: var(--st-breve-cor); }
+
+    .stock-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem; }
+    #list-feedback { margin-top: .5rem; color: var(--cor-primaria); font-weight: 700; }
+    #list-feedback:empty { margin: 0; }
+    /* Mantém a orientação do teste perto da lista, inclusive no celular. */
+    #demo-note { margin-bottom: 1rem; padding: .8rem 1rem; border-radius: .75rem; background: var(--cor-destaque); }
+    #lot-simulation { margin-top: .4rem; }
+
+    /* Os cartões de estoque mantêm o tamanho quando sobra espaço na última fileira. */
+    .lot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: .75rem; margin: 0; padding: 0; list-style: none; }
+    #lots-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); gap: .5rem; align-items: start; }
+
+    li.lot-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: .45rem;
+      border: 1px solid var(--st-prazo-borda);
+      border-left: 4px solid var(--st-prazo-cor);
+      border-radius: .75rem;
+      padding: .5rem;
+      background: var(--st-prazo-fundo);
+      transition: border-color 240ms ease, background-color 240ms ease, box-shadow 240ms ease;
+    }
+
+    li.lot-card.status-expired { border-color: var(--st-vencido-borda); border-left-color: var(--st-vencido-cor); background: var(--st-vencido-fundo); }
+    li.lot-card.status-today { border-color: var(--st-hoje-borda); border-left-color: var(--st-hoje-cor); background: var(--st-hoje-fundo); animation: alerta-vence-hoje-card 1.15s ease-in-out infinite; }
+    li.lot-card.status-soon { border-color: var(--st-breve-borda); border-left-color: var(--st-breve-cor); background: var(--st-breve-fundo); }
+    li.lot-card.status-ok { border-color: var(--st-prazo-borda); border-left-color: var(--st-prazo-cor); background: var(--st-prazo-fundo); }
+
+    .lot-info { overflow-wrap: anywhere; }
+    .lot-name { display: block; font-size: 1rem; line-height: 1.25; margin-bottom: .25rem; }
+    .lot-meta { font-size: .875rem; color: var(--cor-texto); margin-top: .2rem; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .8rem;
+      font-weight: 700;
+      padding: .1rem .35rem;
+      border-radius: .45rem;
+      border: 1px solid transparent;
+      vertical-align: middle;
+    }
+    .badge::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; flex: none; background: currentColor; }
+
+    .badge-expired { background: var(--st-vencido-badge-bg); border-color: var(--st-vencido-badge-borda); color: var(--st-vencido-badge-txt); }
+    .badge-expired::before { background: var(--st-vencido-cor); }
+    .badge-today { background: var(--st-hoje-badge-bg); border-color: var(--st-hoje-badge-borda); color: var(--st-hoje-badge-txt); animation: alerta-vence-hoje-badge 1.15s ease-in-out infinite; }
+    .badge-today::before { background: #ffffff; animation: alerta-vence-hoje-ponto 1.15s ease-out infinite; }
+    .badge-soon { background: var(--st-breve-badge-bg); border-color: var(--st-breve-badge-borda); color: var(--st-breve-badge-txt); }
+    .badge-soon::before { background: var(--st-breve-cor); }
+    .badge-ok { background: var(--st-prazo-badge-bg); border-color: var(--st-prazo-badge-borda); color: var(--st-prazo-badge-txt); }
+    .badge-ok::before { background: var(--st-prazo-cor); }
+
+    @keyframes alerta-vence-hoje-card {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.45); box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0), 0 0 0 0 rgba(239, 68, 68, 0.18); }
+      50% { border-color: #ff4d4d; box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.25), 0 0 0 4px rgba(239, 68, 68, 0.42), 0 0 26px var(--st-hoje-glow); }
+    }
+    @keyframes alerta-vence-hoje-badge {
+      0%, 100% { filter: brightness(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65); }
+      50% { filter: brightness(1.22); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0), 0 0 18px rgba(239, 68, 68, 0.8); }
+    }
+    @keyframes alerta-vence-hoje-ponto {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9); }
+      70% { transform: scale(1.25); box-shadow: 0 0 0 7px rgba(255, 255, 255, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+
+    /* Recolhe as ações para reduzir a altura dos cartões e preserva o tamanho dos botões. */
+    .lot-menu summary { width: 100%; }
+    .lot-menu summary::-webkit-details-marker { display: none; }
+    .lot-actions { display: grid; gap: .35rem; margin-top: .35rem; }
+    .hint { color: var(--cor-texto); font-size: 1rem; margin-top: .7rem; }
+
+    #feedback { margin-top: .75rem; font-weight: 700; min-height: 1.4rem; }
+    #feedback[data-error="true"] { color: var(--cor-alerta); }
+    #feedback[data-error="false"] { color: var(--cor-primaria); }
+
+    .duplicate-warning {
+      margin-top: .55rem;
+      padding: .7rem .8rem;
+      border-radius: .65rem;
+      border: 1.5px solid var(--st-breve-cor);
+      border-left: 4px solid var(--st-breve-cor);
+      background: var(--st-breve-fundo);
+      color: var(--st-breve-badge-txt);
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .duplicate-warning p { font-size: .92rem; font-weight: 700; }
+    .duplicate-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+    li.lot-card.is-duplicate-highlight {
+      box-shadow: 0 0 0 3px var(--st-breve-cor), 0 0 22px rgba(249, 115, 22, 0.45);
+    }
+
+    /* O relatório é acessível a partir do estoque e continua visível quando está vazio. */
+    .stock-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .discard-report { margin-top: 1rem; padding-top: .8rem; border-top: 1px solid var(--cor-secundaria); }
+    .discard-report h3 { font-size: 1rem; margin: 0 0 .45rem; color: var(--cor-primaria); }
+    .discard-item { padding: .75rem; border: 1px solid var(--cor-secundaria); border-radius: .75rem; overflow-wrap: anywhere; }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 46rem) {
+      .grid { grid-template-columns: minmax(0, 1fr); }
+      .summary-bar { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+    }
+</style>
+  <link rel="stylesheet" href="../../css/botoes.css">
+  <link rel="stylesheet" href="../htmls/voice-pill.css">
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="product-brand">
+        <!-- A marca identifica o protótipo sem abrir outra página. -->
+        <img class="product-logo" src="../imagens/visionchef-logo.jpg" width="1356" height="759" alt="">
+        <h1>VisionChef · Protótipo E3</h1>
+      </div>
+      <button id="restart-demo" class="botao botao-secundario" type="button">Reiniciar cenário</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- As ações funcionam sobre os lotes fictícios da sessão de teste. -->
+    <p id="demo-note"><strong>Lotes fictícios.</strong> Os registros desta simulação são apagados ao reiniciar ou recarregar a página.</p>
+    <div class="grid">
+      <!-- COMPONENTE 1: Lista ordenada por validade (PVPS) + resumo para dono e cozinheiro -->
+      <section aria-labelledby="list-title">
+        <div class="stock-heading">
+          <h2 id="list-title" tabindex="-1">Validades do estoque</h2>
+          <div class="stock-actions">
+            <a class="botao botao-secundario" href="#item-name">Cadastrar lote</a>
+            <a class="botao botao-secundario" href="#discard-title">Ver relatório de desperdício</a>
+          </div>
+        </div>
+        <p>Mais urgentes primeiro: vencidos, vencem hoje, vencem em breve e dentro do prazo.</p>
+
+        <div class="summary-bar" aria-live="polite">
+          <div class="metric alert">
+            <strong id="count-urgent">0</strong>
+            <span>Vencidos ou hoje</span>
+          </div>
+          <div class="metric warn">
+            <strong id="count-soon">0</strong>
+            <span>Vencem em até 3 dias</span>
+          </div>
+        </div>
+
+        <p id="list-feedback" role="status"></p>
+        <p id="empty-msg" class="hint">Nenhum lote ativo cadastrado. Use “Cadastrar lote” para começar.</p>
+        <ol id="lots-list" class="lot-grid" role="list" aria-label="Lotes por prioridade de vencimento"></ol>
+
+        <!-- O dono acompanha o acumulado do mês a cada descarte registrado. -->
+        <div class="discard-report" role="region" aria-labelledby="discard-title">
+          <h3 id="discard-title" tabindex="-1">Relatório de desperdício</h3>
+          <p>Descartes registrados em <strong id="report-month"></strong> nesta simulação.</p>
+          <div class="summary-bar" aria-live="polite" aria-atomic="true">
+            <div class="metric">
+              <strong id="count-discarded">0</strong>
+              <span>Lotes descartados</span>
+            </div>
+            <div class="metric warn">
+              <strong id="count-discarded-expired">0</strong>
+              <span>Com validade vencida</span>
+            </div>
+          </div>
+          <p id="discard-empty">Nenhum descarte registrado neste mês.</p>
+          <ul class="lot-grid" id="discard-list" role="list" aria-label="Detalhes dos descartes" hidden></ul>
+        </div>
+
+      </section>
+      <!-- COMPONENTE 2: Formulário manual de cadastro e correção de validade -->
+      <section aria-labelledby="form-title">
+        <h2 id="form-title">Cadastrar lote</h2>
+        <!-- O participante escolhe o modo antes de preencher ou ditar os dados. -->
+        <fieldset class="mode-picker">
+          <legend>Modo de cadastro</legend>
+          <div class="actions">
+            <button id="manual-mode" class="botao botao-secundario" type="button" aria-controls="vision-panel" aria-pressed="true">Manual</button>
+            <button id="vision-mode" class="botao botao-secundario" type="button" aria-controls="vision-panel" aria-pressed="false">Vision - Assistente IA</button>
+          </div>
+        </fieldset>
+        <div id="vision-panel" class="vision-panel" role="region" aria-labelledby="vision-title" hidden>
+          <div class="vision-heading">
+            <span class="vision-avatar" aria-hidden="true"><span class="vision-avatar-symbol"><img src="../imagens/visionchef-logo-pictorica.png" width="1676" height="938" alt=""></span></span>
+            <h3 id="vision-title">Vision - Assistente IA</h3>
+          </div>
+          <label for="vision-description">Descreva o lote</label>
+          <textarea id="vision-description" rows="3" aria-describedby="vision-hint" placeholder="Insumo, validade, quantidade e local"></textarea>
+          <p id="vision-hint" class="hint">Use a validade completa. Toque ou segure o microfone para ditar e arraste à esquerda para cancelar. O ditado pode usar o serviço de voz do navegador.</p>
+          <div class="actions vision-controls">
+            <button id="vision-fill" class="botao botao-primario" type="button">Preencher com a Vision</button>
+            <button
+              type="button"
+              id="vision-speech"
+              class="botao botao-primario voice-pill"
+              data-state="idle"
+              data-input="pointer"
+              data-time=""
+              aria-label="Ditar mensagem por voz"
+              aria-pressed="false"
+              aria-describedby="vision-hint"
+              title="Toque ou segure para ditar por voz (arraste para a esquerda para cancelar)"
+            >
+              <span class="voice-pill__capsule" aria-hidden="true"></span>
+              <canvas id="voice-wave" class="voice-pill__wave" aria-hidden="true"></canvas>
+              <span class="voice-pill__cancel" aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                <span>Cancelar</span>
+              </span>
+              <span id="voice-time" class="voice-pill__time" aria-hidden="true">0:00</span>
+              <span class="voice-pill__glyph">
+                <span class="voice-pill__mic" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="2" width="6" height="11" rx="3"/>
+                    <path d="M5 10a7 7 0 0 0 14 0"/>
+                    <path d="M12 17v4"/>
+                    <path d="M8 21h8"/>
+                  </svg>
+                </span>
+                <span class="voice-pill__stop" aria-hidden="true"></span>
+              </span>
+            </button>
+          </div>
+          <!-- Os três exemplos mudam só a descrição para testar a interpretação pelo fluxo normal. -->
+          <div class="vision-examples" role="group" aria-labelledby="vision-examples-title">
+            <p id="vision-examples-title"><strong>Exemplos</strong></p>
+            <div class="vision-example-buttons">
+              <button id="vision-example-valid" class="botao botao-secundario" type="button">Válido</button>
+              <button id="vision-example-error" class="botao botao-secundario" type="button">Com erro</button>
+              <button id="vision-example-random" class="botao botao-secundario" type="button">Aleatório</button>
+            </div>
+          </div>
+          <p id="vision-status" role="status"></p>
+        </div>
+        <!-- novalidate permite exibir mensagem padronizada de erro dentro do layout -->
+        <p id="lot-simulation">Use um nome de insumo e uma validade fictícios para testar.</p>
+        <form id="lot-form" aria-describedby="lot-simulation" novalidate>
+          <label for="item-name">Insumo *</label>
+          <input id="item-name" type="text" placeholder="Ex.: Creme de leite" aria-describedby="feedback" required>
+
+          <label for="expiry-date">Data de validade *</label>
+          <input id="expiry-date" type="date" aria-describedby="feedback" required>
+
+          <label for="quantity">Quantidade (opcional)</label>
+          <input id="quantity" type="text" placeholder="Ex.: 2 caixas ou 500g">
+
+          <label for="location">Local na geladeira (opcional)</label>
+          <input id="location" type="text" placeholder="Ex.: Prateleira do meio">
+
+          <div class="actions">
+            <button id="save-btn" class="botao botao-primario" type="submit">Salvar lote</button>
+            <button id="cancel-btn" class="botao botao-secundario" type="button" hidden>Cancelar edição</button>
+          </div>
+          <p id="feedback" role="status" aria-live="polite"></p>
+          <div id="duplicate-warning" class="duplicate-warning" role="alert" hidden>
+            <p id="duplicate-warning-text"></p>
+            <div class="duplicate-actions">
+              <button type="button" id="dup-edit-btn" class="botao botao-primario">Editar lote existente</button>
+              <button type="button" id="dup-confirm-btn" class="botao botao-secundario">Adicionar mesmo assim</button>
+              <button type="button" id="dup-dismiss-btn" class="botao botao-secundario">Cancelar</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Script clássico compartilhado para abrir o HTML por arquivo local. -->
+  <script src="../htmls/interpretar-lote.js"></script>
+  <script src="../htmls/voice-pill.js"></script>
+  <script>
+    /* =========================================================================
+       PROTÓTIPO INTERATIVO DA E3:
+       - Teste local em HTML, CSS e JavaScript, com registros somente em memória.
+       - Regra de negócio PVPS (Primeiro que Vence, Primeiro que Sai):
+         ordena todos os lotes pela menor data de validade no topo.
+       - Validação: exige nome do insumo e data de validade; entradas inválidas
+         exibem aviso claro e não entram na lista.
+       - Descartes: permite registrar perdas em 1 toque para o dono acompanhar
+         antes do fechamento do mês.
+       ========================================================================= */
+
+    const el = id => document.getElementById(id);
+    const form = el('lot-form');
+    const nameInput = el('item-name');
+    const expiryInput = el('expiry-date');
+    const qtyInput = el('quantity');
+    const locInput = el('location');
+    const visionInput = el('vision-description');
+    // Usa a data local como referência comum para todos os lotes da sessão.
+    const referenceDate = new Date();
+
+    let lots = [];
+    let discards = [];
+    let editingId = null;
+    let nextLotId = 5;
+    let pendingDuplicate = null;
+
+    function normalizeKey(value) {
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ');
+    }
+
+    function findDuplicateLot(name, expiry, ignoreId = null) {
+      const targetName = normalizeKey(name);
+      return lots.find(item => {
+        if (ignoreId !== null && item.id === ignoreId) return false;
+        return normalizeKey(item.name) === targetName && item.expiry === expiry;
+      }) || null;
+    }
+
+    function hideDuplicateWarning() {
+      pendingDuplicate = null;
+      const box = el('duplicate-warning');
+      if (box) box.hidden = true;
+      document.querySelectorAll('li.lot-card.is-duplicate-highlight').forEach(node => {
+        node.classList.remove('is-duplicate-highlight');
+      });
+    }
+
+    function highlightExistingLot(id) {
+      document.querySelectorAll('li.lot-card.is-duplicate-highlight').forEach(node => {
+        node.classList.remove('is-duplicate-highlight');
+      });
+      const card = document.querySelector(`li.lot-card[data-lot-id="${id}"]`);
+      if (!card) return;
+      card.classList.add('is-duplicate-highlight');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Usa dias relativos para manter os quatro estados presentes em qualquer data.
+    function getScenarioDate(offset = 0) {
+      const now = new Date(referenceDate);
+      now.setDate(now.getDate() + offset);
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')
+      ].join('-');
+    }
+
+    // Formata YYYY-MM-DD para DD/MM/YYYY
+    function formatDateBr(iso) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    // Calcula diferença em dias inteiros entre validade e data de referência
+    function diffDays(expiryIso, refIso) {
+      const [ey, em, ed] = expiryIso.split('-').map(Number);
+      const [ry, rm, rd] = refIso.split('-').map(Number);
+      return Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(ry, rm - 1, rd)) / 86400000);
+    }
+
+    // Classifica o lote por nível de urgência visual
+    function getLotStatus(daysLeft) {
+      if (daysLeft < 0) {
+        return { cls: 'status-expired', badgeCls: 'badge-expired', label: `Vencido há ${Math.abs(daysLeft)}d`, urgent: true, soon: false };
+      }
+      if (daysLeft === 0) {
+        return { cls: 'status-today', badgeCls: 'badge-today', label: 'Vence hoje', urgent: true, soon: false };
+      }
+      if (daysLeft <= 3) {
+        return { cls: 'status-soon', badgeCls: 'badge-soon', label: `Vence em ${daysLeft} dia${daysLeft === 1 ? '' : 's'}`, urgent: false, soon: true };
+      }
+      return { cls: 'status-ok', badgeCls: 'badge-ok', label: 'Dentro do prazo', urgent: false, soon: false };
+    }
+
+    function showFeedback(message, isError = false) {
+      const fb = el('feedback');
+      fb.textContent = message;
+      fb.dataset.error = String(isError);
+    }
+
+    function resetForm() {
+      editingId = null;
+      hideDuplicateWarning();
+      voiceControl.cancel();
+      visionInput.value = '';
+      showVisionStatus('');
+      form.reset();
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
+      el('form-title').textContent = 'Cadastrar lote';
+      el('save-btn').textContent = 'Salvar lote';
+      el('cancel-btn').hidden = true;
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    // A validade crescente determina a prioridade PVPS. Lotes com a mesma data mantêm a ordem de cadastro.
+    function render() {
+      const refIso = getScenarioDate();
+      const sorted = [...lots].sort((a, b) => a.expiry.localeCompare(b.expiry) || a.id - b.id);
+
+      let urgentCount = 0;
+      let soonCount = 0;
+
+      const listEl = el('lots-list');
+      el('empty-msg').hidden = sorted.length > 0;
+
+      listEl.innerHTML = sorted.map(lot => {
+        const daysLeft = diffDays(lot.expiry, refIso);
+        const st = getLotStatus(daysLeft);
+        if (st.urgent) urgentCount++;
+        if (st.soon) soonCount++;
+
+        const extras = [lot.qty, lot.location].filter(Boolean).map(escapeHtml).join(' • ');
+
+        return `
+          <li class="lot-card ${st.cls}" data-lot-id="${lot.id}">
+            <div class="lot-info">
+              <strong class="lot-name">${escapeHtml(lot.name)}</strong>
+              <span class="badge ${st.badgeCls}">${st.label}</span>
+              <p class="lot-meta">Validade <time datetime="${lot.expiry}">${formatDateBr(lot.expiry)}</time></p>
+              ${extras ? `<p class="lot-meta">${extras}</p>` : ''}
+            </div>
+            <details class="lot-menu">
+              <summary class="botao botao-secundario" aria-label="Ações para ${escapeHtml(lot.name)}">Ações <span aria-hidden="true">▾</span></summary>
+              <div class="lot-actions">
+                <button type="button" class="botao botao-secundario" onclick="startEdit(${lot.id})">Corrigir</button>
+                <button type="button" class="botao botao-primario" onclick="markUsed(${lot.id})"${daysLeft < 0 ? ' disabled' : ''}>Registrar uso</button>
+                <button type="button" class="botao botao-secundario danger" onclick="markDiscarded(${lot.id})">Registrar descarte</button>
+              </div>
+            </details>
+          </li>
+        `;
+      }).join('');
+
+      el('count-urgent').textContent = String(urgentCount);
+      el('count-soon').textContent = String(soonCount);
+      renderDiscardReport(refIso);
+    }
+
+    // Agrupa pela data do descarte. A validade indica a situação do lote na baixa.
+    function renderDiscardReport(referenceIso) {
+      const month = referenceIso.slice(0, 7);
+      const monthlyDiscards = discards.filter(item => item.recordedAt.slice(0, 7) === month);
+      const expiredCount = monthlyDiscards.filter(item => item.expiry < item.recordedAt).length;
+      el('count-discarded').textContent = String(monthlyDiscards.length);
+      el('count-discarded-expired').textContent = String(expiredCount);
+      el('discard-empty').hidden = monthlyDiscards.length > 0;
+      const discardList = el('discard-list');
+      discardList.hidden = monthlyDiscards.length === 0;
+      discardList.innerHTML = monthlyDiscards.map(item =>
+        `<li class="discard-item">
+          <strong>${escapeHtml(item.name)}</strong> · ${item.qty ? escapeHtml(item.qty) : 'Quantidade não informada'}<br>
+          Validade ${formatDateBr(item.expiry)} · Descartado em ${formatDateBr(item.recordedAt)}
+        </li>`
+      ).join('');
+    }
+
+    // Edita o mesmo lote sem duplicar
+    window.startEdit = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot) return;
+      editingId = id;
+      nameInput.value = lot.name;
+      expiryInput.value = lot.expiry;
+      qtyInput.value = lot.qty || '';
+      locInput.value = lot.location || '';
+      el('form-title').textContent = 'Corrigir lote';
+      el('save-btn').textContent = 'Salvar alteração';
+      el('cancel-btn').hidden = false;
+      showFeedback('Editando lote selecionado. Altere os campos e clique em Salvar alteração.');
+      nameInput.focus();
+    };
+
+    // O lote vencido continua disponível para correção ou descarte.
+    window.markUsed = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot || diffDays(lot.expiry, getScenarioDate()) < 0) return;
+      lots = lots.filter(item => item.id !== id);
+      if (editingId === id) resetForm();
+      render();
+      el('list-feedback').textContent = `Lote “${lot.name}” marcado como usado.`;
+      el('list-title').focus();
+    };
+
+    window.markDiscarded = function(id) {
+      const lot = lots.find(item => item.id === id);
+      if (!lot) return;
+      lots = lots.filter(item => item.id !== id);
+      discards.unshift({
+        name: lot.name,
+        expiry: lot.expiry,
+        qty: lot.qty,
+        recordedAt: getScenarioDate()
+      });
+      if (editingId === id) resetForm();
+      render();
+      el('list-feedback').textContent = `Descarte de “${lot.name}” registrado. Relatório de desperdício atualizado.`;
+      el('list-title').focus();
+    };
+
+    function saveLotSubmission({ name, expiry, qty, location }) {
+      if (editingId !== null) {
+        lots = lots.map(item =>
+          item.id === editingId ? { ...item, name, expiry, qty, location } : item
+        );
+        showFeedback(`Lote "${name}" atualizado e reordenado na lista.`);
+      } else {
+        lots.push({ id: nextLotId++, name, expiry, qty, location });
+        showFeedback(`Lote "${name}" salvo e ordenado pela data de validade.`);
+      }
+
+      resetForm();
+      render();
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      hideDuplicateWarning();
+
+      const name = nameInput.value.trim();
+      const expiry = expiryInput.value.trim();
+      const qty = qtyInput.value.trim();
+      const location = locInput.value.trim();
+
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
+      if (!name) {
+        nameInput.setAttribute('aria-invalid', 'true');
+        showFeedback('Informe o nome do insumo antes de salvar.', true);
+        nameInput.focus();
+        return;
+      }
+
+      if (!expiry || !/^\d{4}-\d{2}-\d{2}$/.test(expiry)) {
+        expiryInput.setAttribute('aria-invalid', 'true');
+        showFeedback('A data de validade é obrigatória. O lote não foi adicionado à lista.', true);
+        expiryInput.focus();
+        return;
+      }
+
+      const duplicate = findDuplicateLot(name, expiry, editingId);
+      if (duplicate) {
+        pendingDuplicate = {
+          existingId: duplicate.id,
+          payload: { name, expiry, qty, location }
+        };
+        const detalhes = [
+          `validade ${formatDateBr(duplicate.expiry)}`,
+          duplicate.qty ? duplicate.qty : ''
+        ].filter(Boolean).join(' · ');
+        el('duplicate-warning-text').textContent =
+          `Lote repetido detectado: “${duplicate.name}” (${detalhes}) já está cadastrado no estoque. Deseja editar o existente ou adicionar outro igual?`;
+        el('duplicate-warning').hidden = false;
+        showFeedback('Cadastro pausado para evitar duplicidade.', false);
+        highlightExistingLot(duplicate.id);
+        el('dup-edit-btn').focus();
+        return;
+      }
+
+      saveLotSubmission({ name, expiry, qty, location });
+    });
+
+    el('dup-edit-btn').addEventListener('click', () => {
+      if (!pendingDuplicate) return;
+      const targetId = pendingDuplicate.existingId;
+      hideDuplicateWarning();
+      window.startEdit(targetId);
+    });
+    el('dup-confirm-btn').addEventListener('click', () => {
+      if (!pendingDuplicate) return;
+      const payload = pendingDuplicate.payload;
+      hideDuplicateWarning();
+      saveLotSubmission(payload);
+    });
+    el('dup-dismiss-btn').addEventListener('click', () => {
+      hideDuplicateWarning();
+      showFeedback('Cadastro duplicado cancelado.', false);
+      nameInput.focus();
+    });
+
+    form.addEventListener('input', ({ target }) => {
+      target.removeAttribute('aria-invalid');
+      hideDuplicateWarning();
+    });
+    el('cancel-btn').addEventListener('click', () => {
+      resetForm();
+      showFeedback('Edição cancelada.');
+      nameInput.focus();
+    });
+
+    // Alternar o modo preserva os dados já preenchidos no formulário comum.
+    function selectRegistrationMode(useVision) {
+      el('manual-mode').setAttribute('aria-pressed', String(!useVision));
+      el('vision-mode').setAttribute('aria-pressed', String(useVision));
+      el('vision-panel').hidden = !useVision;
+      if (!useVision) {
+        voiceControl.cancel();
+        showVisionStatus('');
+      }
+    }
+
+    function showVisionStatus(message, isError = false) {
+      const status = el('vision-status');
+      status.textContent = message;
+      status.dataset.error = String(isError);
+    }
+
+    // As sugestões precisam passar pela conferência e pelo mesmo salvamento do modo manual.
+    function fillWithVision() {
+      if (!visionInput.value.trim()) {
+        showVisionStatus('Digite ou dite uma descrição do lote.', true);
+        visionInput.focus();
+        return;
+      }
+      const fields = interpretNaturalText(visionInput.value);
+      hideDuplicateWarning();
+      nameInput.value = fields.name;
+      expiryInput.value = fields.expiry;
+      qtyInput.value = fields.qty;
+      locInput.value = fields.location;
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
+      showFeedback('');
+      if (fields.ambiguousDateTerm) {
+        showVisionStatus(`A validade “${fields.ambiguousDateTerm}” é ambígua. Informe dia, mês e ano.`, true);
+        return;
+      }
+      if (!fields.name || !fields.expiry) {
+        showVisionStatus('Confira o insumo e informe uma validade completa e válida antes de salvar.', true);
+        return;
+      }
+      showVisionStatus('Confira os campos sugeridos e clique em Salvar lote quando estiverem corretos.');
+    }
+
+    el('manual-mode').addEventListener('click', () => selectRegistrationMode(false));
+    el('vision-mode').addEventListener('click', () => selectRegistrationMode(true));
+    el('vision-fill').addEventListener('click', fillWithVision);
+    // O mesmo microfone da demonstração envia o texto para a conferência da E3.
+    const voiceControl = initVoicePill(el('vision-speech'), {
+      onStatus: (message, state) => showVisionStatus(message, state !== 'ok'),
+      onTranscript(texto) {
+        visionInput.value = texto;
+        fillWithVision();
+      }
+    });
+    // Os exemplos usam datas relativas à sessão para funcionar em qualquer dia de teste.
+    const randomExamples = [
+      { name: 'Manteiga', days: 3, details: '2 pacotes, gaveta de frios' },
+      { name: 'Ervilha', days: 6, details: '3 sacos, freezer' },
+      { name: 'Leite integral', days: 2, details: '4 caixas, prateleira de baixo' },
+      { name: 'Palmito', days: 8, details: '2 potes, prateleira do meio' }
+    ];
+    let lastRandomExample;
+
+    function loadVisionExample(description) {
+      voiceControl.cancel();
+      visionInput.value = description;
+      showVisionStatus('Exemplo inserido. Clique em Preencher com a Vision.');
+      visionInput.focus();
+    }
+
+    el('vision-example-valid').addEventListener('click', () => {
+      loadVisionExample(`Molho de tomate, validade ${formatDateBr(getScenarioDate(1))}, 2 potes, prateleira de cima`);
+    });
+    el('vision-example-error').addEventListener('click', () => {
+      loadVisionExample('Frango resfriado, vence amanhã, 2 bandejas, prateleira de baixo');
+    });
+    el('vision-example-random').addEventListener('click', () => {
+      // Evita repetir o mesmo cenário em dois cliques seguidos.
+      const options = randomExamples.filter(example => example !== lastRandomExample);
+      const example = options[Math.floor(Math.random() * options.length)];
+      lastRandomExample = example;
+      loadVisionExample(`${example.name}, validade ${formatDateBr(getScenarioDate(example.days))}, ${example.details}`);
+    });
+
+    // O relatório usa o mês da sessão. O estoque inicial é recriado a cada teste.
+    el('report-month').textContent = new Intl.DateTimeFormat('pt-BR', {
+      month: 'long', year: 'numeric'
+    }).format(referenceDate);
+    lots = [
+      { id: 1, name: 'Iogurte natural', expiry: getScenarioDate(-1), qty: '2 potes', location: 'Prateleira de baixo' },
+      { id: 2, name: 'Creme de leite', expiry: getScenarioDate(), qty: '3 caixas', location: 'Prateleira do meio' },
+      { id: 3, name: 'Queijo muçarela', expiry: getScenarioDate(2), qty: '500 g', location: 'Gaveta de frios' },
+      { id: 4, name: 'Polpa de tomate', expiry: getScenarioDate(7), qty: '2 pacotes', location: 'Prateleira de cima' }
+    ];
+    el('restart-demo').addEventListener('click', () => window.location.reload());
+    resetForm();
+    render();
+  </script>
+</body>
+</html>

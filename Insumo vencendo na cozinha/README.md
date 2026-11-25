@@ -8,7 +8,7 @@ Segundo simulado da UC6. Um restaurante pequeno controla o estoque em um caderno
 | --- | --- |
 | [E1](desafios/E1.md), [CSD](Matriz-CSD.md) e [persona](persona.md) | Definir problema, público e desafio. |
 | [E2](desafios/E2.md) | Entrevistar e registrar a revisão da CSD. |
-| [E3](desafios/E3.md) e [MVP](htmls/E3-mvp-validade.html) | Planejar, executar e testar o MVP (abrir `htmls/E3-mvp-validade.html` direto no navegador). |
+| [E3](desafios/E3.md) e [protótipo interativo](desafios/E3-prototipo.html) | Testar o cadastro manual ou com a Vision, consultar a grade de lotes fictícios e abrir o relatório de desperdício. Abra o HTML direto no navegador. |
 | [E4](desafios/E4.md), [roteiro](pitch/roteiro.md), [slides](pitch/E4-pitch-slides.html) e [ensaio de voz](pitch/ensaio-voz.html) | Preparar, ensaiar com voz/cronômetro, apresentar e exportar o pitch em PDF (`Ctrl + P`). |
 | [E5](desafios/E5.md) | Organizar PDF, link e evidências. |
 | [Índice de imagens](imagens/README.md) | Registrar as imagens produzidas para este tema. |

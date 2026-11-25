@@ -19,6 +19,10 @@ export const arquivosPublicos = [
   `${tema}/abertura/imagens/sync-emblema-animado.mp4`,
   `${tema}/imagens/visionchef-logo.jpg`,
   `${tema}/htmls/agente-ia-cadastro.html`,
+  // A demonstração pública da Vision compartilha o interpretador e o microfone com o exemplar E3.
+  `${tema}/htmls/interpretar-lote.js`,
+  `${tema}/htmls/voice-pill.css`,
+  `${tema}/htmls/voice-pill.js`,
   `${tema}/htmls/E3-mvp-validade.html`,
 ];
 
