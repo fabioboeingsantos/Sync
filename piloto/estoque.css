@@ -24,10 +24,25 @@ body { margin: 0; }
 h1, h2, p { margin: 0; }
 h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; letter-spacing: -.03em; color: #0f4c5c; }
 h2 { font-size: 1.25rem; letter-spacing: -.02em; color: #0f4c5c; }
-.topo { background: #0f4c5c; color: #ffffff; }
+.topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgb(15 76 92 / 92%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgb(168 213 221 / 28%);
+  color: #ffffff;
+}
 .largura { width: min(100% - 2rem, 69rem); margin-inline: auto; }
 .topo-conteudo { min-height: 4.75rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; padding-block: .5rem; }
 .acoes-topo { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.marca-link { color: #ffffff; text-decoration: none; }
+.marca-link:focus-visible, .link-topo:focus-visible { outline: 3px solid #a8d5dd; outline-offset: 3px; border-radius: 6px; }
+.marca-icone { width: 2.35rem; height: 2.35rem; object-fit: contain; display: block; }
+.marca small { font-weight: 400; color: #a8d5dd; }
+.link-topo { color: #e6f3f6; font-size: .92rem; font-weight: 700; text-decoration: none; padding: .45rem .65rem; border-radius: 8px; }
+.link-topo:hover { background: rgb(255 255 255 / 12%); color: #ffffff; }
 /* Identifica visualmente a sessão autenticada na barra superior sem competir com os botões. */
 .conta-topo { padding: .35rem .7rem; border: 1px solid #a8d5dd; border-radius: 999px; background: rgb(255 255 255 / 12%); color: #ffffff; font-size: .875rem; font-weight: 700; max-width: 18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dados-conta { display: grid; gap: .55rem; margin-block: .9rem .4rem; }
@@ -81,7 +96,8 @@ main { padding-block: 1.75rem 3rem; }
 .botao-olho-estoque:hover { background: #0f4c5c; }
 .botao-olho-estoque:focus-visible { outline: 3px solid #0f4c5c; outline-offset: 2px; }
 .acoes-entrada-dupla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-top: .85rem; }
-.acao-link-entrada { width: 100%; min-height: 48px; padding-inline: .75rem; text-decoration: underline; text-underline-offset: 3px; font-size: .94rem; }
+/* Mantém os botões auxiliares menores que Entrar (42px) e sempre em uma única linha. */
+.acao-link-entrada { width: 100%; min-height: 42px; padding: 8px 10px; text-decoration: underline; text-underline-offset: 3px; font-size: .86rem; white-space: nowrap; }
 @media (max-width: 440px) {
   .acoes-entrada-dupla { grid-template-columns: 1fr; }
 }

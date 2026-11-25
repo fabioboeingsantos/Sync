@@ -129,6 +129,7 @@ test('regra global de botões aplica GlassSurface com paleta Aço Inox e compone
   const glassJsx = await readFile(new URL('../frontend/components/GlassSurface.jsx', import.meta.url), 'utf8');
   const horizonJsx = await readFile(new URL('../frontend/components/HorizonBloom.jsx', import.meta.url), 'utf8');
   const landing = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const estoqueHtml = await readFile(new URL('../piloto/index.html', import.meta.url), 'utf8');
   assert.match(botoesCss, /backdrop-filter:\s*blur/);
   assert.match(botoesCss, /\.glass-surface/);
   assert.match(botoesCss, /#0F4C5C/i);
@@ -136,4 +137,8 @@ test('regra global de botões aplica GlassSurface com paleta Aço Inox e compone
   assert.match(glassJsx, /feDisplacementMap/);
   assert.match(horizonJsx, /prefers-reduced-motion/);
   assert.match(landing, /id="hero-horizon-bloom"/);
+  assert.match(landing, /class="brand-name"/);
+  assert.match(landing, /class="footer-brand"/);
+  assert.match(landing, /aria-expanded="false"/);
+  assert.match(estoqueHtml, /href="\.\.\/"/);
 });

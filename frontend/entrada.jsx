@@ -5,11 +5,11 @@ import GlassSurface from './components/GlassSurface.jsx';
 import HorizonBloom from './components/HorizonBloom.jsx';
 
 // Encapsula botões React em GlassSurface preservando a semântica nativa de <button>, submit e aria-busy.
-function BotaoGlass({ className = '', children, ...props }) {
+function BotaoGlass({ className = '', height = 50, children, ...props }) {
   return (
     <GlassSurface
       width="100%"
-      height={50}
+      height={height}
       borderRadius={12}
       distortionScale={-180}
       displace={0.5}
@@ -122,6 +122,18 @@ function AcessoVisionChef({ destino }) {
     links.forEach((link) => link.addEventListener('click', abrir));
     return () => links.forEach((link) => link.removeEventListener('click', abrir));
   }, []);
+
+  useEffect(() => {
+    // Permite abrir cadastro, recuperação ou conta via hash (#cadastro, #recuperar, #minha-conta) sem recarregar.
+    const aoMudarHash = () => {
+      const atual = window.location.hash;
+      if (atual === '#cadastro') { definirMensagem(''); definirModo('cadastro'); definirDialogoAberto(true); }
+      else if (atual === '#recuperar') { definirMensagem(''); definirModo('recuperar'); definirDialogoAberto(true); }
+      else if (atual === '#minha-conta' && conta) { definirMensagem(''); definirModo('conta'); definirDialogoAberto(true); }
+    };
+    window.addEventListener('hashchange', aoMudarHash);
+    return () => window.removeEventListener('hashchange', aoMudarHash);
+  }, [conta]);
 
   useEffect(() => {
     // O elemento nativo fornece foco contido, Escape e semântica de diálogo acessível.
@@ -387,9 +399,9 @@ function AcessoVisionChef({ destino }) {
           {modo === 'resultado' && <p className="mensagem-acesso" role="status">{mensagem}</p>}
           {mensagem && modo !== 'resultado' && <p className="mensagem-acesso" role="alert">{mensagem}</p>}
           {modo === 'entrar' && <nav className="acoes-acesso acoes-acesso-dupla" aria-label="Ações de acesso">
-            {/* Mantém o mesmo arranjo de botões lado a lado com GlassSurface, sem opção de reenvio de confirmação. */}
-            <BotaoGlass className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('cadastro'); }}>Criar conta</BotaoGlass>
-            <BotaoGlass className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('recuperar'); }}>Esqueci minha senha</BotaoGlass>
+            {/* Mantém hierarquia subordinada ao Entrar (42px em 1 linha), sem opção de reenvio de confirmação. */}
+            <BotaoGlass height={42} className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('cadastro'); }}>Criar conta</BotaoGlass>
+            <BotaoGlass height={42} className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('recuperar'); }}>Esqueci minha senha</BotaoGlass>
           </nav>}
           {modo !== 'entrar' && modo !== 'conta' && <nav className="acoes-acesso" aria-label="Ações de acesso">
             <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('entrar'); }}>Voltar para entrar</BotaoGlass>

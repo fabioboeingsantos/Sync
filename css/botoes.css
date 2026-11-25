@@ -22,8 +22,11 @@
     0 12px 26px rgba(15, 76, 92, 0.36);
 
   --btn-secundario-fundo: rgba(255, 255, 255, 0.74);
+  --btn-secundario-gradiente: linear-gradient(160deg, rgba(255, 255, 255, 0.82) 0%, rgba(244, 246, 247, 0.68) 100%);
+  --btn-secundario-gradiente-hover: linear-gradient(160deg, rgba(255, 255, 255, 0.9) 0%, rgba(168, 213, 221, 0.42) 100%);
   --btn-secundario-texto: #0F4C5C;
   --btn-secundario-borda: rgba(42, 127, 142, 0.58);
+  --btn-secundario-borda-hover: #0F4C5C;
   --btn-secundario-fundo-hover: rgba(168, 213, 221, 0.36);
   --btn-secundario-sombra:
     inset 0 1px 0 rgba(255, 255, 255, 0.72),
@@ -154,10 +157,10 @@
   transform: translateY(-1px);
 }
 
-/* Botão secundário — vidro claro fosco com texto e borda Aço Inox */
+/* Botão secundário — vidro fosco adaptável ao tema claro ou escuro via tokens */
 .botao.botao-secundario {
   background-color: var(--btn-secundario-fundo);
-  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.82) 0%, rgba(244, 246, 247, 0.68) 100%);
+  background-image: var(--btn-secundario-gradiente);
   color: var(--btn-secundario-texto);
   border-color: var(--btn-secundario-borda);
   box-shadow: var(--btn-secundario-sombra);
@@ -165,17 +168,19 @@
 
 .botao.botao-secundario:hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]):not(.is-loading) {
   background-color: var(--btn-secundario-fundo-hover);
-  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.9) 0%, rgba(168, 213, 221, 0.42) 100%);
+  background-image: var(--btn-secundario-gradiente-hover);
   color: var(--btn-secundario-texto);
-  border-color: #0F4C5C;
+  border-color: var(--btn-secundario-borda-hover);
   box-shadow: var(--btn-secundario-sombra-hover);
   transform: translateY(-1px);
 }
 
 .botao.botao-secundario[aria-pressed="true"] {
-  background-color: var(--btn-secundario-fundo-hover);
-  color: var(--btn-secundario-texto);
-  border-color: #0F4C5C;
+  background-color: #0F4C5C;
+  background-image: linear-gradient(160deg, var(--btn-primario-inicio) 0%, var(--btn-primario-fim) 100%);
+  color: #FFFFFF;
+  border-color: rgba(168, 213, 221, 0.65);
+  box-shadow: var(--btn-primario-sombra);
 }
 
 /* Ação destrutiva mantendo base de vidro clara com alerta vermelho do style guide */

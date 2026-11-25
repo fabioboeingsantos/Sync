@@ -20,6 +20,7 @@
   <header class="site-header frame">
     <a class="brand" href="#inicio" aria-label="SYNC, início">
       <img class="brand-logo" src="Insumo%20vencendo%20na%20cozinha/abertura/imagens/coruja-sync-icone.png" width="128" height="128" alt="">
+      <span class="brand-name">Sync</span>
     </a>
     <nav class="site-nav" aria-label="Navegação principal">
       <a class="header-link" href="#solucoes">Soluções</a>
@@ -137,12 +138,12 @@
         <a class="text-link" href="informacoes.html">Ver privacidade e termos de uso →</a>
       </div>
       <div class="questions">
-        <details name="duvidas"><summary>Preciso criar uma conta?</summary><p>O estoque do piloto exige uma conta autorizada do restaurante. As demonstrações podem ser abertas sem cadastro.</p></details>
-        <details name="duvidas"><summary>As demonstrações são gratuitas?</summary><p>Sim. Você pode experimentar os dois protótipos sem cobrança ou cartão.</p></details>
-        <details name="duvidas"><summary>Onde ficam os lotes cadastrados?</summary><p>No piloto, os lotes ficam no banco de dados do restaurante. Cada demonstração guarda seus próprios lotes no navegador.</p></details>
-        <details name="duvidas"><summary>O que acontece se eu limpar os dados do navegador?</summary><p>Os lotes das demonstrações são removidos desse navegador. Os registros do piloto continuam no banco do restaurante.</p></details>
-        <details name="duvidas"><summary>Posso usar o assistente sem microfone?</summary><p>Sim. Digite os dados do lote no campo de mensagem e confira a sugestão preenchida antes de salvar.</p></details>
-        <details name="duvidas"><summary>Funciona no celular dentro da cozinha?</summary><p>Sim. A interface se adapta a telas menores para consulta rápida direto no celular ou tablet.</p></details>
+        <details name="duvidas"><summary aria-expanded="false">Preciso criar uma conta?</summary><p>O estoque do piloto exige uma conta autorizada do restaurante. As demonstrações podem ser abertas sem cadastro.</p></details>
+        <details name="duvidas"><summary aria-expanded="false">As demonstrações são gratuitas?</summary><p>Sim. Você pode experimentar os dois protótipos sem cobrança ou cartão.</p></details>
+        <details name="duvidas"><summary aria-expanded="false">Onde ficam os lotes cadastrados?</summary><p>No piloto, os lotes ficam no banco de dados do restaurante. Cada demonstração guarda seus próprios lotes no navegador.</p></details>
+        <details name="duvidas"><summary aria-expanded="false">O que acontece se eu limpar os dados do navegador?</summary><p>Os lotes das demonstrações são removidos desse navegador. Os registros do piloto continuam no banco do restaurante.</p></details>
+        <details name="duvidas"><summary aria-expanded="false">Posso usar o assistente sem microfone?</summary><p>Sim. Digite os dados do lote no campo de mensagem e confira a sugestão preenchida antes de salvar.</p></details>
+        <details name="duvidas"><summary aria-expanded="false">Funciona no celular dentro da cozinha?</summary><p>Sim. A interface se adapta a telas menores para consulta rápida direto no celular ou tablet.</p></details>
       </div>
     </section>
     <section class="prototypes frame section" id="prototipos" tabindex="-1" aria-labelledby="titulo-prototipos">
@@ -175,7 +176,10 @@
     </section>
   </main>
   <footer class="site-footer frame">
-    <span>Sync · Soluções digitais</span>
+    <span class="footer-brand">
+      <img class="footer-logo" src="Insumo%20vencendo%20na%20cozinha/abertura/imagens/coruja-sync-icone.png" width="32" height="32" alt="">
+      <span>Sync · Soluções digitais</span>
+    </span>
     <nav aria-label="Informações do produto">
       <a href="informacoes.html#privacidade">Privacidade</a>
       <a href="informacoes.html#armazenamento">Cookies e armazenamento</a>
@@ -189,6 +193,14 @@
     new ResizeObserver(() => {
       document.documentElement.style.setProperty('--altura-cabecalho-sync', cabecalho.getBoundingClientRect().height + 'px');
     }).observe(cabecalho);
+
+    // Mantém aria-expanded sincronizado com o estado real dos itens do acordeão de dúvidas.
+    document.querySelectorAll('.questions details').forEach((item) => {
+      const resumo = item.querySelector('summary');
+      item.addEventListener('toggle', () => {
+        resumo?.setAttribute('aria-expanded', String(item.open));
+      });
+    });
 
     const filters = document.querySelector('.filters');
     const buttons = filters.querySelectorAll('[data-filter]');
