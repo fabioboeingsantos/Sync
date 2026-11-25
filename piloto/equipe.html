@@ -7,6 +7,7 @@
   <!-- A tela de equipe fica em /equipe/ e reutiliza a paleta Aço Inox e o padrão GlassSurface de botões. -->
   <link rel="stylesheet" href="../css/estoque.css">
   <link rel="stylesheet" href="../css/botoes.css">
+  <script src="../Insumo%20vencendo%20na%20cozinha/abertura/js/tema.js"></script>
   <script type="module" src="../equipe.js"></script>
 </head>
 <body>
@@ -24,6 +25,17 @@
         <a class="link-topo" href="../">Início Sync</a>
         <span class="conta-topo" id="conta-topo" hidden></span>
         <button class="botao botao-secundario" id="sair" type="button" hidden>Sair</button>
+        <button type="button" class="theme-toggle theme-toggle-inline" data-theme-toggle aria-pressed="false" aria-label="Modo escuro ativo (Lua). Clique para ativar modo claro (Sol).">
+          <span class="sky-track" aria-hidden="true">
+            <span class="sky-stars"></span>
+            <span class="sky-clouds"></span>
+            <span class="sky-rays"></span>
+            <span class="celestial-thumb">
+              <img class="orb orb-sun" src="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/sol-realista.webp" alt="" width="40" height="40">
+              <img class="orb orb-moon" src="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/lua-realista.webp" alt="" width="40" height="40">
+            </span>
+          </span>
+        </button>
       </div>
     </div>
   </header>

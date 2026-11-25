@@ -9,20 +9,20 @@ Segundo simulado da UC6. Um restaurante pequeno controla o estoque em um caderno
 | [E1](desafios/E1.md), [CSD](Matriz-CSD.md) e [persona](persona.md) | Definir problema, público e desafio. |
 | [E2](desafios/E2.md) | Entrevistar e registrar a revisão da CSD. |
 | [E3](desafios/E3.md) e [MVP](htmls/E3-mvp-validade.html) | Planejar, executar e testar o MVP (abrir `htmls/E3-mvp-validade.html` direto no navegador). |
-| [E4](desafios/E4.md), [roteiro](pitch/roteiro.md) e [slides](pitch/E4-pitch-slides.html) | Preparar, apresentar e exportar o pitch em PDF (`Ctrl + P`). |
+| [E4](desafios/E4.md), [roteiro](pitch/roteiro.md), [slides](pitch/E4-pitch-slides.html) e [ensaio de voz](pitch/ensaio-voz.html) | Preparar, ensaiar com voz/cronômetro, apresentar e exportar o pitch em PDF (`Ctrl + P`). |
 | [E5](desafios/E5.md) | Organizar PDF, link e evidências. |
 | [Índice de imagens](imagens/README.md) | Registrar as imagens produzidas para este tema. |
-| [Agente de IA](agente_IA/agente_IA.md), [arquitetura](agente_IA/arquitetura-passo-a-passo.md) e [protótipo IA](htmls/agente-ia-cadastro.html) | Discutir em sala e testar o assistente de cadastro (texto natural e voz) separado do MVP manual. |
+| [Agente de IA](agente_IA/agente_IA.md), [arquitetura](agente_IA/arquitetura-passo-a-passo.md), [roadmap fiscal](../docs/futuras-implantacoes/integracao-notas-fiscais.md) e [protótipo IA](htmls/agente-ia-cadastro.html) | Discutir em sala e testar o assistente (5 simulações, VoicePill, alerta de lote repetido e importação de XML NF-e Fase 1). |
 | [Landing page](../index.html) e [animação da SYNC](docs/animacao-sync.md) | Abrir a página inicial e consultar os tempos da animação. |
 
 ### Como executar os arquivos HTML (`htmls/`)
-- **MVP da E3 (manual):** abra [htmls/E3-mvp-validade.html](htmls/E3-mvp-validade.html) no Chrome/Edge.
-- **MVP com assistente integrado:** abra [htmls/agente-ia-cadastro.html](htmls/agente-ia-cadastro.html) para cadastrar e consultar lotes com sugestões por texto ou voz. Veja os três casos de [teste do assistente](agente_IA/agente_IA.md).
-- **Ferramentas de avaliação:** abra o [estoque manual com lotes de exemplo](htmls/E3-mvp-validade.html?demo=ux) ou o [assistente com controles de teste](htmls/agente-ia-cadastro.html?teste=1).
+- **MVP da E3 (manual):** abra [htmls/E3-mvp-validade.html](htmls/E3-mvp-validade.html) no Chrome/Edge (com as 4 cores de validade nos temas claro/escuro e alerta contra lote repetido).
+- **MVP com assistente integrado:** abra [htmls/agente-ia-cadastro.html](htmls/agente-ia-cadastro.html) para testar as **5 simulações interativas** (incluindo erro de data ambígua), o microfone animado **VoicePill**, a **trava contra lotes repetidos** e a **Fase 1 de importação de XML NF-e** (`Simular NF-e` ou envio de `.xml` real). Veja a pauta em [agente_IA/agente_IA.md](agente_IA/agente_IA.md).
+- **Ferramentas de avaliação:** abra o [estoque manual com lotes de exemplo](htmls/E3-mvp-validade.html?demo=ux) ou o [assistente com controles extras de teste](htmls/agente-ia-cadastro.html?teste=1).
 
-Para apresentar, abra os [slides do pitch](pitch/E4-pitch-slides.html) no navegador (`F` para tela cheia, `T` para Claro/Escuro e `Ctrl + P` para exportar o PDF).
+Para apresentar, abra os [slides do pitch](pitch/E4-pitch-slides.html) no navegador (`F` para tela cheia, `T` para Claro/Escuro e `Ctrl + P` para exportar o PDF) e treine no [estúdio de ensaio e voz](pitch/ensaio-voz.html).
 
-**Status geral (Time SYNC):** E1 concluída, E2 concluída para treino (simulada, com telas exploratórias registradas), E3 com Lean Canvas, MoSCoW, MVP e 22/22 testes técnicos aprovados (aguardando apenas registro de feedback presencial com outro grupo), slides e roteiro da E4 atualizados no padrão SYNC · VisionChef (Aço Inox + QR Code) e E5 pronta para exportação do PDF. Piloto web publicado como plus em `https://sync-solucoes.vercel.app`.
+**Status geral (Time SYNC):** E1 concluída, E2 concluída para treino (simulada, com telas exploratórias registradas), E3 com Lean Canvas, MoSCoW, MVP (4 cores semânticas nos temas claro/escuro com alerta pulsante em *Vence hoje*, trava contra lote duplicado, microfone VoicePill, 5 simulações interativas e Fase 1 de importação de XML NF-e) e 26/26 testes técnicos aprovados; slides, roteiro e estúdio de ensaio da E4 atualizados com o roadmap fiscal em 3 fases e QR Code. Piloto web publicado como plus em `https://sync-solucoes.vercel.app`.
 
 ## Revisão dos 19 itens de lançamento
 
@@ -48,7 +48,7 @@ Revisão atualizada em 25/11/2026 cobrindo as **demonstrações gratuitas** (`lo
 | 16 | Dados da empresa | Identifica a **SYNC** como equipe desenvolvedora e o **VisionChef** como solução; sem CNPJ ou cadastro empresarial fictício. |
 | 17 | Direitos das imagens | Emblema da SYNC e marca VisionChef são ativos próprios do projeto, registrados em [imagens/README.md](imagens/README.md). |
 | 18 | Leis locais e setoriais | Análise considera LGPD, WCAG 2.2, LBI, CDC e boas práticas sanitárias (Anvisa RDC 216/2004, item 4.8.6) para validade pós-abertura. |
-| 19 | Riscos operacionais | Piloto online com banco PostgreSQL (RLS), 22/22 testes automatizados, CI no GitHub Actions, `/api/health` e [runbook.md](../docs/operations/runbook.md); ambiente Preview separado e ensaio de backup/restore planejados antes de operação comercial. |
+| 19 | Riscos operacionais | Piloto online com banco PostgreSQL (RLS), 26/26 testes automatizados, CI no GitHub Actions, `/api/health` e [runbook.md](../docs/operations/runbook.md); ambiente Preview separado e ensaio de backup/restore planejados antes de operação comercial. |
 
 Verificação local no Chrome em perfil limpo: navegação por teclado, filtros, links de privacidade, erros e cancelamento de edição nos dois cadastros, persistência após recarregar e ausência de rolagem horizontal na abertura a 320, 390 e 1280 px. O fluxo verificado não carregou cookies nem fez requisições HTTP externas com o ditado inativo. O funcionamento do ditado e as configurações de hospedagem ficam para a validação da versão publicada.
 

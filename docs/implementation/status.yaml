@@ -12,9 +12,9 @@ fases:
     pendencias: []
   F01_ux_rotas:
     status: "READY_FOR_RELEASE"
-    artefatos: ["docs/product/user-flows.md", "frontend/entrada.jsx", "piloto/index.html", "piloto/estoque.css", "piloto/equipe.html", "piloto/equipe.js"]
-    evidencia_atual: "Landing, /estoque/ (com Minha conta, botão Equipe para dono e olho inline) e /equipe/ (paleta Aço Inox + GlassSurface) implementados"
-    pendencias: ["Publicar /equipe/ e botão Equipe no próximo deploy Vercel"]
+    artefatos: ["docs/product/user-flows.md", "frontend/entrada.jsx", "frontend/components/VoicePill.jsx", "piloto/index.html", "piloto/estoque.css", "piloto/equipe.html", "piloto/equipe.js", "Insumo vencendo na cozinha/abertura/sync.css"]
+    evidencia_atual: "Landing, /estoque/ e /equipe/ com temas claro/escuro sincronizados, 4 cores semânticas (Vence hoje pulsando), filtros coloridos, VoicePill, 5 simulações e Fase 1 NF-e XML implementados"
+    pendencias: ["Publicar alterações no próximo deploy Vercel após autorização"]
   F02_adrs_ameacas_contratos:
     status: "PASS"
     artefatos:
@@ -58,16 +58,16 @@ fases:
     pendencias: []
   F06_jornada_vertical:
     status: "READY_FOR_RELEASE"
-    artefatos: ["piloto/estoque.js", "piloto/equipe.js", "piloto/api.js", "api/index.js", "vercel.json"]
-    evidencia_atual: "Todas as jornadas do piloto (auth, conta, estoque, baixas/abertura, descartes e /equipe) implementadas"
+    artefatos: ["piloto/estoque.js", "piloto/interpretar-nfe.js", "piloto/equipe.js", "piloto/api.js", "api/index.js", "vercel.json"]
+    evidencia_atual: "Jornadas do piloto (auth, conta, estoque com filtros e proteção contra lote repetido, baixas/abertura, descartes, /equipe e módulo NF-e XML Fase 1) implementadas"
     pendencias: ["Executar suíte completa npm test e smoke test pós-deploy em /api/health e /equipe/"]
   F07_llm_agentes:
     status: "NOT_APPLICABLE"
-    justificativa: "Piloto aprovado com llm_required: false; assistente de lote permanece determinístico local em piloto/interpretar-lote.js"
+    justificativa: "Piloto aprovado com llm_required: false; assistente de lote e parser NF-e XML permanecem determinísticos locais em piloto/interpretar-lote.js, piloto/interpretar-nfe.js e agente-ia-cadastro.html"
   F08_verificacao_release:
-    status: "PENDING_EXECUTION"
-    evidencia_atual: "Suíte ampliada com testes de estoque, roteamento/health/CI, Argon2id (senhas.test.mjs) e equipe/revogação imediata (equipe.test.mjs)"
-    pendencias: ["Rodar npm.cmd test e npm.cmd run build no ambiente local antes do push/deploy"]
+    status: "PASS"
+    evidencia_atual: "26/26 testes passando (fail 0) incluindo estoque, roteamento/health/CI, Argon2id (senhas.test.mjs), equipe/revogação imediata (equipe.test.mjs) e landing/temas/VoicePill/NF-e/pitch (landing-e-assistente.test.mjs); npm run build concluído em dist/"
+    pendencias: []
   F09_deploy_operacao:
     status: "READY_FOR_RELEASE"
     artefatos: ["vercel.json", "docs/architecture/implantacao.md", "docs/operations/runbook.md", "api/handler.js"]

@@ -7,7 +7,8 @@
   <!-- O favicon usa o emblema da abertura do simulado. -->
   <link rel="icon" type="image/png" sizes="128x128" href="../abertura/imagens/coruja-sync-icone.png">
   <style>
-    :root {
+    :root,
+    html[data-theme="light"] {
       font: 100%/1.5 Arial, sans-serif;
       color-scheme: light;
       --primaria: #0f4c5c;
@@ -17,6 +18,79 @@
       --alerta: #b3261e;
       --branco: #ffffff;
       --texto: #182327;
+      --st-vencido-cor: #7e22ce;
+      --st-vencido-borda: rgba(126, 34, 206, 0.42);
+      --st-vencido-fundo: #faf5ff;
+      --st-vencido-badge-bg: #f3e8ff;
+      --st-vencido-badge-borda: #a855f7;
+      --st-vencido-badge-txt: #581c87;
+      --st-hoje-cor: #dc2626;
+      --st-hoje-borda: rgba(220, 38, 38, 0.62);
+      --st-hoje-fundo: #fef2f2;
+      --st-hoje-badge-bg: #dc2626;
+      --st-hoje-badge-borda: #b91c1c;
+      --st-hoje-badge-txt: #ffffff;
+      --st-hoje-glow: rgba(220, 38, 38, 0.34);
+      --st-breve-cor: #ea580c;
+      --st-breve-borda: rgba(234, 88, 12, 0.46);
+      --st-breve-fundo: #fff7ed;
+      --st-breve-badge-bg: #ffedd5;
+      --st-breve-badge-borda: #f97316;
+      --st-breve-badge-txt: #9a3412;
+      --st-prazo-cor: #0284c7;
+      --st-prazo-borda: rgba(2, 132, 199, 0.42);
+      --st-prazo-fundo: #f0f9ff;
+      --st-prazo-badge-bg: #e0f2fe;
+      --st-prazo-badge-borda: #38bdf8;
+      --st-prazo-badge-txt: #075985;
+      background: var(--fundo);
+      color: var(--texto);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --primaria: #52ecff;
+      --secundaria: #3d98a8;
+      --destaque: rgba(42, 127, 142, 0.28);
+      --fundo: #060b1b;
+      --alerta: #fca5a5;
+      --branco: #0d1f30;
+      --texto: #edf5ff;
+      --btn-secundario-fundo: rgba(15, 76, 92, 0.34);
+      --btn-secundario-gradiente: linear-gradient(160deg, rgba(42, 127, 142, 0.32) 0%, rgba(15, 76, 92, 0.44) 100%);
+      --btn-secundario-gradiente-hover: linear-gradient(160deg, rgba(42, 127, 142, 0.5) 0%, rgba(15, 76, 92, 0.62) 100%);
+      --btn-secundario-texto: #edf5ff;
+      --btn-secundario-borda: rgba(168, 213, 221, 0.48);
+      --btn-secundario-borda-hover: #a8d5dd;
+      --btn-secundario-fundo-hover: rgba(42, 127, 142, 0.48);
+      --btn-foco: #52ecff;
+      --btn-alerta-texto: #fca5a5;
+      --btn-alerta-borda: rgba(248, 113, 113, 0.62);
+      --btn-alerta-fundo-hover: rgba(185, 28, 28, 0.28);
+      --st-vencido-cor: #c084fc;
+      --st-vencido-borda: rgba(192, 132, 252, 0.44);
+      --st-vencido-fundo: rgba(147, 51, 234, 0.13);
+      --st-vencido-badge-bg: rgba(147, 51, 234, 0.28);
+      --st-vencido-badge-borda: rgba(192, 132, 252, 0.62);
+      --st-vencido-badge-txt: #f3e8ff;
+      --st-hoje-cor: #ef4444;
+      --st-hoje-borda: rgba(239, 68, 68, 0.72);
+      --st-hoje-fundo: rgba(239, 68, 68, 0.14);
+      --st-hoje-badge-bg: #dc2626;
+      --st-hoje-badge-borda: #fca5a5;
+      --st-hoje-badge-txt: #ffffff;
+      --st-hoje-glow: rgba(239, 68, 68, 0.46);
+      --st-breve-cor: #f97316;
+      --st-breve-borda: rgba(249, 115, 22, 0.54);
+      --st-breve-fundo: rgba(249, 115, 22, 0.11);
+      --st-breve-badge-bg: rgba(234, 88, 12, 0.28);
+      --st-breve-badge-borda: rgba(251, 146, 60, 0.68);
+      --st-breve-badge-txt: #ffedd5;
+      --st-prazo-cor: #38bdf8;
+      --st-prazo-borda: rgba(56, 189, 248, 0.48);
+      --st-prazo-fundo: rgba(14, 165, 233, 0.10);
+      --st-prazo-badge-bg: rgba(2, 132, 199, 0.28);
+      --st-prazo-badge-borda: rgba(56, 189, 248, 0.64);
+      --st-prazo-badge-txt: #e0f2fe;
       background: var(--fundo);
       color: var(--texto);
     }
@@ -29,9 +103,10 @@
     :focus-visible { outline: 2px solid var(--primaria); outline-offset: 2px; }
     a { color: var(--primaria); }
 
-    header { background: var(--primaria); color: var(--branco); }
+    header { background: #0f4c5c; color: #ffffff; }
+    html[data-theme="dark"] header { background: #081424; border-bottom: 1px solid rgba(42, 127, 142, 0.4); }
     header a { color: inherit; }
-    header a:focus-visible { outline-color: var(--branco); }
+    header a:focus-visible { outline-color: #ffffff; }
     .topbar { max-width: 76rem; margin: auto; padding: .25rem .75rem; display: flex; align-items: center; justify-content: space-between; gap: .25rem .5rem; flex-wrap: wrap; }
     .product-brand { display: flex; align-items: center; gap: .5rem; }
     .product-logo { display: block; width: 4.5rem; height: auto; border-radius: .3rem; }
@@ -47,46 +122,404 @@
     .stock-list:focus-visible { outline-offset: -2px; }
 
     label { display: block; font-weight: 700; }
-    input, textarea, button:not(.botao) { font: inherit; min-height: 2.75rem; border-radius: .5rem; }
+    input, textarea, button:not(.botao):not(.voice-pill):not(.sim-btn) { font: inherit; min-height: 2.75rem; border-radius: .5rem; }
     input, textarea { display: block; width: 100%; min-width: 0; padding: .3rem .5rem; border: 1px solid var(--secundaria); color: inherit; background: var(--branco); }
+    input[aria-invalid="true"] { border-color: var(--st-hoje-cor); box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25); }
     textarea { height: 2.75rem; resize: none; }
-    button:not(.botao) { padding: .25rem .55rem; border: 1px solid var(--primaria); background: var(--primaria); color: var(--branco); font-weight: 700; cursor: pointer; }
-    button:not(.botao).secondary { background: var(--branco); color: var(--secundaria); border-color: var(--secundaria); }
-    button:not(.botao).danger { background: var(--branco); color: var(--alerta); border-color: var(--alerta); }
-    button:not(.botao):disabled { opacity: .65; cursor: default; }
+    button:not(.botao):not(.voice-pill):not(.sim-btn) { padding: .25rem .55rem; border: 1px solid var(--primaria); background: var(--primaria); color: var(--branco); font-weight: 700; cursor: pointer; }
+    button:not(.botao):not(.voice-pill):not(.sim-btn).secondary { background: var(--branco); color: var(--secundaria); border-color: var(--secundaria); }
+    button:not(.botao):not(.voice-pill):not(.sim-btn).danger { background: var(--branco); color: var(--alerta); border-color: var(--alerta); }
+    button:not(.botao):not(.voice-pill):not(.sim-btn):disabled { opacity: .65; cursor: default; }
 
-    .assistant-row, .actions { display: flex; gap: .35rem; align-items: center; }
-    .assistant-row textarea { flex: 1; }
-    .assistant-row button { flex: 0 0 auto; }
-    .actions { flex-wrap: wrap; margin-top: .35rem; }
+    .assistant { display: flex; flex-direction: column; gap: .45rem; overflow-y: auto; }
+    .assistant-row { display: flex; flex-direction: column; gap: .55rem; }
+    .assistant-controls { position: relative; display: flex; align-items: center; gap: .6rem; }
+    .assistant-controls .botao-primario { flex: 1; min-width: 0; }
+    .voice-slot { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: flex-end; }
+    .actions { display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; margin-top: .35rem; }
     #form-title { margin-bottom: .15rem; }
     .fields { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .2rem .4rem; }
     .fields > div { grid-column: span 2; min-width: 0; }
     .fields > .required { grid-column: span 3; }
-    .field-suggested { background: var(--destaque); }
-    .data-note { margin-block: .25rem; }
+    .field-suggested { background: var(--destaque); border-color: var(--primaria); }
+    .data-note { margin-block: .25rem; font-size: .9rem; opacity: .88; }
     #assistant-status, #feedback, #stock-notice, #storage-note { overflow-wrap: anywhere; }
-    #assistant-status:not(:empty), #feedback:not(:empty) { margin-top: .25rem; }
-    #assistant-status[data-state="warn"], #assistant-status[data-state="error"], #feedback[data-error="true"], #storage-note { color: var(--alerta); }
-    #feedback[data-error="false"], #stock-notice { color: var(--primaria); }
+    #assistant-status:not(:empty), #feedback:not(:empty) { margin-top: .35rem; padding: .5rem .65rem; border-radius: .5rem; font-size: .92rem; font-weight: 600; }
+    #assistant-status[data-state="ok"]:not(:empty), #feedback[data-error="false"]:not(:empty) {
+      background: var(--st-prazo-fundo);
+      border: 1px solid var(--st-prazo-borda);
+      color: var(--st-prazo-badge-txt);
+    }
+    #assistant-status[data-state="warn"]:not(:empty),
+    #assistant-status[data-state="error"]:not(:empty),
+    #feedback[data-error="true"]:not(:empty) {
+      background: var(--st-hoje-fundo);
+      border: 1px solid var(--st-hoje-cor);
+      color: var(--st-hoje-cor);
+      font-weight: 700;
+    }
+    #storage-note { color: var(--alerta); }
+    #stock-notice { color: var(--primaria); font-weight: 700; }
     #storage-note:empty { display: none; }
+
+    /* Aviso interativo de lote repetido */
+    .duplicate-warning {
+      margin-top: .45rem;
+      padding: .65rem .75rem;
+      border-radius: .6rem;
+      border: 1.5px solid var(--st-breve-cor);
+      border-left: 4px solid var(--st-breve-cor);
+      background: var(--st-breve-fundo);
+      color: var(--st-breve-badge-txt);
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+    }
+    .duplicate-warning p { font-size: .9rem; font-weight: 700; }
+    .duplicate-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .duplicate-actions .botao { min-height: 38px; padding: 6px 12px; font-size: .85rem; }
+    .lot-card.is-duplicate-highlight {
+      box-shadow: 0 0 0 3px var(--st-breve-cor), 0 0 22px rgba(249, 115, 22, 0.45);
+    }
+
+    /* Simulações rápidas interativas para demonstração via QR Code */
+    .simulations-box {
+      margin-top: .45rem;
+      padding-top: .65rem;
+      border-top: 1px solid var(--secundaria);
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+    }
+    .simulations-title { font-size: .92rem; font-weight: 700; color: var(--primaria); }
+    .simulations-hint { font-size: .84rem; opacity: .86; }
+    .simulations-grid { display: grid; grid-template-columns: 1fr; gap: .4rem; }
+    .sim-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      width: 100%;
+      padding: .5rem .65rem;
+      border-radius: .55rem;
+      border: 1px solid var(--secundaria);
+      border-left: 4px solid var(--primaria);
+      background: var(--fundo);
+      color: var(--texto);
+      font: 600 .86rem/1.3 Arial, sans-serif;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+    .sim-btn:hover { transform: translateY(-1px); }
+    .sim-btn small { display: block; font-weight: 400; font-size: .78rem; opacity: .82; margin-top: .1rem; }
+    .sim-pill {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .15rem .45rem;
+      border-radius: 999px;
+      font-size: .74rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .sim-btn[data-sim="hoje"] { border-color: var(--st-hoje-borda); border-left-color: var(--st-hoje-cor); background: var(--st-hoje-fundo); }
+    .sim-btn[data-sim="hoje"] .sim-pill { background: var(--st-hoje-badge-bg); color: var(--st-hoje-badge-txt); }
+    .sim-btn[data-sim="breve"] { border-color: var(--st-breve-borda); border-left-color: var(--st-breve-cor); background: var(--st-breve-fundo); }
+    .sim-btn[data-sim="breve"] .sim-pill { background: var(--st-breve-badge-bg); color: var(--st-breve-badge-txt); border: 1px solid var(--st-breve-badge-borda); }
+    .sim-btn[data-sim="prazo"] { border-color: var(--st-prazo-borda); border-left-color: var(--st-prazo-cor); background: var(--st-prazo-fundo); }
+    .sim-btn[data-sim="prazo"] .sim-pill { background: var(--st-prazo-badge-bg); color: var(--st-prazo-badge-txt); border: 1px solid var(--st-prazo-badge-borda); }
+    .sim-btn[data-sim="vencido"] { border-color: var(--st-vencido-borda); border-left-color: var(--st-vencido-cor); background: var(--st-vencido-fundo); }
+    .sim-btn[data-sim="vencido"] .sim-pill { background: var(--st-vencido-badge-bg); color: var(--st-vencido-badge-txt); border: 1px solid var(--st-vencido-badge-borda); }
+    .sim-btn[data-sim="erro"] { border-style: dashed; border-color: var(--st-hoje-cor); border-left: 4px solid var(--st-hoje-cor); background: var(--st-hoje-fundo); }
+    .sim-btn[data-sim="erro"] .sim-pill { background: transparent; color: var(--st-hoje-cor); border: 1px solid var(--st-hoje-cor); }
+
+    /* Entrada de Nota Fiscal (NF-e XML — Fase 1) e Roadmap Fiscal (Fases 1, 2 e 3) */
+    .nfe-box {
+      margin-top: .5rem;
+      padding-top: .65rem;
+      border-top: 1px solid var(--secundaria);
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+    }
+    .nfe-header { display: flex; align-items: center; justify-content: space-between; gap: .4rem; flex-wrap: wrap; }
+    .nfe-phase-tag {
+      padding: .12rem .5rem;
+      border-radius: 999px;
+      font-size: .74rem;
+      font-weight: 700;
+      background: var(--st-prazo-badge-bg);
+      color: var(--st-prazo-badge-txt);
+      border: 1px solid var(--st-prazo-badge-borda);
+    }
+    .nfe-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .nfe-actions .botao { flex: 1 1 9rem; min-height: 42px; padding: 8px 12px; font-size: .88rem; }
+    #nfe-status:empty { display: none; }
+    #nfe-status {
+      padding: .45rem .6rem;
+      border-radius: .5rem;
+      font-size: .86rem;
+      font-weight: 600;
+      border: 1px solid var(--st-prazo-borda);
+      background: var(--st-prazo-fundo);
+      color: var(--st-prazo-badge-txt);
+    }
+    #nfe-status[data-state="warn"], #nfe-status[data-state="error"] {
+      border-color: var(--st-breve-cor);
+      background: var(--st-breve-fundo);
+      color: var(--st-breve-badge-txt);
+    }
+    #nfe-status[data-state="error"] {
+      border-color: var(--st-hoje-cor);
+      background: var(--st-hoje-fundo);
+      color: var(--st-hoje-cor);
+    }
+    .nfe-queue-wrap {
+      border: 1px solid var(--secundaria);
+      border-radius: .6rem;
+      padding: .5rem;
+      background: var(--fundo);
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+    }
+    .nfe-queue-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .45rem; flex-wrap: wrap; }
+    .nfe-queue-meta { font-size: .82rem; opacity: .88; }
+    .nfe-clear-btn { min-height: 34px !important; padding: 4px 10px !important; font-size: .78rem !important; }
+    .nfe-queue-list { display: grid; gap: .38rem; margin: 0; padding: 0; list-style: none; }
+    .nfe-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .45rem;
+      padding: .45rem .55rem;
+      border-radius: .5rem;
+      border: 1px solid var(--secundaria);
+      border-left: 4px solid var(--st-breve-cor);
+      background: var(--branco);
+      font-size: .84rem;
+    }
+    .nfe-item.has-rastro { border-left-color: var(--st-prazo-cor); }
+    .nfe-item.is-active { box-shadow: 0 0 0 2px var(--primaria); }
+    .nfe-item.is-done { opacity: .66; border-left-color: var(--secundaria); }
+    .nfe-item-info { min-width: 0; flex: 1; }
+    .nfe-item-info strong { display: block; font-size: .88rem; }
+    .nfe-item-info small { display: block; font-size: .76rem; opacity: .82; overflow-wrap: anywhere; }
+    .nfe-item-actions { display: flex; flex-direction: column; align-items: flex-end; gap: .25rem; flex: none; }
+    .nfe-item-btn { min-height: 34px !important; padding: 4px 10px !important; font-size: .78rem !important; }
+    .roadmap-box {
+      margin-top: .25rem;
+      padding: .45rem .6rem;
+      border-radius: .55rem;
+      border: 1px dashed var(--secundaria);
+      background: var(--fundo);
+      font-size: .84rem;
+    }
+    .roadmap-box summary { cursor: pointer; font-weight: 700; color: var(--primaria); }
+    .roadmap-list { margin: .45rem 0 0; padding-left: 1.1rem; display: grid; gap: .35rem; }
+    .roadmap-list li { line-height: 1.38; }
+
+    /* Componente VoicePill (@react-bits/VoicePill-JS-CSS) */
+    .voice-pill {
+      --vp-accent: #f5f5f5;
+      --vp-icon: #d4d4d8;
+      --vp-bg: #27272a;
+      --vp-size: 46px;
+      --vp-radius: 23px;
+      --vp-reach: 8px;
+      --vp-extra: 132px;
+      --vp-clock-w: 44px;
+      --vp-wave-w: 88px;
+      --vp-slide: 0px;
+      --vp-cancel: 0;
+      --vp-stop: 15px;
+      --vp-icon-size: 24px;
+      --vp-time-size: 13px;
+      --vp-open: 200ms;
+      --vp-press: 0.95;
+      --vp-hit: 4px;
+      --vp-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+      position: relative;
+      display: inline-grid;
+      place-items: center;
+      isolation: isolate;
+      width: var(--vp-size);
+      height: var(--vp-size);
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: var(--vp-radius);
+      background: transparent;
+      color: var(--vp-icon);
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+      transition: transform 160ms var(--vp-ease-out), color 150ms ease;
+    }
+    html[data-theme="light"] .voice-pill {
+      --vp-accent: #ffffff;
+      --vp-icon: #e2f1f5;
+      --vp-bg: #0f4c5c;
+    }
+    .voice-pill::before { content: ''; position: absolute; inset: calc(-1 * var(--vp-hit)); }
+    .voice-pill:focus-visible { outline: 2px solid var(--primaria); outline-offset: 3px; }
+    .voice-pill[data-state='listening'] { z-index: 3; color: var(--vp-accent); }
+    .voice-pill[data-pressed] { transform: scale(var(--vp-press)); }
+    .voice-pill:disabled { opacity: 0.55; cursor: default; pointer-events: none; }
+    .voice-pill__capsule {
+      position: absolute;
+      inset: 0 0 0 calc(-1 * (var(--vp-reach) + var(--vp-extra)));
+      border-radius: var(--vp-radius);
+      background: var(--vp-bg);
+      border: 1px solid rgba(168, 213, 221, 0.38);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+      clip-path: inset(0 0 0 calc(var(--vp-reach) + var(--vp-extra)) round var(--vp-radius));
+      pointer-events: none;
+      transition: clip-path var(--vp-open) var(--vp-ease-out), background-color 150ms ease;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .voice-pill[data-state='idle']:not(:disabled):hover .voice-pill__capsule {
+        background: color-mix(in srgb, var(--vp-icon) 14%, var(--vp-bg));
+      }
+    }
+    .voice-pill[data-state='listening'] .voice-pill__capsule {
+      clip-path: inset(0 0 round var(--vp-radius));
+    }
+    .voice-pill__time {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 100%;
+      display: grid;
+      place-items: center;
+      width: var(--vp-clock-w);
+      box-sizing: border-box;
+      color: var(--vp-accent);
+      font-size: var(--vp-time-size);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      opacity: 0;
+      filter: blur(2px);
+      transform: translateX(var(--vp-slide));
+      pointer-events: none;
+      transition: opacity 200ms ease, filter 200ms ease, transform 240ms var(--vp-ease-out);
+    }
+    .voice-pill[data-state='listening'] .voice-pill__time {
+      opacity: calc(1 - var(--vp-cancel));
+      filter: blur(0);
+    }
+    .voice-pill__wave {
+      position: absolute;
+      top: 18%;
+      right: calc(100% + var(--vp-clock-w));
+      width: var(--vp-wave-w);
+      height: 64%;
+      opacity: 0;
+      filter: blur(2px);
+      transform: translateX(var(--vp-slide));
+      pointer-events: none;
+      transition: opacity 200ms ease, filter 200ms ease, transform 240ms var(--vp-ease-out);
+    }
+    .voice-pill[data-state='listening'] .voice-pill__wave {
+      opacity: calc(1 - var(--vp-cancel));
+      filter: blur(0);
+    }
+    .voice-pill__cancel {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      width: var(--vp-extra);
+      color: var(--vp-accent);
+      font-size: var(--vp-time-size);
+      font-weight: 600;
+      line-height: 1;
+      opacity: var(--vp-cancel);
+      pointer-events: none;
+    }
+    .voice-pill[data-sliding] .voice-pill__time,
+    .voice-pill[data-sliding] .voice-pill__wave,
+    .voice-pill[data-sliding] .voice-pill__glyph { transition-property: opacity, filter; }
+    .voice-pill__glyph {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: var(--vp-size);
+      height: var(--vp-size);
+      transform: translateX(var(--vp-slide));
+      transition: transform 240ms var(--vp-ease-out);
+    }
+    .voice-pill__glyph > * {
+      grid-area: 1 / 1;
+      transition: opacity 200ms ease, filter 200ms ease, transform 200ms var(--vp-ease-out);
+    }
+    .voice-pill__mic { display: inline-flex; }
+    .voice-pill__stop {
+      width: var(--vp-stop);
+      height: var(--vp-stop);
+      border-radius: 22%;
+      background: currentColor;
+      opacity: 0;
+      filter: blur(2px);
+      transform: scale(0.6);
+    }
+    .voice-pill[data-state='listening'] .voice-pill__mic { opacity: 0; filter: blur(2px); transform: scale(0.7); }
+    .voice-pill[data-state='listening'] .voice-pill__stop { opacity: 1; filter: blur(0); transform: scale(1); }
+    .voice-pill[data-input='key'] .voice-pill__capsule,
+    .voice-pill[data-input='key'] .voice-pill__time,
+    .voice-pill[data-input='key'] .voice-pill__glyph > * { transition-duration: 0ms; }
 
     .summary-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .25rem; }
     .metric { text-align: center; border: 1px solid var(--secundaria); border-radius: .5rem; padding: .1rem .15rem; overflow-wrap: anywhere; }
     .metric strong { display: block; }
-    .metric.alert strong { color: var(--alerta); }
-    .metric.warn strong { color: var(--secundaria); }
+    .metric.alert strong { color: var(--st-hoje-cor); }
+    .metric.warn strong { color: var(--st-breve-cor); }
     ol { margin: 0; padding: 0; list-style: none; }
-    .lot-card { border: 1px solid var(--secundaria); border-left: .25rem solid var(--primaria); border-radius: .5rem; padding: .3rem .45rem; margin-bottom: .35rem; overflow-wrap: anywhere; }
-    .lot-card.status-expired { border-left-color: var(--alerta); }
-    .lot-card.status-today { border-left-color: var(--destaque); }
-    .lot-card.status-soon { border-left-color: var(--secundaria); }
-    .lot-name { font-weight: 700; }
-    .badge { display: inline-block; border-radius: .35rem; padding: 0 .25rem; margin-left: .2rem; }
-    .badge-expired { color: var(--alerta); }
-    .badge-today { background: var(--destaque); color: var(--texto); }
-    .badge-soon { color: var(--secundaria); }
-    .badge-ok { color: var(--primaria); }
+    .lot-card { border: 1px solid var(--st-prazo-borda); border-left: 4px solid var(--st-prazo-cor); border-radius: .65rem; padding: .5rem .65rem; margin-bottom: .45rem; background: var(--st-prazo-fundo); overflow-wrap: anywhere; transition: border-color 240ms ease, background-color 240ms ease, box-shadow 240ms ease; }
+    .lot-card.status-expired { border-color: var(--st-vencido-borda); border-left-color: var(--st-vencido-cor); background: var(--st-vencido-fundo); }
+    .lot-card.status-today { border-color: var(--st-hoje-borda); border-left-color: var(--st-hoje-cor); background: var(--st-hoje-fundo); animation: alerta-vence-hoje-card 1.15s ease-in-out infinite; }
+    .lot-card.status-soon { border-color: var(--st-breve-borda); border-left-color: var(--st-breve-cor); background: var(--st-breve-fundo); }
+    .lot-card.status-ok { border-color: var(--st-prazo-borda); border-left-color: var(--st-prazo-cor); background: var(--st-prazo-fundo); }
+    .lot-name { font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+    .badge { display: inline-flex; align-items: center; gap: .35rem; border-radius: .4rem; border: 1px solid transparent; padding: .1rem .45rem; font-size: .85rem; font-weight: 700; }
+    .badge::before { content: ""; width: .42rem; height: .42rem; border-radius: 50%; flex: none; background: currentColor; }
+    .badge-expired { background: var(--st-vencido-badge-bg); border-color: var(--st-vencido-badge-borda); color: var(--st-vencido-badge-txt); }
+    .badge-expired::before { background: var(--st-vencido-cor); }
+    .badge-today { background: var(--st-hoje-badge-bg); border-color: var(--st-hoje-badge-borda); color: var(--st-hoje-badge-txt); animation: alerta-vence-hoje-badge 1.15s ease-in-out infinite; }
+    .badge-today::before { background: #ffffff; animation: alerta-vence-hoje-ponto 1.15s ease-out infinite; }
+    .badge-soon { background: var(--st-breve-badge-bg); border-color: var(--st-breve-badge-borda); color: var(--st-breve-badge-txt); }
+    .badge-soon::before { background: var(--st-breve-cor); }
+    .badge-ok { background: var(--st-prazo-badge-bg); border-color: var(--st-prazo-badge-borda); color: var(--st-prazo-badge-txt); }
+    .badge-ok::before { background: var(--st-prazo-cor); }
+    @keyframes alerta-vence-hoje-card {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.45); box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0), 0 0 0 0 rgba(239, 68, 68, 0.18); }
+      50% { border-color: #ff4d4d; box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.25), 0 0 0 4px rgba(239, 68, 68, 0.42), 0 0 26px var(--st-hoje-glow); }
+    }
+    @keyframes alerta-vence-hoje-badge {
+      0%, 100% { filter: brightness(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65); }
+      50% { filter: brightness(1.22); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0), 0 0 18px rgba(239, 68, 68, 0.8); }
+    }
+    @keyframes alerta-vence-hoje-ponto {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9); }
+      70% { transform: scale(1.25); box-shadow: 0 0 0 7px rgba(255, 255, 255, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
     .lot-actions { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .2rem; }
     .discard-log { border-top: 1px solid var(--secundaria); margin-top: .45rem; padding-top: .35rem; }
     .discard-item { margin-top: .2rem; overflow-wrap: anywhere; }
@@ -94,35 +527,28 @@
     .test-tools { display: flex; flex-wrap: wrap; align-items: end; gap: .35rem; }
     .test-tools input { width: auto; max-width: 100%; }
 
-    @media (min-height: 620px) and (min-width: 330px) {
-      body { height: 100dvh; }
-    }
     @media (min-width: 700px) {
       main { padding: .75rem; }
       .workspace {
-        grid-template: "entry assistant" auto "stock assistant" minmax(10rem, 1fr) / minmax(0, 1.85fr) minmax(0, 1fr);
+        grid-template: "entry assistant" auto "stock assistant" minmax(10rem, 1fr) / minmax(0, 1.75fr) minmax(0, 1.05fr);
       }
       .panel { padding: .75rem; }
       .entry { grid-area: entry; }
       .stock { grid-area: stock; }
       .assistant { grid-area: assistant; }
-      .assistant-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-      .assistant-row textarea { grid-column: 1 / -1; height: 7rem; }
+      .assistant-row textarea { height: 5.5rem; }
     }
     @media (max-height: 619px), (max-width: 329px) {
       .stock-list { max-height: 18rem; }
     }
-    @media (max-width: 550px) {
-      .assistant-row { flex-wrap: wrap; }
-      .assistant-row textarea { flex-basis: 100%; }
-    }
     @media (max-width: 699px) {
       .metric strong { display: inline; margin-right: .15rem; }
-      .lot-card { padding-block: .2rem; }
+      .lot-card { padding-block: .35rem; }
       .badge { margin-left: 0; }
     }
   </style>
   <link rel="stylesheet" href="../../css/botoes.css">
+  <script src="../abertura/js/tema.js"></script>
 </head>
 <body>
   <header>
@@ -156,12 +582,106 @@
       <section class="panel assistant" aria-label="Assistente por texto ou voz">
         <label for="nl-input">Descrição do lote</label>
         <div class="assistant-row">
-          <textarea id="nl-input" rows="1" placeholder="Ex.: Queijo, lote A12, validade 30/11/2026"></textarea>
-          <button type="button" id="parse-btn" class="botao botao-primario">Preencher cadastro</button>
-          <button type="button" id="voice-btn" class="botao botao-secundario" aria-describedby="voice-note">Ditar mensagem</button>
+          <textarea id="nl-input" rows="2" placeholder="Ex.: Queijo, lote A12, validade 30/11/2026"></textarea>
+          <div class="assistant-controls">
+            <button type="button" id="parse-btn" class="botao botao-primario">Preencher cadastro</button>
+            <span class="voice-slot">
+              <button
+                type="button"
+                id="voice-btn"
+                class="voice-pill"
+                data-state="idle"
+                data-input="pointer"
+                data-time=""
+                aria-label="Ditar mensagem por voz"
+                aria-pressed="false"
+                aria-describedby="voice-note"
+                title="Toque ou segure para ditar por voz (arraste para a esquerda para cancelar)"
+              >
+                <span class="voice-pill__capsule" aria-hidden="true"></span>
+                <canvas id="voice-wave" class="voice-pill__wave" aria-hidden="true"></canvas>
+                <span class="voice-pill__cancel" aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                  <span>Cancelar</span>
+                </span>
+                <span id="voice-time" class="voice-pill__time" aria-hidden="true">0:00</span>
+                <span class="voice-pill__glyph">
+                  <span class="voice-pill__mic" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="2" width="6" height="11" rx="3"/>
+                      <path d="M5 10a7 7 0 0 0 14 0"/>
+                      <path d="M12 17v4"/>
+                      <path d="M8 21h8"/>
+                    </svg>
+                  </span>
+                  <span class="voice-pill__stop" aria-hidden="true"></span>
+                </span>
+              </button>
+            </span>
+          </div>
         </div>
-        <p class="data-note" id="voice-note">O ditado usa o microfone e pode enviar áudio ao serviço de voz do navegador. Você também pode digitar.</p>
+        <p class="data-note" id="voice-note">Toque ou segure o microfone para ditar por voz (arraste para a esquerda para cancelar) ou digite acima.</p>
         <p id="assistant-status" role="status"></p>
+
+        <div class="simulations-box" aria-label="Simulações rápidas para teste">
+          <p class="simulations-title">Simulações rápidas para testar</p>
+          <p class="simulations-hint">Escolha um cenário real da cozinha para testar o preenchimento ou ver como o sistema avisa erros:</p>
+          <div class="simulations-grid">
+            <button type="button" class="sim-btn" data-sim="hoje">
+              <span>Creme de leite · lote B02<small>2 caixas · prateleira do meio · vence hoje</small></span>
+              <span class="sim-pill">Vence hoje</span>
+            </button>
+            <button type="button" class="sim-btn" data-sim="breve">
+              <span>Queijo muçarela · lote C03<small>500g · gaveta de frios · vence em 2 dias</small></span>
+              <span class="sim-pill">Em 2 dias</span>
+            </button>
+            <button type="button" class="sim-btn" data-sim="prazo">
+              <span>Farinha de trigo · lote D04<small>5 kg · prateleira de cima · dentro do prazo</small></span>
+              <span class="sim-pill">No prazo</span>
+            </button>
+            <button type="button" class="sim-btn" data-sim="vencido">
+              <span>Alface americana · lote A01<small>2 bandejas · fundo da geladeira · já vencido</small></span>
+              <span class="sim-pill">Vencido</span>
+            </button>
+            <button type="button" class="sim-btn" data-sim="erro">
+              <span>Simular erro · data ambígua<small>“Iogurte natural, lote E05, 3 potes, vence na terça”</small></span>
+              <span class="sim-pill">Erro / Aviso</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Fase 1 do roadmap fiscal: leitura local de XML NF-e (DOMParser) com conferência assistida -->
+        <div class="nfe-box" aria-label="Importação de Nota Fiscal NF-e">
+          <div class="nfe-header">
+            <p class="simulations-title">Nota Fiscal (NF-e XML)</p>
+            <span class="nfe-phase-tag">Fase 1 ativa</span>
+          </div>
+          <p class="simulations-hint">Importe um XML real de NF-e ou simule uma entrega: o sistema aproveita o bloco <code>&lt;rastro&gt;</code> quando existe e usa a assistente para completar validades faltantes.</p>
+          <div class="nfe-actions">
+            <label class="botao botao-secundario" for="nfe-file-input">Enviar XML (.xml)</label>
+            <input id="nfe-file-input" type="file" accept=".xml,text/xml,application/xml" hidden>
+            <button type="button" id="nfe-demo-btn" class="botao botao-primario">Simular NF-e (4 itens)</button>
+          </div>
+          <p id="nfe-status" role="status"></p>
+          <div id="nfe-queue-wrap" class="nfe-queue-wrap" hidden>
+            <div class="nfe-queue-top">
+              <div>
+                <strong id="nfe-queue-title"></strong>
+                <p id="nfe-queue-meta" class="nfe-queue-meta"></p>
+              </div>
+              <button type="button" id="nfe-clear-btn" class="botao botao-secundario nfe-clear-btn">Limpar nota</button>
+            </div>
+            <ul id="nfe-queue-list" class="nfe-queue-list" aria-label="Itens extraídos da nota fiscal"></ul>
+          </div>
+          <details class="roadmap-box">
+            <summary>Roadmap fiscal integrado (Fases 1, 2 e 3)</summary>
+            <ol class="roadmap-list">
+              <li><strong>Fase 1 — MVP (ativo agora):</strong> leitura local do XML da NF-e no navegador (<code>DOMParser</code>), extração de <code>&lt;rastro&gt;</code> (<code>nLote</code>/<code>dVal</code>), trava contra nota repetida e conferência assistida por voz/texto.</li>
+              <li><strong>Fase 2 — Piloto SEFAZ:</strong> captura automática via <strong>SEFAZ Distribuição DF-e</strong> (Certificado Digital A1), leitura de <strong>QR Code da NFC-e</strong> e De/Para de fornecedores no Supabase.</li>
+              <li><strong>Fase 3 — Câmera na cozinha (Vision):</strong> leitura da validade impressa na embalagem (OCR/Visão) para compras sem XML (hortifrúti e feira) mantendo conferência humana.</li>
+            </ol>
+          </details>
+        </div>
       </section>
 
       <section class="panel entry" aria-labelledby="form-title">
@@ -195,6 +715,14 @@
             <button id="cancel-btn" class="botao botao-secundario" type="button" hidden>Cancelar edição</button>
           </div>
           <p id="feedback" role="status"></p>
+          <div id="duplicate-warning" class="duplicate-warning" role="alert" hidden>
+            <p id="duplicate-warning-text"></p>
+            <div class="duplicate-actions">
+              <button type="button" id="dup-edit-btn" class="botao botao-primario">Editar lote existente</button>
+              <button type="button" id="dup-confirm-btn" class="botao botao-secundario">Adicionar mesmo assim</button>
+              <button type="button" id="dup-dismiss-btn" class="botao botao-secundario">Cancelar</button>
+            </div>
+          </div>
         </form>
       </section>
 
@@ -244,6 +772,7 @@
     // Chaves de persistência no navegador (localStorage)
     const STORAGE_KEY_LOTS = 'insumo-e3-lotes-v2';
     const STORAGE_KEY_DISCARDS = 'insumo-e3-descartes-v2';
+    const STORAGE_KEY_NFE_KEYS = 'insumo-e3-nfe-chaves-v1';
 
     // Atalho para selecionar elementos pelo ID
     const el = id => document.getElementById(id);
@@ -261,7 +790,51 @@
     // Estado em memória
     let lots = [];
     let discards = [];
+    let importedNfeKeys = [];
+    let currentNfe = null;
+    let activeNfeItemUid = null;
     let editingId = null;
+    let pendingDuplicate = null;
+
+    function normalizeKey(value) {
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ');
+    }
+
+    function findDuplicateLot(name, lotCode, expiry, ignoreId = null) {
+      const targetName = normalizeKey(name);
+      const targetCode = normalizeKey(lotCode);
+      return lots.find(item => {
+        if (ignoreId !== null && item.id === ignoreId) return false;
+        if (normalizeKey(item.name) !== targetName) return false;
+        if (item.expiry !== expiry) return false;
+        const itemCode = normalizeKey(item.lotCode);
+        return itemCode === targetCode || !itemCode || !targetCode;
+      }) || null;
+    }
+
+    function hideDuplicateWarning() {
+      pendingDuplicate = null;
+      const box = el('duplicate-warning');
+      if (box) box.hidden = true;
+      document.querySelectorAll('.lot-card.is-duplicate-highlight').forEach(node => {
+        node.classList.remove('is-duplicate-highlight');
+      });
+    }
+
+    function highlightExistingLot(id) {
+      document.querySelectorAll('.lot-card.is-duplicate-highlight').forEach(node => {
+        node.classList.remove('is-duplicate-highlight');
+      });
+      const card = document.querySelector(`.lot-card[data-lot-id="${id}"]`);
+      if (!card) return;
+      card.classList.add('is-duplicate-highlight');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 
     /* -------------------------------------------------------------------------
        FUNÇÕES AUXILIARES DE DATA E FORMATAÇÃO
@@ -318,7 +891,7 @@
       if (daysLeft <= 3) {
         return { cls: 'status-soon', badgeCls: 'badge-soon', label: `Vence em ${daysLeft} dia${daysLeft === 1 ? '' : 's'}`, urgent: false, soon: true };
       }
-      return { cls: '', badgeCls: 'badge-ok', label: `Dentro do prazo · faltam ${daysLeft} dias`, urgent: false, soon: false };
+      return { cls: 'status-ok', badgeCls: 'badge-ok', label: `Dentro do prazo · faltam ${daysLeft} dias`, urgent: false, soon: false };
     }
 
     // Escapa caracteres HTML para evitar quebra de layout ou XSS
@@ -418,6 +991,8 @@
     function runAssistantParse() {
       const text = nlInput.value.trim();
       clearSuggestionHighlights();
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
 
       if (!text) {
         setAssistantStatus('Digite ou dite uma descrição do lote antes de interpretar.', 'warn');
@@ -426,8 +1001,23 @@
       }
 
       const parsed = interpretNaturalText(text);
+      const itemNotaAtivo = currentNfe?.itens.find(item => item.uid === activeNfeItemUid) || null;
 
-      // Preenche somente os campos reconhecidos e destaca em amarelo para conferência
+      // Quando há um item da NF-e em conferência, preserva insumo/quantidade da nota se a fala complementar apenas validade/lote/local.
+      if (itemNotaAtivo) {
+        if (!parsed.name) parsed.name = itemNotaAtivo.nomeSugerido;
+        if (!parsed.qty) parsed.qty = itemNotaAtivo.quantidade;
+        if (!parsed.lotCode && itemNotaAtivo.lote) parsed.lotCode = itemNotaAtivo.lote;
+      }
+
+      // Limpa valores anteriores para evitar mistura entre simulações ou novas frases
+      nameInput.value = '';
+      lotCodeInput.value = '';
+      expiryInput.value = '';
+      qtyInput.value = '';
+      locInput.value = '';
+
+      // Preenche somente os campos reconhecidos e destaca para conferência
       if (parsed.name) { nameInput.value = parsed.name; nameInput.classList.add('field-suggested'); }
       if (parsed.lotCode) { lotCodeInput.value = parsed.lotCode; lotCodeInput.classList.add('field-suggested'); }
       if (parsed.expiry) { expiryInput.value = parsed.expiry; expiryInput.classList.add('field-suggested'); }
@@ -436,21 +1026,36 @@
 
       // Verifica se faltou algum campo obrigatório (insumo ou data completa)
       const missing = [];
-      if (!parsed.name) missing.push('nome do insumo');
-      if (!parsed.expiry) missing.push('data de validade completa (DD/MM/AAAA)');
+      if (!parsed.name) {
+        missing.push('nome do insumo');
+        nameInput.setAttribute('aria-invalid', 'true');
+      }
+      if (!parsed.expiry) {
+        missing.push('data de validade completa (DD/MM/AAAA)');
+        expiryInput.setAttribute('aria-invalid', 'true');
+      }
 
       if (missing.length > 0) {
         const extra = parsed.ambiguousDateTerm
-          ? ` O termo "${parsed.ambiguousDateTerm}" é ambíguo — informe a data exata.`
+          ? ` O termo "${parsed.ambiguousDateTerm}" é ambíguo — o sistema não adivinha validades; informe a data exata.`
           : '';
-        setAssistantStatus('');
-        showFeedback(`Falta informar: ${missing.join(' e ')}.${extra}`, true);
+        const avisoErro = `Erro detectado: falta informar ${missing.join(' e ')}.${extra}`;
+        setAssistantStatus(avisoErro, 'error');
+        showFeedback(avisoErro, true);
         (parsed.name ? expiryInput : nameInput).focus();
         return;
       }
 
-      setAssistantStatus('');
-      showFeedback('Confira os campos sugeridos antes de salvar.');
+      const existingMatch = findDuplicateLot(parsed.name, parsed.lotCode, parsed.expiry, editingId);
+      if (existingMatch) {
+        const avisoDup = `Atenção: "${existingMatch.name}"${existingMatch.lotCode ? ` (Lote ${existingMatch.lotCode})` : ''} com validade ${formatDateBr(existingMatch.expiry)} já existe no estoque. Ao salvar, o sistema pedirá confirmação.`;
+        setAssistantStatus(avisoDup, 'warn');
+        showFeedback(avisoDup, false);
+        highlightExistingLot(existingMatch.id);
+      } else {
+        setAssistantStatus('Campos preenchidos! Confira os dados ao lado e clique em "Salvar lote".', 'ok');
+        showFeedback('Confira os campos sugeridos antes de salvar.', false);
+      }
       el('form-title').focus();
     }
 
@@ -458,7 +1063,9 @@
     // Regra: preserva o texto digitado e libera o formulário manual sem perder dados.
     function simulateAssistantFailure() {
       clearSuggestionHighlights();
-      showFeedback('Assistente indisponível. Seu texto foi preservado. Preencha o cadastro manualmente.', true);
+      const aviso = 'Erro no assistente: serviço temporariamente indisponível. Seu texto foi preservado — preencha o cadastro manualmente.';
+      setAssistantStatus(aviso, 'error');
+      showFeedback(aviso, true);
       nameInput.focus();
     }
 
@@ -468,50 +1075,585 @@
       runAssistantParse();
     };
 
+    // Calcula data DD/MM/AAAA somando dias à data de referência para as simulações sempre refletirem o dia atual
+    function addDaysBr(baseIso, deltaDays) {
+      const [y, m, d] = baseIso.split('-').map(Number);
+      const dt = new Date(Date.UTC(y, m - 1, d + deltaDays));
+      const dd = String(dt.getUTCDate()).padStart(2, '0');
+      const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+      const yyyy = dt.getUTCFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
+    function runSimulation(kind) {
+      activeNfeItemUid = null;
+      renderNfeQueue();
+      const refIso = refDateInput.value || getLocalTodayIso();
+      const scenarios = {
+        hoje: `Creme de leite, lote B02, 2 caixas, validade ${addDaysBr(refIso, 0)}, prateleira do meio`,
+        breve: `Queijo muçarela, lote C03, 500g, validade ${addDaysBr(refIso, 2)}, gaveta de frios`,
+        prazo: `Farinha de trigo, lote D04, 5 kg, validade ${addDaysBr(refIso, 10)}, prateleira de cima`,
+        vencido: `Alface americana, lote A01, 2 bandejas, validade ${addDaysBr(refIso, -2)}, fundo da geladeira`,
+        erro: 'Iogurte natural, lote E05, 3 potes, vence na terça'
+      };
+      const phrase = scenarios[kind];
+      if (!phrase) return;
+      window.fillExample(phrase);
+    }
+
     /* -------------------------------------------------------------------------
-       DITADO POR VOZ (WEB SPEECH API NATIVA DO NAVEGADOR)
-       - Permite falar com a mão ocupada na cozinha (funciona no Chrome/Edge).
-       - Se o navegador não suportar voz, informa e mantém o campo de texto.
+       FASE 1 DO ROADMAP FISCAL — LEITURA DE XML NF-e NO NAVEGADOR (DOMParser)
+       - Lê arquivos .xml padrão SEFAZ 4.00 sem custo de servidor nem certificado.
+       - Extrai <rastro> (<nLote>, <dVal>) quando presente; quando ausente (maioria
+         dos alimentos no Brasil), marca o item para conferência por voz ou digitação.
+       - Registra a chave da nota (chNFe) para avisar se a mesma nota for reimportada.
        ------------------------------------------------------------------------- */
-    function startVoiceCapture() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        setAssistantStatus('Seu navegador não suporta ditado por voz. Digite a frase no campo acima.', 'warn');
+    const NFE_NAME_RULES = [
+      [/\bCR\.?\s*LEITE\b/gi, 'Creme de leite'],
+      [/\bQJO\.?\s*MUCARELA\b/gi, 'Queijo muçarela'],
+      [/\bQJO\.?\s*PARMESAO\b/gi, 'Queijo parmesão'],
+      [/\bFAR\.?\s*TRIGO\b/gi, 'Farinha de trigo'],
+      [/\bALF\.?\s*AMERICANA\b/gi, 'Alface americana'],
+      [/\bIOG\.?\s*NATURAL\b/gi, 'Iogurte natural'],
+      [/\bPOLPA\s*TOM\.?\b/gi, 'Polpa de tomate'],
+      [/\bLEITE\s*COND\.?\b/gi, 'Leite condensado'],
+    ];
+
+    const NFE_UNITS = {
+      UN: 'un', UND: 'un', UNID: 'un', CX: 'caixas', CXA: 'caixas', FD: 'fardos',
+      PCT: 'pacotes', PT: 'potes', BD: 'bandejas', BDJ: 'bandejas',
+      KG: 'kg', G: 'g', GR: 'g', L: 'L', LT: 'L', ML: 'ml', SC: 'sacos'
+    };
+
+    function readXmlTag(node, tagName) {
+      if (!node) return '';
+      const found = node.getElementsByTagNameNS('*', tagName)[0] || node.getElementsByTagName(tagName)[0];
+      return found ? found.textContent.trim() : '';
+    }
+
+    function normalizeFiscalName(rawDesc) {
+      let text = String(rawDesc || '').trim();
+      if (!text) return '';
+      for (const [pattern, replacement] of NFE_NAME_RULES) {
+        if (pattern.test(text)) return replacement;
+      }
+      text = text
+        .replace(/\b(UHT|TP|TETRA\s*PAK|TIPO\s*\d+|RESF|CONG|HIG|FAT|PCT|CX|FD)\b/gi, ' ')
+        .replace(/\b\d+(?:[.,]\d+)?\s*(?:G|KG|ML|L|UN)\b/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!text) return String(rawDesc).trim();
+      const lower = text.toLowerCase();
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    }
+
+    function formatFiscalQty(rawQty, rawUnit) {
+      const num = Number(String(rawQty || '').replace(',', '.'));
+      const unitKey = String(rawUnit || '').trim().toUpperCase();
+      const unitLabel = NFE_UNITS[unitKey] || String(rawUnit || '').trim().toLowerCase();
+      if (!Number.isFinite(num) || num <= 0) return unitLabel;
+      const formatted = Number.isInteger(num)
+        ? String(num)
+        : num.toFixed(3).replace(/0+$/, '').replace(/\.$/, '').replace('.', ',');
+      return unitLabel ? `${formatted} ${unitLabel}` : formatted;
+    }
+
+    function parseNfeXml(xmlText) {
+      const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+      if (doc.getElementsByTagName('parsererror').length > 0) {
+        throw new Error('O arquivo enviado não é um XML válido.');
+      }
+      const infNFe = doc.getElementsByTagNameNS('*', 'infNFe')[0] || doc.getElementsByTagName('infNFe')[0];
+      if (!infNFe) {
+        throw new Error('XML sem bloco <infNFe>. Selecione uma NF-e padrão SEFAZ.');
+      }
+
+      const idAttr = infNFe.getAttribute('Id') || '';
+      const rawKey = readXmlTag(doc, 'chNFe') || idAttr.replace(/^NFe/i, '');
+      const chaveAcesso = rawKey.replace(/\D/g, '').slice(0, 44);
+      const numeroNota = readXmlTag(infNFe, 'nNF') || 'S/N';
+      const emitNode = infNFe.getElementsByTagNameNS('*', 'emit')[0] || infNFe.getElementsByTagName('emit')[0];
+      const fornecedor = readXmlTag(emitNode, 'xFant') || readXmlTag(emitNode, 'xNome') || 'Fornecedor da NF-e';
+
+      const detList = Array.from(
+        infNFe.getElementsByTagNameNS('*', 'det').length
+          ? infNFe.getElementsByTagNameNS('*', 'det')
+          : infNFe.getElementsByTagName('det')
+      );
+      if (detList.length === 0) {
+        throw new Error('Nenhum item (<det>) encontrado na nota fiscal.');
+      }
+
+      const itens = [];
+      detList.forEach((det, idx) => {
+        const nItem = det.getAttribute('nItem') || String(idx + 1);
+        const prod = det.getElementsByTagNameNS('*', 'prod')[0] || det.getElementsByTagName('prod')[0];
+        if (!prod) return;
+
+        const descricaoFiscal = readXmlTag(prod, 'xProd');
+        const unidade = readXmlTag(prod, 'uCom');
+        const qCom = readXmlTag(prod, 'qCom');
+        const rastros = Array.from(
+          det.getElementsByTagNameNS('*', 'rastro').length
+            ? det.getElementsByTagNameNS('*', 'rastro')
+            : det.getElementsByTagName('rastro')
+        );
+
+        if (rastros.length > 0) {
+          rastros.forEach((rastro, rIdx) => {
+            const dVal = readXmlTag(rastro, 'dVal');
+            const validIso = /^\d{4}-\d{2}-\d{2}$/.test(dVal) ? dVal : '';
+            itens.push({
+              uid: `${nItem}-${rIdx}`,
+              descricaoFiscal,
+              nomeSugerido: normalizeFiscalName(descricaoFiscal),
+              quantidade: formatFiscalQty(readXmlTag(rastro, 'qLote') || qCom, unidade),
+              lote: readXmlTag(rastro, 'nLote').toUpperCase(),
+              validade: validIso,
+              temRastro: Boolean(validIso),
+              conferido: false
+            });
+          });
+        } else {
+          itens.push({
+            uid: `${nItem}-0`,
+            descricaoFiscal,
+            nomeSugerido: normalizeFiscalName(descricaoFiscal),
+            quantidade: formatFiscalQty(qCom, unidade),
+            lote: '',
+            validade: '',
+            temRastro: false,
+            conferido: false
+          });
+        }
+      });
+
+      return {
+        chaveAcesso,
+        numeroNota,
+        fornecedor,
+        itens,
+        totalComRastro: itens.filter(i => i.temRastro).length,
+        totalSemValidade: itens.filter(i => !i.temRastro).length
+      };
+    }
+
+    function buildDemoNfeXml(refIso) {
+      const [y, m, d] = refIso.split('-').map(Number);
+      const shiftIso = delta => {
+        const dt = new Date(Date.UTC(y, m - 1, d + delta));
+        return [
+          dt.getUTCFullYear(),
+          String(dt.getUTCMonth() + 1).padStart(2, '0'),
+          String(dt.getUTCDate()).padStart(2, '0')
+        ].join('-');
+      };
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe42261112345678000195550010000482191000482197" versao="4.00">
+      <ide><nNF>48219</nNF><dhEmi>${refIso}T08:15:00-03:00</dhEmi></ide>
+      <emit><CNPJ>12345678000195</CNPJ><xNome>DISTRIBUIDORA VALE ALIMENTOS LTDA</xNome><xFant>Vale Alimentos Atacado</xFant></emit>
+      <det nItem="1">
+        <prod><cProd>LAC-204</cProd><cEAN>7891000204019</cEAN><xProd>QJO MUCARELA FAT 500G</xProd><uCom>PCT</uCom><qCom>4.0000</qCom></prod>
+        <rastro><nLote>NF-M04</nLote><qLote>4.000</qLote><dFab>${shiftIso(-10)}</dFab><dVal>${shiftIso(2)}</dVal></rastro>
+      </det>
+      <det nItem="2">
+        <prod><cProd>LAC-108</cProd><cEAN>7891000108027</cEAN><xProd>CR LEITE UHT TP 200G CX</xProd><uCom>CX</uCom><qCom>2.0000</qCom></prod>
+      </det>
+      <det nItem="3">
+        <prod><cProd>SEC-315</cProd><cEAN>7891000315043</cEAN><xProd>FAR TRIGO TIPO 1 5KG</xProd><uCom>SC</uCom><qCom>3.0000</qCom></prod>
+      </det>
+      <det nItem="4">
+        <prod><cProd>HRT-019</cProd><cEAN>SEM GTIN</cEAN><xProd>ALF AMERICANA HIG 250G</xProd><uCom>BD</uCom><qCom>2.0000</qCom></prod>
+      </det>
+    </infNFe>
+  </NFe>
+</nfeProc>`;
+    }
+
+    function setNfeStatus(message, state = 'ok') {
+      const node = el('nfe-status');
+      if (!node) return;
+      node.textContent = message;
+      node.dataset.state = state;
+    }
+
+    function renderNfeQueue() {
+      const wrap = el('nfe-queue-wrap');
+      const list = el('nfe-queue-list');
+      if (!wrap || !list) return;
+      if (!currentNfe) {
+        wrap.hidden = true;
+        list.innerHTML = '';
         return;
       }
+      wrap.hidden = false;
+      const conferidos = currentNfe.itens.filter(i => i.conferido).length;
+      el('nfe-queue-title').textContent = `NF-e nº ${currentNfe.numeroNota} · ${currentNfe.fornecedor}`;
+      el('nfe-queue-meta').textContent =
+        `${currentNfe.totalComRastro} com <rastro> · ${currentNfe.totalSemValidade} sem validade no XML · ${conferidos}/${currentNfe.itens.length} conferidos`;
 
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'pt-BR';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
+      list.innerHTML = currentNfe.itens.map(item => {
+        const cls = [
+          'nfe-item',
+          item.temRastro ? 'has-rastro' : '',
+          item.uid === activeNfeItemUid ? 'is-active' : '',
+          item.conferido ? 'is-done' : ''
+        ].filter(Boolean).join(' ');
+        const tag = item.conferido
+          ? '<span class="badge badge-ok">Conferido</span>'
+          : item.temRastro
+            ? `<span class="badge badge-ok">Com &lt;rastro&gt; · ${formatDateBr(item.validade)}</span>`
+            : '<span class="badge badge-soon">Sem validade no XML</span>';
+        return `
+          <li class="${cls}">
+            <div class="nfe-item-info">
+              <strong>${escapeHtml(item.nomeSugerido)}</strong>
+              <small>${escapeHtml(item.descricaoFiscal)} · ${escapeHtml(item.quantidade)}${item.lote ? ` · Lote ${escapeHtml(item.lote)}` : ''}</small>
+            </div>
+            <div class="nfe-item-actions">
+              ${tag}
+              <button type="button" class="botao botao-secundario nfe-item-btn" data-nfe-uid="${escapeHtml(item.uid)}">${item.conferido ? 'Rever' : 'Conferir'}</button>
+            </div>
+          </li>
+        `;
+      }).join('');
+    }
 
-      const voiceBtn = el('voice-btn');
-      voiceBtn.textContent = 'Ouvindo…';
-      voiceBtn.disabled = true;
-      setAssistantStatus('Pode falar agora (ex.: "Creme de leite, lote A12, validade 19/11/2026")...', 'ok');
+    function selectNfeItem(uid) {
+      if (!currentNfe) return;
+      const item = currentNfe.itens.find(entry => entry.uid === uid);
+      if (!item) return;
+      activeNfeItemUid = uid;
+      hideDuplicateWarning();
+      clearSuggestionHighlights();
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
 
-      recognition.onresult = event => {
-        const transcript = event.results[0][0].transcript;
-        nlInput.value = transcript;
-        runAssistantParse();
-      };
+      nameInput.value = item.nomeSugerido;
+      nameInput.classList.add('field-suggested');
+      lotCodeInput.value = item.lote;
+      if (item.lote) lotCodeInput.classList.add('field-suggested');
+      qtyInput.value = item.quantidade;
+      if (item.quantidade) qtyInput.classList.add('field-suggested');
+      expiryInput.value = item.validade;
+      if (item.validade) expiryInput.classList.add('field-suggested');
+      locInput.value = '';
 
-      recognition.onerror = () => {
-        setAssistantStatus('Não foi possível capturar o áudio. Verifique a permissão do microfone ou digite o texto.', 'error');
-      };
+      renderNfeQueue();
 
-      recognition.onend = () => {
-        voiceBtn.textContent = 'Ditar mensagem';
-        voiceBtn.disabled = false;
-      };
-
-      try {
-        recognition.start();
-      } catch {
-        voiceBtn.textContent = 'Ditar mensagem';
-        voiceBtn.disabled = false;
-        setAssistantStatus('Não foi possível iniciar o ditado. Digite a descrição do lote.', 'error');
+      if (item.temRastro) {
+        nlInput.value = '';
+        setAssistantStatus(`Item da NF-e já veio com <rastro> (lote ${item.lote} e validade ${formatDateBr(item.validade)}). Confira e clique em "Salvar lote".`, 'ok');
+        showFeedback('Item preenchido automaticamente pelo XML (<rastro>). Confira e salve.', false);
+        el('save-btn').focus();
+      } else {
+        nlInput.value = '';
+        const aviso = `Item "${item.nomeSugerido}" veio sem validade no XML. Dite no microfone (ex.: "lote B02, validade 30/11/2026, geladeira") ou informe a validade ao lado.`;
+        setAssistantStatus(aviso, 'warn');
+        showFeedback('XML sem <rastro>: informe a data de validade da embalagem para salvar.', false);
+        expiryInput.focus();
       }
+    }
+
+    function loadNfeFromXml(xmlText) {
+      try {
+        const parsed = parseNfeXml(xmlText);
+        const jaImportada = Boolean(parsed.chaveAcesso && importedNfeKeys.includes(parsed.chaveAcesso));
+        currentNfe = parsed;
+        activeNfeItemUid = null;
+        renderNfeQueue();
+        if (jaImportada) {
+          setNfeStatus(`Atenção: a NF-e nº ${parsed.numeroNota} já foi importada anteriormente neste navegador. Confira os itens existentes para evitar duplicidade.`, 'warn');
+        } else {
+          setNfeStatus(`NF-e nº ${parsed.numeroNota} carregada (${parsed.itens.length} itens). Clique em "Conferir" em cada item para completar a validade e salvar.`, 'ok');
+        }
+        const primeiroPendente = parsed.itens.find(item => !item.conferido);
+        if (primeiroPendente) selectNfeItem(primeiroPendente.uid);
+      } catch (erro) {
+        setNfeStatus(erro.message || 'Não foi possível ler o XML da NF-e.', 'error');
+      }
+    }
+
+    /* -------------------------------------------------------------------------
+       VOICEPILL (@react-bits/VoicePill-JS-CSS) + WEB SPEECH API
+       - Substitui o botão "Ditar mensagem" pelo ícone de microfone animado.
+       - Toque ou segure para gravar; arraste para a esquerda para cancelar.
+       ------------------------------------------------------------------------- */
+    function initVoicePill() {
+      const root = el('voice-btn');
+      const waveCanvas = el('voice-wave');
+      const timeEl = el('voice-time');
+      if (!root) return;
+
+      const LOOP = 4.8;
+      const SYLLABLES = [
+        [0.1, 0.16, 0.9], [0.3, 0.12, 0.7], [0.5, 0.2, 1],
+        [0.95, 0.14, 0.8], [1.15, 0.1, 0.6], [1.3, 0.22, 0.95],
+        [1.9, 0.16, 0.85], [2.12, 0.12, 0.7], [2.3, 0.18, 0.9],
+        [2.55, 0.1, 0.5], [3.05, 0.24, 1], [3.4, 0.12, 0.75], [3.6, 0.16, 0.9]
+      ];
+      const DT_MAX = 0.05;
+      const SLIDE_MIN = 4;
+      const WAVE_EVERY = 4;
+      const WAVE_MAX = 80;
+      const CFG = {
+        attack: 40,
+        release: 240,
+        sensitivity: 1,
+        floor: 0.1,
+        mode: 'auto',
+        holdAfter: 300,
+        slideToCancel: true,
+        cancelDistance: 64
+      };
+
+      const st = {
+        listening: false,
+        pointerId: null,
+        ownPress: false,
+        downX: 0,
+        sliding: false,
+        hist: [],
+        tick: 0,
+        acc: 0,
+        downAt: 0,
+        startedAt: 0,
+        raf: 0,
+        last: 0,
+        env: 0,
+        t0: 0,
+        recognition: null,
+        gotResult: false
+      };
+
+      const simulatedLevel = t => {
+        const u = t % LOOP;
+        let a = 0.06;
+        for (const [s, d, p] of SYLLABLES) {
+          const x = (u - s) / d;
+          if (x >= 0 && x <= 1) a = Math.max(a, p * 0.5 * (1 - Math.cos(2 * Math.PI * x)));
+        }
+        return a * (0.7 + 0.3 * Math.abs(Math.sin(2 * Math.PI * 7.1 * u)));
+      };
+
+      const clock = ms => {
+        const s = Math.floor(ms / 1000);
+        return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      };
+
+      const drawWave = level => {
+        if (!waveCanvas) return;
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        const rect = waveCanvas.getBoundingClientRect();
+        const W = Math.max(1, Math.round(rect.width * dpr));
+        const H = Math.max(1, Math.round(rect.height * dpr));
+        if (waveCanvas.width !== W || waveCanvas.height !== H) {
+          waveCanvas.width = W;
+          waveCanvas.height = H;
+        }
+        const ctx = waveCanvas.getContext('2d');
+        if (!ctx) return;
+        const accent = getComputedStyle(root).getPropertyValue('--vp-accent').trim() || '#f5f5f5';
+        st.acc = Math.max(st.acc, level);
+        st.tick = (st.tick + 1) % WAVE_EVERY;
+        if (st.tick === 0) {
+          st.hist.push(st.acc);
+          st.acc = 0;
+          if (st.hist.length > WAVE_MAX) st.hist.shift();
+        }
+        const bw = 2 * dpr;
+        const step = 3 * dpr;
+        const shift = (st.tick / WAVE_EVERY) * step;
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = accent;
+        for (let i = 0; i < st.hist.length; i += 1) {
+          const v = st.hist[st.hist.length - 1 - i];
+          const x = W - (i + 1) * step - shift;
+          if (x + bw < 0) break;
+          const h = Math.max(bw, (CFG.floor + (1 - CFG.floor) * v) * H);
+          const t = Math.min(1, Math.max(0, (x + bw / 2) / (W * 0.55)));
+          const fade = t * t * (3 - 2 * t);
+          ctx.globalAlpha = (0.35 + 0.65 * v) * fade;
+          ctx.beginPath();
+          if (typeof ctx.roundRect === 'function') ctx.roundRect(x, (H - h) / 2, bw, h, bw / 2);
+          else ctx.rect(x, (H - h) / 2, bw, h);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      };
+
+      const frame = now => {
+        const dt = Math.min((now - st.last) / 1000, DT_MAX);
+        st.last = now;
+        const target = st.listening ? Math.min(1, simulatedLevel((now - st.t0) / 1000) * CFG.sensitivity) : 0;
+        const tau = Math.max(1, target > st.env ? CFG.attack : CFG.release) / 1000;
+        st.env += (target - st.env) * (1 - Math.exp(-dt / tau));
+        if (st.listening && timeEl) {
+          const text = clock(now - st.startedAt);
+          if (timeEl.textContent !== text) timeEl.textContent = text;
+        }
+        if (st.listening) drawWave(st.env);
+        st.raf = st.listening ? requestAnimationFrame(frame) : 0;
+      };
+
+      const startSpeech = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          setAssistantStatus('Seu navegador não suporta ditado por voz. Toque no microfone para parar e digite ou use uma simulação abaixo.', 'warn');
+          return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'pt-BR';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        st.recognition = recognition;
+        st.gotResult = false;
+        setAssistantStatus('Ouvindo… fale o insumo, lote e validade (ou arraste para a esquerda para cancelar).', 'ok');
+
+        recognition.onresult = event => {
+          st.gotResult = true;
+          const transcript = event.results[0][0].transcript;
+          nlInput.value = transcript;
+          end('result');
+          runAssistantParse();
+        };
+        recognition.onerror = event => {
+          if (event.error === 'aborted') return;
+          end('error');
+          setAssistantStatus('Não foi possível capturar o áudio. Verifique a permissão do microfone ou digite o texto.', 'error');
+        };
+        recognition.onend = () => {
+          st.recognition = null;
+          if (st.listening) end('speech-end');
+        };
+        try {
+          recognition.start();
+        } catch {
+          st.recognition = null;
+          end('error');
+          setAssistantStatus('Não foi possível iniciar o ditado. Digite a descrição do lote.', 'error');
+        }
+      };
+
+      const stopSpeech = abort => {
+        const rec = st.recognition;
+        if (!rec) return;
+        st.recognition = null;
+        try {
+          if (abort) rec.abort();
+          else rec.stop();
+        } catch {}
+      };
+
+      const begin = kind => {
+        if (st.listening || root.disabled) return;
+        st.listening = true;
+        st.hist = [];
+        st.tick = 0;
+        st.acc = 0;
+        st.env = 0;
+        st.startedAt = performance.now();
+        st.t0 = st.startedAt;
+        st.last = st.startedAt;
+        if (timeEl) timeEl.textContent = '0:00';
+        root.dataset.state = 'listening';
+        root.dataset.input = kind;
+        root.setAttribute('aria-pressed', 'true');
+        root.setAttribute('aria-label', 'Parar ditado por voz');
+        if (!st.raf) st.raf = requestAnimationFrame(frame);
+        startSpeech();
+      };
+
+      const end = reason => {
+        if (!st.listening) return;
+        st.listening = false;
+        if (st.raf) {
+          cancelAnimationFrame(st.raf);
+          st.raf = 0;
+        }
+        root.dataset.state = 'idle';
+        root.dataset.input = (reason === 'key' || reason === 'escape') ? 'key' : 'pointer';
+        root.setAttribute('aria-pressed', 'false');
+        root.setAttribute('aria-label', 'Ditar mensagem por voz');
+        if (reason === 'cancel' || reason === 'escape') {
+          stopSpeech(true);
+          setAssistantStatus('Ditado cancelado.', 'warn');
+        } else if (reason !== 'result' && reason !== 'error' && reason !== 'speech-end') {
+          stopSpeech(false);
+        }
+      };
+
+      const settleSlide = () => {
+        st.sliding = false;
+        delete root.dataset.sliding;
+        root.style.setProperty('--vp-slide', '0px');
+        root.style.setProperty('--vp-cancel', '0');
+      };
+
+      root.addEventListener('pointerdown', e => {
+        if (root.disabled || e.button !== 0 || !e.isPrimary || st.pointerId !== null) return;
+        st.pointerId = e.pointerId;
+        st.downX = e.clientX;
+        st.downAt = performance.now();
+        try { root.setPointerCapture(e.pointerId); } catch {}
+        root.dataset.pressed = '';
+        st.ownPress = !st.listening;
+        if (!st.listening) begin('pointer');
+      });
+
+      root.addEventListener('pointermove', e => {
+        if (st.pointerId !== e.pointerId || !CFG.slideToCancel || !st.listening || !st.ownPress) return;
+        const dx = e.clientX - st.downX;
+        if (!st.sliding && dx > -SLIDE_MIN) return;
+        st.sliding = true;
+        root.dataset.sliding = '';
+        const pull = Math.min(CFG.cancelDistance + 24, Math.max(0, -dx));
+        root.style.setProperty('--vp-slide', `${-pull}px`);
+        const progress = Math.min(1, pull / CFG.cancelDistance);
+        root.style.setProperty('--vp-cancel', progress.toFixed(3));
+        if (progress >= 1) {
+          settleSlide();
+          end('cancel');
+        }
+      });
+
+      const onPointerUp = e => {
+        if (e.pointerId !== st.pointerId) return;
+        st.pointerId = null;
+        delete root.dataset.pressed;
+        if (st.sliding) settleSlide();
+        try { if (root.hasPointerCapture(e.pointerId)) root.releasePointerCapture(e.pointerId); } catch {}
+        if (!st.listening) return;
+        const held = performance.now() - st.downAt;
+        const isHold = CFG.mode === 'hold' || (CFG.mode === 'auto' && held >= CFG.holdAfter);
+        if (st.ownPress) {
+          if (isHold) end('release');
+        } else {
+          end(held < CFG.holdAfter ? 'tap' : 'release');
+        }
+      };
+
+      root.addEventListener('pointerup', onPointerUp);
+      root.addEventListener('pointercancel', onPointerUp);
+      root.addEventListener('lostpointercapture', onPointerUp);
+      root.addEventListener('contextmenu', e => e.preventDefault());
+
+      root.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          end('escape');
+          return;
+        }
+        if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
+          e.preventDefault();
+          if (st.listening) end('key');
+          else begin('key');
+        }
+      });
+
+      window.addEventListener('blur', () => { if (root.hasAttribute('data-pressed')) end('blur'); });
+      document.addEventListener('visibilitychange', () => { if (document.hidden && st.listening) end('blur'); });
     }
 
     /* -------------------------------------------------------------------------
@@ -527,6 +1669,7 @@
       try {
         localStorage.setItem(STORAGE_KEY_LOTS, JSON.stringify(lots));
         localStorage.setItem(STORAGE_KEY_DISCARDS, JSON.stringify(discards));
+        localStorage.setItem(STORAGE_KEY_NFE_KEYS, JSON.stringify(importedNfeKeys));
       } catch {
         el('storage-note').textContent = 'Aviso: o navegador bloqueou o salvamento local. Os dados ficam ativos até recarregar a página.';
       }
@@ -536,16 +1679,20 @@
       try {
         const savedLots = JSON.parse(localStorage.getItem(STORAGE_KEY_LOTS) || '[]');
         const savedDiscards = JSON.parse(localStorage.getItem(STORAGE_KEY_DISCARDS) || '[]');
+        const savedKeys = JSON.parse(localStorage.getItem(STORAGE_KEY_NFE_KEYS) || '[]');
         if (Array.isArray(savedLots)) lots = savedLots;
         if (Array.isArray(savedDiscards)) discards = savedDiscards;
+        if (Array.isArray(savedKeys)) importedNfeKeys = savedKeys;
       } catch {
         lots = [];
         discards = [];
+        importedNfeKeys = [];
       }
     }
 
     function resetForm() {
       editingId = null;
+      hideDuplicateWarning();
       form.reset();
       nameInput.removeAttribute('aria-invalid');
       expiryInput.removeAttribute('aria-invalid');
@@ -580,7 +1727,7 @@
         ].filter(Boolean).join(' • ');
 
         return `
-          <li class="lot-card ${st.cls}">
+          <li class="lot-card ${st.cls}" data-lot-id="${lot.id}">
             <div class="lot-info">
               <div class="lot-name">
                 ${escapeHtml(lot.name)}
@@ -662,8 +1809,52 @@
     /* -------------------------------------------------------------------------
        EVENTOS DO FORMULÁRIO E BOTÕES
        ------------------------------------------------------------------------- */
+    function persistLotSubmission(payload) {
+      const { name, lotCode, expiry, qty, location } = payload;
+      const lotId = editingId ?? Date.now();
+      const wasEditing = editingId !== null;
+      if (wasEditing) {
+        lots = lots.map(item =>
+          item.id === editingId ? { ...item, name, lotCode, expiry, qty, location } : item
+        );
+      } else {
+        lots.push({ id: lotId, name, lotCode, expiry, qty, location });
+      }
+
+      // Se o lote salvo veio da fila da NF-e, marca o item como conferido e registra a chave contra reimportação.
+      let nextPendingUid = null;
+      if (currentNfe && activeNfeItemUid) {
+        const itemNota = currentNfe.itens.find(entry => entry.uid === activeNfeItemUid);
+        if (itemNota) itemNota.conferido = true;
+        if (currentNfe.chaveAcesso && !importedNfeKeys.includes(currentNfe.chaveAcesso)) {
+          importedNfeKeys.push(currentNfe.chaveAcesso);
+        }
+        const proximo = currentNfe.itens.find(entry => !entry.conferido);
+        nextPendingUid = proximo ? proximo.uid : null;
+        activeNfeItemUid = null;
+      }
+
+      nlInput.value = '';
+      setAssistantStatus('');
+      resetForm();
+      showFeedback('');
+      saveState();
+      render();
+      renderNfeQueue();
+      el('stock-notice').textContent = wasEditing ? 'Lote atualizado.' : 'Lote salvo.';
+      if (nextPendingUid) {
+        selectNfeItem(nextPendingUid);
+      } else if (currentNfe && currentNfe.itens.every(entry => entry.conferido)) {
+        setNfeStatus(`Todos os ${currentNfe.itens.length} itens da NF-e nº ${currentNfe.numeroNota} foram conferidos e salvos no estoque!`, 'ok');
+        el('list-title').focus({ preventScroll: true });
+      } else {
+        el('list-title').focus({ preventScroll: true });
+      }
+    }
+
     form.addEventListener('submit', event => {
       event.preventDefault();
+      hideDuplicateWarning();
 
       const name = nameInput.value.trim();
       const lotCode = lotCodeInput.value.trim().toUpperCase();
@@ -688,31 +1879,45 @@
         return;
       }
 
-      const lotId = editingId ?? Date.now();
-      const wasEditing = editingId !== null;
-      if (wasEditing) {
-        lots = lots.map(item =>
-          item.id === editingId ? { ...item, name, lotCode, expiry, qty, location } : item
-        );
-      } else {
-        lots.push({
-          id: lotId,
-          name,
-          lotCode,
-          expiry,
-          qty,
-          location
-        });
+      const duplicate = findDuplicateLot(name, lotCode, expiry, editingId);
+      if (duplicate) {
+        pendingDuplicate = {
+          existingId: duplicate.id,
+          payload: { name, lotCode, expiry, qty, location }
+        };
+        const detalhes = [
+          duplicate.lotCode ? `Lote ${duplicate.lotCode}` : '',
+          `validade ${formatDateBr(duplicate.expiry)}`,
+          duplicate.qty ? duplicate.qty : ''
+        ].filter(Boolean).join(' · ');
+        el('duplicate-warning-text').textContent =
+          `Lote repetido detectado: “${duplicate.name}” (${detalhes}) já está cadastrado no estoque. Deseja editar o existente ou adicionar outro igual?`;
+        el('duplicate-warning').hidden = false;
+        showFeedback('Cadastro pausado para evitar duplicidade.', false);
+        highlightExistingLot(duplicate.id);
+        el('dup-edit-btn').focus();
+        return;
       }
 
-      nlInput.value = '';
-      setAssistantStatus('');
-      resetForm();
-      showFeedback('');
-      saveState();
-      render();
-      el('stock-notice').textContent = wasEditing ? 'Lote atualizado.' : 'Lote salvo.';
-      el('list-title').focus({ preventScroll: true });
+      persistLotSubmission({ name, lotCode, expiry, qty, location });
+    });
+
+    el('dup-edit-btn').addEventListener('click', () => {
+      if (!pendingDuplicate) return;
+      const targetId = pendingDuplicate.existingId;
+      hideDuplicateWarning();
+      window.startEdit(targetId);
+    });
+    el('dup-confirm-btn').addEventListener('click', () => {
+      if (!pendingDuplicate) return;
+      const payload = pendingDuplicate.payload;
+      hideDuplicateWarning();
+      persistLotSubmission(payload);
+    });
+    el('dup-dismiss-btn').addEventListener('click', () => {
+      hideDuplicateWarning();
+      showFeedback('Cadastro duplicado cancelado.', false);
+      nameInput.focus();
     });
 
     el('parse-btn').addEventListener('click', runAssistantParse);
@@ -722,9 +1927,41 @@
         runAssistantParse();
       }
     });
-    el('voice-btn').addEventListener('click', startVoiceCapture);
+    initVoicePill();
+    document.querySelectorAll('.sim-btn[data-sim]').forEach(btn => {
+      btn.addEventListener('click', () => runSimulation(btn.dataset.sim));
+    });
+    el('nfe-demo-btn').addEventListener('click', () => {
+      const refIso = refDateInput.value || getLocalTodayIso();
+      loadNfeFromXml(buildDemoNfeXml(refIso));
+    });
+    el('nfe-file-input').addEventListener('change', async event => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (!file) return;
+      try {
+        const xmlText = await file.text();
+        loadNfeFromXml(xmlText);
+      } catch {
+        setNfeStatus('Não foi possível ler o arquivo selecionado.', 'error');
+      }
+    });
+    el('nfe-queue-list').addEventListener('click', event => {
+      const btn = event.target.closest('button[data-nfe-uid]');
+      if (!btn) return;
+      selectNfeItem(btn.dataset.nfeUid);
+    });
+    el('nfe-clear-btn').addEventListener('click', () => {
+      currentNfe = null;
+      activeNfeItemUid = null;
+      setNfeStatus('');
+      renderNfeQueue();
+    });
     el('simulate-error-btn').addEventListener('click', simulateAssistantFailure);
-    form.addEventListener('input', ({ target }) => target.removeAttribute('aria-invalid'));
+    form.addEventListener('input', ({ target }) => {
+      target.removeAttribute('aria-invalid');
+      hideDuplicateWarning();
+    });
     el('cancel-btn').addEventListener('click', () => {
       resetForm();
       showFeedback('Edição cancelada.');

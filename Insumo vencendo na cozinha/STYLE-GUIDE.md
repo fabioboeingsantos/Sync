@@ -39,23 +39,26 @@ Use este guia nas versões manual e com assistente integrado do controle de vali
 
 Use grafite ou a cor primária para texto sobre o fundo cinza. Reserve a secundária para texto sobre branco. Use grafite para texto sobre o destaque.
 
-### Estados de validade
+### Estados de validade (temas escuro e claro)
 
-| Estado | Quando aparece | Rótulo e aplicação |
-| --- | --- | --- |
-| Vencido | A validade é anterior à data de referência. | **Vencido há 2 dias**, em vermelho alerta sobre branco. |
-| Vence hoje | A validade coincide com a data de referência. | **Vence hoje**, em grafite sobre azul-petróleo claro. |
-| Vence em breve | Faltam de 1 a 3 dias. | **Vence em 2 dias**, em azul secundário sobre branco. |
-| Dentro do prazo | Faltam mais de 3 dias. | **Dentro do prazo**, em azul primário sobre branco. |
+Todas as telas (landing page, sistema `/estoque/` e demonstrações) aplicam a mesma semântica de **4 estados** na barra lateral, borda, fundo sutil, etiqueta (badge) e botões de filtro, nos temas **escuro e claro**:
 
-Exiba o estado por escrito e mantenha a data de validade visível. Em avisos de formulário, diga como corrigir o campo, por exemplo **Informe a validade do lote**.
+| Estado | Quando aparece | Cor semântica (Escuro / Claro) | Comportamento visual |
+| --- | --- | --- | --- |
+| **Vencido** | A validade é anterior à data de referência. | **Roxo / Vinho** (`#C084FC` / `#7E22CE`) | Estático — diferencia item já expirado (bloqueado para uso, pronto para descarte) do alerta urgente de hoje. |
+| **Vence hoje** | A validade coincide com a data de referência. | **Vermelho alerta vivo** (`#EF4444` / `#DC2626`) | **Pulsando em alerta** (borda, halo vermelho, badge e filtro), indicando última chance de aproveitar antes de perder. |
+| **Vence em breve** | Faltam de 1 a 3 dias. | **Laranja / Âmbar** (`#F97316` / `#EA580C`) | Estático — sinaliza atenção próxima para priorizar saída. |
+| **Dentro do prazo / Em dia** | Faltam mais de 3 dias. | **Azul / Ciano** (`#38BDF8` / `#0284C7`) | Estático — estado saudável alinhado à identidade Aço Inox. |
+
+Exiba sempre o estado por escrito junto com a cor e mantenha a data de validade visível. Em avisos de formulário (como data ambígua ou **lote repetido**), informe como corrigir ou decidir (ex.: **Editar lote existente** ou **Adicionar mesmo assim**). Respeite `prefers-reduced-motion: reduce`.
 
 ## Espaçamento e componentes
 
 - Use **8 px** entre elementos relacionados, **16 px** dentro de cartões e entre campos, e **24 px** entre seções.
 - Mantenha botões e campos com **44 px de altura mínima**. Em telas estreitas, empilhe os componentes quando o conteúdo não couber lado a lado.
-- **Botão principal:** fundo na cor primária, texto branco em negrito e cantos de 8 px. Use uma ação principal por bloco.
-- **Botão secundário:** fundo branco, texto e borda na cor secundária. Exemplo **Ditar mensagem**.
+- **Botão principal:** fundo na cor primária (acabamento GlassSurface), texto branco em negrito e cantos de 12 px. Use uma ação principal por bloco.
+- **Botão secundário:** vidro fosco Aço Inox adaptável ao tema claro e escuro. Nos filtros de validade, assume a cor semântica de cada status.
+- **Controle de voz (VoicePill):** substitui o botão textual de ditado pelo ícone de microfone expansível (`VoicePill`) com forma de onda animada, cronômetro e gesto *arraste para cancelar*.
 - **Campo:** rótulo visível acima, fundo branco, texto grafite e borda na cor secundária. Em caso de erro, mostre a mensagem em vermelho abaixo do campo.
 - **Cartão de lote:** fundo branco. Mostre nome do insumo, código, data e rótulo de validade. Exemplo **Queijo · lote B02 · 25/11/2026 · Vence em 2 dias**, considerando 23/11/2026 como referência.
 - **Mensagens do assistente:** use fundo cinza claro com texto grafite. Para destacar a entrada do usuário, use fundo na cor primária com texto branco.

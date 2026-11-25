@@ -13,7 +13,7 @@ import {
 // O servidor de desenvolvimento atende apenas os arquivos públicos listados aqui e as rotas de teste.
 const tipos = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
-  '.png': 'image/png', '.jpg': 'image/jpeg', '.mp4': 'video/mp4',
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.mp4': 'video/mp4',
 };
 const arquivos = new Map([
   ...arquivosPublicos.map((arquivo) => [encodeURI(`/${arquivo}`), arquivo]),
@@ -26,6 +26,7 @@ const arquivos = new Map([
   ['/estoque.js', 'estoque.js'],
   ['/equipe.js', 'equipe.js'],
   ['/interpretar-lote.js', 'interpretar-lote.js'],
+  ['/interpretar-nfe.js', 'interpretar-nfe.js'],
   ['/entrada.js', 'entrada.js'],
   ['/api.js', 'api.js'],
   ['/css/estoque.css', 'css/estoque.css'],

@@ -1,6 +1,6 @@
 # Mapa da raiz do VisionChef
 
-Inventário de 24/11/2026 do repositório `Sync`. A árvore lista os itens observados na raiz e abre os diretórios usados para desenvolver e documentar o piloto.
+Inventário atualizado em 25/11/2026 do repositório `Sync`. A árvore lista os itens observados na raiz e abre os diretórios usados para desenvolver e documentar o piloto.
 
 ```text
 Sync/
@@ -13,23 +13,23 @@ Sync/
 ├── docs/
 │   ├── api/                    contrato OpenAPI 3.1 da API Node (api-contract.yaml)
 │   ├── architecture/           desenho técnico, contexto, modelo de dados, ameaças e ADRs
-│   ├── futuras-implantacoes/   evolução do piloto e divulgação do portfólio da Sync
+│   ├── futuras-implantacoes/   evolução do piloto (incluindo integração de notas fiscais Fases 1–3) e divulgação da Sync
 │   ├── implementation/         rastreabilidade de fases, requisitos e evidências (status.yaml)
 │   ├── operations/             runbook operacional (deploy, rollback, rotação e restore)
 │   ├── product/                escopo, requisitos funcionais/não funcionais e fluxos do piloto
 │   └── MAPA-DA-RAIZ.md         inventário e dependências de caminhos
-├── frontend/                   componente React de acesso e superfícies GlassSurface (components/)
+├── frontend/                   componente React de acesso e componentes GlassSurface, HorizonBloom e VoicePill (components/)
 ├── Insumo vencendo na cozinha/
 │   ├── abertura/               estilos, tema e mídias da abertura da SYNC
-│   ├── agente_IA/              documentação do protótipo de assistente
+│   ├── agente_IA/              documentação do protótipo de assistente e roadmap fiscal
 │   ├── desafios/               entregas E1 a E5
 │   ├── docs/                   guia UC6 e referência da animação
-│   ├── htmls/                  protótipos de estoque e cadastro assistido
+│   ├── htmls/                  protótipos de estoque e cadastro assistido (com VoicePill, simulações e XML NF-e)
 │   ├── imagens/                mídias específicas do tema
-│   ├── pitch/                  slides e roteiro do simulado
+│   ├── pitch/                  slides, roteiro e estúdio de ensaio de voz (ensaio-voz.html)
 │   └── documentos do tema      índice, persona, matriz CSD, regras e guia visual
 ├── node_modules/               dependências instaladas pelo npm
-├── piloto/                     HTML, CSS, JavaScript e cliente Supabase do piloto
+├── piloto/                     HTML, CSS, JavaScript (incluindo interpretar-nfe.js) e cliente Supabase do piloto
 ├── scripts/                    servidor local, banco de teste e geração de dist/
 ├── supabase/
 │   ├── functions/              funções de servidor para login, limites e confirmação facultativa

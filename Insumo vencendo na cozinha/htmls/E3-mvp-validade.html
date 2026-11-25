@@ -7,7 +7,8 @@
   <!-- O favicon usa o emblema da abertura do simulado. -->
   <link rel="icon" type="image/png" sizes="128x128" href="../abertura/imagens/coruja-sync-icone.png">
   <style>
-    :root {
+    :root,
+    html[data-theme="light"] {
       --fonte-interface: Arial, sans-serif;
       --cor-primaria: #0f4c5c;
       --cor-fundo: #f4f6f7;
@@ -17,7 +18,85 @@
       --cor-alerta: #b3261e;
       --cor-destaque: #a8d5dd;
       --cor-foco: var(--cor-primaria);
+      --st-vencido-cor: #7e22ce;
+      --st-vencido-borda: rgba(126, 34, 206, 0.42);
+      --st-vencido-fundo: #faf5ff;
+      --st-vencido-badge-bg: #f3e8ff;
+      --st-vencido-badge-borda: #a855f7;
+      --st-vencido-badge-txt: #581c87;
+      --st-hoje-cor: #dc2626;
+      --st-hoje-borda: rgba(220, 38, 38, 0.62);
+      --st-hoje-fundo: #fef2f2;
+      --st-hoje-badge-bg: #dc2626;
+      --st-hoje-badge-borda: #b91c1c;
+      --st-hoje-badge-txt: #ffffff;
+      --st-hoje-glow: rgba(220, 38, 38, 0.34);
+      --st-breve-cor: #ea580c;
+      --st-breve-borda: rgba(234, 88, 12, 0.46);
+      --st-breve-fundo: #fff7ed;
+      --st-breve-badge-bg: #ffedd5;
+      --st-breve-badge-borda: #f97316;
+      --st-breve-badge-txt: #9a3412;
+      --st-prazo-cor: #0284c7;
+      --st-prazo-borda: rgba(2, 132, 199, 0.42);
+      --st-prazo-fundo: #f0f9ff;
+      --st-prazo-badge-bg: #e0f2fe;
+      --st-prazo-badge-borda: #38bdf8;
+      --st-prazo-badge-txt: #075985;
       font: 100%/1.5 var(--fonte-interface);
+      color-scheme: light;
+      color: var(--cor-texto);
+      background: var(--cor-fundo);
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cor-primaria: #52ecff;
+      --cor-fundo: #060b1b;
+      --cor-superficie: #0d1f30;
+      --cor-texto: #edf5ff;
+      --cor-secundaria: #3d98a8;
+      --cor-alerta: #fca5a5;
+      --cor-destaque: rgba(42, 127, 142, 0.28);
+      --cor-foco: #52ecff;
+      --btn-secundario-fundo: rgba(15, 76, 92, 0.34);
+      --btn-secundario-gradiente: linear-gradient(160deg, rgba(42, 127, 142, 0.32) 0%, rgba(15, 76, 92, 0.44) 100%);
+      --btn-secundario-gradiente-hover: linear-gradient(160deg, rgba(42, 127, 142, 0.5) 0%, rgba(15, 76, 92, 0.62) 100%);
+      --btn-secundario-texto: #edf5ff;
+      --btn-secundario-borda: rgba(168, 213, 221, 0.48);
+      --btn-secundario-borda-hover: #a8d5dd;
+      --btn-secundario-fundo-hover: rgba(42, 127, 142, 0.48);
+      --btn-foco: #52ecff;
+      --btn-alerta-texto: #fca5a5;
+      --btn-alerta-borda: rgba(248, 113, 113, 0.62);
+      --btn-alerta-fundo-hover: rgba(185, 28, 28, 0.28);
+      --st-vencido-cor: #c084fc;
+      --st-vencido-borda: rgba(192, 132, 252, 0.44);
+      --st-vencido-fundo: rgba(147, 51, 234, 0.13);
+      --st-vencido-badge-bg: rgba(147, 51, 234, 0.28);
+      --st-vencido-badge-borda: rgba(192, 132, 252, 0.62);
+      --st-vencido-badge-txt: #f3e8ff;
+      --st-hoje-cor: #ef4444;
+      --st-hoje-borda: rgba(239, 68, 68, 0.72);
+      --st-hoje-fundo: rgba(239, 68, 68, 0.14);
+      --st-hoje-badge-bg: #dc2626;
+      --st-hoje-badge-borda: #fca5a5;
+      --st-hoje-badge-txt: #ffffff;
+      --st-hoje-glow: rgba(239, 68, 68, 0.46);
+      --st-breve-cor: #f97316;
+      --st-breve-borda: rgba(249, 115, 22, 0.54);
+      --st-breve-fundo: rgba(249, 115, 22, 0.11);
+      --st-breve-badge-bg: rgba(234, 88, 12, 0.28);
+      --st-breve-badge-borda: rgba(251, 146, 60, 0.68);
+      --st-breve-badge-txt: #ffedd5;
+      --st-prazo-cor: #38bdf8;
+      --st-prazo-borda: rgba(56, 189, 248, 0.48);
+      --st-prazo-fundo: rgba(14, 165, 233, 0.10);
+      --st-prazo-badge-bg: rgba(2, 132, 199, 0.28);
+      --st-prazo-badge-borda: rgba(56, 189, 248, 0.64);
+      --st-prazo-badge-txt: #e0f2fe;
+      color: var(--cor-texto);
+      background: var(--cor-fundo);
     }
 
     :focus-visible {
@@ -26,25 +105,24 @@
     }
 
     header a:focus-visible {
-      outline-color: var(--cor-superficie);
+      outline-color: #ffffff;
     }
 
     /* =========================================================================
        ESTILOS GERAIS DO MVP MANUAL (E3)
        - Paleta de alto contraste com fonte Arial para uso rápido no celular.
        ========================================================================= */
-    :root {
-      color-scheme: light;
-      color: var(--cor-texto);
-      background: var(--cor-fundo);
-    }
 
     * { box-sizing: border-box; }
-    body { margin: 0; }
+    body { margin: 0; background: var(--cor-fundo); color: var(--cor-texto); }
 
     header {
-      background: var(--cor-primaria);
-      color: var(--cor-superficie);
+      background: #0f4c5c;
+      color: #ffffff;
+    }
+    html[data-theme="dark"] header {
+      background: #081424;
+      border-bottom: 1px solid rgba(42, 127, 142, 0.4);
     }
     .topbar { max-width: 68rem; margin: auto; padding: .25rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: .25rem .5rem; flex-wrap: wrap; }
     .product-brand { display: flex; align-items: center; gap: .5rem; }
@@ -128,8 +206,8 @@
 
     .metric strong { display: block; font-size: 1rem; line-height: 1.5; }
     .metric span { font-size: 1rem; color: var(--cor-texto); }
-    .metric.alert { background: var(--cor-fundo); border-color: var(--cor-alerta); color: var(--cor-alerta); }
-    .metric.warn { background: var(--cor-superficie); border-color: var(--cor-secundaria); color: var(--cor-secundaria); }
+    .metric.alert { background: var(--st-hoje-fundo); border-color: var(--st-hoje-borda); color: var(--st-hoje-cor); }
+    .metric.warn { background: var(--st-breve-fundo); border-color: var(--st-breve-borda); color: var(--st-breve-cor); }
 
     /* Relógio de teste explícito para validar os cenários da E3 */
     .clock-box {
@@ -166,36 +244,62 @@
       align-items: center;
       justify-content: space-between;
       gap: .7rem;
-      border: 1px solid var(--cor-secundaria);
-      border-left: 5px solid var(--cor-primaria);
+      border: 1px solid var(--st-prazo-borda);
+      border-left: 4px solid var(--st-prazo-cor);
       border-radius: .75rem;
       padding: .75rem .9rem;
       margin-bottom: .65rem;
-      background: var(--cor-superficie);
+      background: var(--st-prazo-fundo);
+      transition: border-color 240ms ease, background-color 240ms ease, box-shadow 240ms ease;
     }
 
-    li.lot-card.status-expired { border-left-color: var(--cor-alerta); }
-    li.lot-card.status-today { border-left-color: var(--cor-destaque); }
-    li.lot-card.status-soon { border-left-color: var(--cor-secundaria); }
+    li.lot-card.status-expired { border-color: var(--st-vencido-borda); border-left-color: var(--st-vencido-cor); background: var(--st-vencido-fundo); }
+    li.lot-card.status-today { border-color: var(--st-hoje-borda); border-left-color: var(--st-hoje-cor); background: var(--st-hoje-fundo); animation: alerta-vence-hoje-card 1.15s ease-in-out infinite; }
+    li.lot-card.status-soon { border-color: var(--st-breve-borda); border-left-color: var(--st-breve-cor); background: var(--st-breve-fundo); }
+    li.lot-card.status-ok { border-color: var(--st-prazo-borda); border-left-color: var(--st-prazo-cor); background: var(--st-prazo-fundo); }
 
     .lot-info { flex: 1; min-width: 12rem; }
-    .lot-name { font-weight: 700; font-size: 1rem; }
+    .lot-name { font-weight: 700; font-size: 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
     .lot-meta { font-size: 1rem; color: var(--cor-texto); margin-top: .15rem; }
 
     .badge {
-      display: inline-block;
-      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .38rem;
+      font-size: .875rem;
       font-weight: 700;
-      padding: .15rem .55rem;
-      border-radius: 999px;
-      margin-left: .4rem;
+      padding: .18rem .6rem;
+      border-radius: .45rem;
+      border: 1px solid transparent;
       vertical-align: middle;
     }
+    .badge::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; flex: none; background: currentColor; }
 
-    .badge-expired { background: var(--cor-superficie); color: var(--cor-alerta); }
-    .badge-today { background: var(--cor-destaque); color: var(--cor-texto); }
-    .badge-soon { background: var(--cor-superficie); color: var(--cor-secundaria); }
-    .badge-ok { background: var(--cor-superficie); color: var(--cor-primaria); }
+    .badge-expired { background: var(--st-vencido-badge-bg); border-color: var(--st-vencido-badge-borda); color: var(--st-vencido-badge-txt); }
+    .badge-expired::before { background: var(--st-vencido-cor); }
+    .badge-today { background: var(--st-hoje-badge-bg); border-color: var(--st-hoje-badge-borda); color: var(--st-hoje-badge-txt); animation: alerta-vence-hoje-badge 1.15s ease-in-out infinite; }
+    .badge-today::before { background: #ffffff; animation: alerta-vence-hoje-ponto 1.15s ease-out infinite; }
+    .badge-soon { background: var(--st-breve-badge-bg); border-color: var(--st-breve-badge-borda); color: var(--st-breve-badge-txt); }
+    .badge-soon::before { background: var(--st-breve-cor); }
+    .badge-ok { background: var(--st-prazo-badge-bg); border-color: var(--st-prazo-badge-borda); color: var(--st-prazo-badge-txt); }
+    .badge-ok::before { background: var(--st-prazo-cor); }
+
+    @keyframes alerta-vence-hoje-card {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.45); box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0), 0 0 0 0 rgba(239, 68, 68, 0.18); }
+      50% { border-color: #ff4d4d; box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.25), 0 0 0 4px rgba(239, 68, 68, 0.42), 0 0 26px var(--st-hoje-glow); }
+    }
+    @keyframes alerta-vence-hoje-badge {
+      0%, 100% { filter: brightness(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65); }
+      50% { filter: brightness(1.22); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0), 0 0 18px rgba(239, 68, 68, 0.8); }
+    }
+    @keyframes alerta-vence-hoje-ponto {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9); }
+      70% { transform: scale(1.25); box-shadow: 0 0 0 7px rgba(255, 255, 255, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
 
     .lot-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
     .hint { color: var(--cor-texto); font-size: 1rem; margin-top: .7rem; }
@@ -203,6 +307,25 @@
     #feedback { margin-top: .75rem; font-weight: 700; min-height: 1.4rem; }
     #feedback[data-error="true"] { color: var(--cor-alerta); }
     #feedback[data-error="false"] { color: var(--cor-primaria); }
+
+    .duplicate-warning {
+      margin-top: .55rem;
+      padding: .7rem .8rem;
+      border-radius: .65rem;
+      border: 1.5px solid var(--st-breve-cor);
+      border-left: 4px solid var(--st-breve-cor);
+      background: var(--st-breve-fundo);
+      color: var(--st-breve-badge-txt);
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .duplicate-warning p { font-size: .92rem; font-weight: 700; }
+    .duplicate-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+    .duplicate-actions .botao { min-height: 38px; padding: 6px 12px; font-size: .88rem; }
+    li.lot-card.is-duplicate-highlight {
+      box-shadow: 0 0 0 3px var(--st-breve-cor), 0 0 22px rgba(249, 115, 22, 0.45);
+    }
 
     .discard-log { margin-top: 1rem; padding-top: .8rem; border-top: 1px solid var(--cor-secundaria); }
     .discard-log h3 { font-size: 1rem; margin: 0 0 .45rem; color: var(--cor-alerta); }
@@ -216,6 +339,7 @@
     }
 </style>
   <link rel="stylesheet" href="../../css/botoes.css">
+  <script src="../abertura/js/tema.js"></script>
 </head>
 <body>
   <header>
@@ -296,6 +420,14 @@
             <button id="cancel-btn" class="botao botao-secundario" type="button" hidden>Cancelar edição</button>
           </div>
           <p id="feedback" role="status" aria-live="polite"></p>
+          <div id="duplicate-warning" class="duplicate-warning" role="alert" hidden>
+            <p id="duplicate-warning-text"></p>
+            <div class="duplicate-actions">
+              <button type="button" id="dup-edit-btn" class="botao botao-primario">Editar lote existente</button>
+              <button type="button" id="dup-confirm-btn" class="botao botao-secundario">Adicionar mesmo assim</button>
+              <button type="button" id="dup-dismiss-btn" class="botao botao-secundario">Cancelar</button>
+            </div>
+          </div>
         </form>
       </section>
 
@@ -331,6 +463,43 @@
     let lots = [];
     let discards = [];
     let editingId = null;
+    let pendingDuplicate = null;
+
+    function normalizeKey(value) {
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ');
+    }
+
+    function findDuplicateLot(name, expiry, ignoreId = null) {
+      const targetName = normalizeKey(name);
+      return lots.find(item => {
+        if (ignoreId !== null && item.id === ignoreId) return false;
+        return normalizeKey(item.name) === targetName && item.expiry === expiry;
+      }) || null;
+    }
+
+    function hideDuplicateWarning() {
+      pendingDuplicate = null;
+      const box = el('duplicate-warning');
+      if (box) box.hidden = true;
+      document.querySelectorAll('li.lot-card.is-duplicate-highlight').forEach(node => {
+        node.classList.remove('is-duplicate-highlight');
+      });
+    }
+
+    function highlightExistingLot(id) {
+      document.querySelectorAll('li.lot-card.is-duplicate-highlight').forEach(node => {
+        node.classList.remove('is-duplicate-highlight');
+      });
+      const card = document.querySelector(`li.lot-card[data-lot-id="${id}"]`);
+      if (!card) return;
+      card.classList.add('is-duplicate-highlight');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 
     // Retorna data local YYYY-MM-DD sem deslocamento de fuso UTC
     function getLocalTodayIso() {
@@ -367,7 +536,7 @@
       if (daysLeft <= 3) {
         return { cls: 'status-soon', badgeCls: 'badge-soon', label: `Vence em ${daysLeft} dia${daysLeft === 1 ? '' : 's'}`, urgent: false, soon: true };
       }
-      return { cls: '', badgeCls: 'badge-ok', label: `Dentro do prazo · faltam ${daysLeft} dias`, urgent: false, soon: false };
+      return { cls: 'status-ok', badgeCls: 'badge-ok', label: `Dentro do prazo · faltam ${daysLeft} dias`, urgent: false, soon: false };
     }
 
     function showFeedback(message, isError = false) {
@@ -401,6 +570,7 @@
 
     function resetForm() {
       editingId = null;
+      hideDuplicateWarning();
       form.reset();
       nameInput.removeAttribute('aria-invalid');
       expiryInput.removeAttribute('aria-invalid');
@@ -435,7 +605,7 @@
         const extras = [lot.qty, lot.location].filter(Boolean).map(escapeHtml).join(' • ');
 
         return `
-          <li class="lot-card ${st.cls}">
+          <li class="lot-card ${st.cls}" data-lot-id="${lot.id}">
             <div class="lot-info">
               <div class="lot-name">
                 ${escapeHtml(lot.name)}
@@ -510,8 +680,25 @@
       el('list-title').focus();
     };
 
+    function persistLotSubmission({ name, expiry, qty, location }) {
+      if (editingId !== null) {
+        lots = lots.map(item =>
+          item.id === editingId ? { ...item, name, expiry, qty, location } : item
+        );
+        showFeedback(`Lote "${name}" atualizado e reordenado na lista.`);
+      } else {
+        lots.push({ id: Date.now(), name, expiry, qty, location });
+        showFeedback(`Lote "${name}" salvo e ordenado pela data de validade.`);
+      }
+
+      resetForm();
+      saveState();
+      render();
+    }
+
     form.addEventListener('submit', event => {
       event.preventDefault();
+      hideDuplicateWarning();
 
       const name = nameInput.value.trim();
       const expiry = expiryInput.value.trim();
@@ -534,22 +721,50 @@
         return;
       }
 
-      if (editingId !== null) {
-        lots = lots.map(item =>
-          item.id === editingId ? { ...item, name, expiry, qty, location } : item
-        );
-        showFeedback(`Lote "${name}" atualizado e reordenado na lista.`);
-      } else {
-        lots.push({ id: Date.now(), name, expiry, qty, location });
-        showFeedback(`Lote "${name}" salvo e ordenado pela data de validade.`);
+      const duplicate = findDuplicateLot(name, expiry, editingId);
+      if (duplicate) {
+        pendingDuplicate = {
+          existingId: duplicate.id,
+          payload: { name, expiry, qty, location }
+        };
+        const detalhes = [
+          `validade ${formatDateBr(duplicate.expiry)}`,
+          duplicate.qty ? duplicate.qty : ''
+        ].filter(Boolean).join(' · ');
+        el('duplicate-warning-text').textContent =
+          `Lote repetido detectado: “${duplicate.name}” (${detalhes}) já está cadastrado no estoque. Deseja editar o existente ou adicionar outro igual?`;
+        el('duplicate-warning').hidden = false;
+        showFeedback('Cadastro pausado para evitar duplicidade.', false);
+        highlightExistingLot(duplicate.id);
+        el('dup-edit-btn').focus();
+        return;
       }
 
-      resetForm();
-      saveState();
-      render();
+      persistLotSubmission({ name, expiry, qty, location });
     });
 
-    form.addEventListener('input', ({ target }) => target.removeAttribute('aria-invalid'));
+    el('dup-edit-btn').addEventListener('click', () => {
+      if (!pendingDuplicate) return;
+      const targetId = pendingDuplicate.existingId;
+      hideDuplicateWarning();
+      window.startEdit(targetId);
+    });
+    el('dup-confirm-btn').addEventListener('click', () => {
+      if (!pendingDuplicate) return;
+      const payload = pendingDuplicate.payload;
+      hideDuplicateWarning();
+      persistLotSubmission(payload);
+    });
+    el('dup-dismiss-btn').addEventListener('click', () => {
+      hideDuplicateWarning();
+      showFeedback('Cadastro duplicado cancelado.', false);
+      nameInput.focus();
+    });
+
+    form.addEventListener('input', ({ target }) => {
+      target.removeAttribute('aria-invalid');
+      hideDuplicateWarning();
+    });
     el('cancel-btn').addEventListener('click', () => {
       resetForm();
       showFeedback('Edição cancelada.');

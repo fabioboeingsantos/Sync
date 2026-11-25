@@ -1,17 +1,18 @@
-mo# Arquitetura Passo a Passo — Assistente de Estoque (IA)
+# Arquitetura Passo a Passo — Assistente de Estoque (IA) e Notas Fiscais
 
 **Tema:** Gastronomia — Insumo vencendo na cozinha  
 **Protótipo separado para discussão em sala:** [htmls/agente-ia-cadastro.html](../htmls/agente-ia-cadastro.html)  
 **Comparação com o fluxo manual:** [htmls/E3-mvp-validade.html](../htmls/E3-mvp-validade.html)  
-**Pauta de testes:** [agente_IA.md](agente_IA.md)
+**Pauta de testes:** [agente_IA.md](agente_IA.md)  
+**Roadmap fiscal detalhado (Fases 1, 2 e 3):** [integracao-notas-fiscais.md](../../docs/futuras-implantacoes/integracao-notas-fiscais.md)
 
 ---
 
-## 1. Por que criar este experimento de IA?
+## 1. Por que criar este experimento de IA + Entrada Fiscal?
 
 Durante os testes do **MVP manual da E3**, surgiu um atrito real da cozinha: **digitar manualmente todos os campos de cada insumo dá trabalho** na correria do dia a dia — exatamente o motivo pelo qual restaurantes pequenos abandonam ERPs complexos e voltam para o caderno (achado de `P02` na [E2](../desafios/E2.md)).
 
-O experimento testa se **descrever ou ditar o lote em linguagem natural** reduz o tempo de cadastro **sem perder confiabilidade** na data de validade.
+Além disso, no Brasil, mesmo quando uma nota fiscal (NF-e/NFC-e) chega em XML, o bloco de rastreabilidade (`<rastro>` com `<nLote>` e `<dVal>`) raramente vem preenchido em alimentos. O experimento une **leitura de XML (Fase 1)** com **voz/texto natural (VoicePill)** para zerar a digitação pesada **sem perder confiabilidade** na validade.
 
 ---
 
@@ -19,46 +20,51 @@ O experimento testa se **descrever ou ditar o lote em linguagem natural** reduz 
 
 ```mermaid
 flowchart LR
-    A["1. Entrada<br/>Texto natural ou Voz (pt-BR)"] --> B["2. Interpretação<br/>Parser NLP / Contrato LLM"]
-    B --> C{"3. Data válida<br/>e completa?"}
+    A["1. Entrada<br/>Texto, Voz (VoicePill)<br/>ou XML NF-e (Fase 1)"] --> B["2. Interpretação<br/>Parser NLP + DOMParser NF-e<br/>(&lt;rastro&gt; + De/Para)"]
+    B --> C{"3. Data válida<br/>e sem duplicidade?"}
     C -- "Sim" --> D["4. Conferência Humana<br/>Preenche campos em destaque"]
-    C -- "Não / Ambígua" --> E["Pede esclarecimento<br/>Foca campo da data"]
+    C -- "Ambígua / Ausente" --> E["Banner de Erro<br/>Foca campo da data"]
+    C -- "Lote/Nota Repetida" --> R["Aviso de Duplicidade<br/>Editar existente ou confirmar"]
     B -- "Falha / Indisponível" --> F["Fallback Seguro<br/>Preserva texto + Formulário manual"]
     D --> G["5. Confirmação do Usuário<br/>Validação obrigatória"]
-    G --> H["6. Lista PVPS + Descartes<br/>Ordena por vencimento e salva"]
+    G --> H["6. Lista PVPS + 4 Cores<br/>Vence hoje pulsando + Descartes"]
 ```
 
 ---
 
 ## 3. Passo a Passo de Cada Camada
 
-### Passo 1 — Captura da Entrada (Texto ou Voz)
-* **Na interface:** o cozinheiro digita uma frase livre no campo `#nl-input` ou clica em **🎤 Falar** (`startVoiceCapture()`).
-* **Tecnologia usada:** `Web Speech API` (`SpeechRecognition` / `webkitSpeechRecognition`) configurada em `pt-BR`.
-* **Regra de resiliência:** se o navegador não suportar microfone ou a permissão for negada, o sistema informa e mantém o campo de texto funcionando normalmente.
+### Passo 1 — Captura da Entrada (Texto, Microfone VoicePill ou XML NF-e)
+* **Voz com VoicePill:** substitui o antigo botão textual por um controle de microfone expansível (`VoicePill`, baseado em `@react-bits/VoicePill-JS-CSS`) com forma de onda em canvas, cronômetro `0:00`, suporte a toque/segurar (`mode="auto"`) e gesto **arraste para a esquerda para cancelar**, conectado à `Web Speech API` (`pt-BR`).
+* **Simulações prontas para apresentação (QR Code):** 5 cenários interativos visíveis na tela (4 estados de validade + 1 erro de data ambígua) para qualquer visitante testar em segundos.
+* **Importação de Nota Fiscal (Fase 1):** upload de arquivo `.xml` de NF-e (ou botão **Simular NF-e**) lido localmente via `DOMParser` (`piloto/interpretar-nfe.js` e `agente-ia-cadastro.html`).
+* **Regra de resiliência:** se o navegador não suportar microfone ou a permissão for negada, a interface informa claramente e mantém o texto, as simulações e o XML funcionando normalmente.
 
-### Passo 2 — Interpretação da Linguagem Natural (`interpretNaturalText`)
-* **O que extrai:**
-  1. **Data completa** (`DD/MM/AAAA`) com validação de calendário real (`toValidIsoDate`, rejeitando datas impossíveis como `31/02`).
-  2. **Termos ambíguos de data** (*"terça"*, *"amanhã"*, *"semana que vem"*) para acionar o pedido de esclarecimento.
-  3. **Código do lote** (ex.: `lote A12` → `A12`).
-  4. **Quantidade e unidade** (ex.: `2 caixas`, `500g`, `3 potes`).
-  5. **Local na geladeira** (ex.: `prateleira do meio`, `freezer`, `fundo`).
-  6. **Nome do insumo** (removendo os metadados acima e padronizando a capitalização).
-* **Evolução para LLM (API real):** no protótipo do simulado, a interpretação roda localmente em JavaScript puro para funcionar offline no GitHub Pages sem expor chave de API. Em produção, apenas essa função (`interpretNaturalText`) é substituída por uma chamada a uma API de LLM retornando JSON com o mesmo formato (`{ name, lotCode, expiry, qty, location, ambiguousDateTerm }`).
+### Passo 2 — Interpretação da Linguagem Natural (`interpretNaturalText`) e XML (`parseNfeXml`)
+* **No texto/voz:** extrai data completa (`DD/MM/AAAA`) com validação de calendário real (`toValidIsoDate`), detecta termos ambíguos (*"terça"*, *"amanhã"*, *"semana que vem"*), código do lote, quantidade/unidade, local na geladeira e nome do insumo.
+* **No XML NF-e (Fase 1):** extrai chave de acesso (`chNFe`), fornecedor e cada `<det>`; aproveita `<rastro>` (`nLote`, `dVal`, `qLote`) quando presente, normaliza abreviações fiscais (`QJO MUCARELA FAT 500G` → `Queijo muçarela`) e preserva insumo/quantidade da nota quando o usuário usa a voz para ditar apenas a validade e o local.
+* **Evolução para LLM (API real):** a função `interpretNaturalText` pode ser trocada por uma chamada a API de LLM mantendo exatamente o mesmo contrato JSON de saída e as mesmas validações determinísticas.
 
 ### Passo 3 — Conferência Humana (*Human-in-the-Loop*)
 * **Regra de ouro:** o assistente **nunca salva o lote sozinho**.
-* Ao interpretar a frase, `runAssistantParse()` preenche os campos do formulário e aplica destaque visual amarelo (`.field-suggested`) para o cozinheiro bater o olho, corrigir se quiser e clicar em **"Confirmar e salvar lote"**.
+* Ao interpretar uma frase ou selecionar um item da NF-e, o sistema preenche os campos destacados (`.field-suggested`) para o cozinheiro conferir e confirmar com 1 toque em **Salvar lote**.
 
-### Passo 4 — Tratamento de Ambiguidade e Falhas
-* **Caso 2 (Informação ausente ou ambígua):** ex.: `"Queijo, lote B02, vence na terça"`. O assistente preenche *Queijo* e *B02*, mas bloqueia o salvamento automático, avisa que *"terça"* é ambíguo e coloca o cursor direto no campo de data.
-* **Caso 3 (Falha do serviço):** botão **"Simular falha"** (`simulateAssistantFailure()`) demonstra que, mesmo se a IA cair, **o texto digitado não é perdido** e o formulário manual continua 100% operacional.
+### Passo 4 — Tratamento de Ambiguidade, Duplicidade e Falhas
+* **Data ambígua (erro):** ex.: `"Iogurte natural, lote E05, 3 potes, vence na terça"`. O assistente marca `Validade` com `aria-invalid="true"`, exibe banner vermelho de erro e exige data completa (`DD/MM/AAAA`).
+* **Lote repetido e NF-e repetida:** detecta se já existe insumo + validade + lote igual (oferecendo **Editar lote existente** ou **Adicionar mesmo assim** e destacando o card na lista) e avisa se a mesma chave `chNFe` já foi importada.
+* **Falha do serviço:** mesmo se a IA ficar indisponível (`simulateAssistantFailure()`), o texto digitado é preservado e o formulário manual permanece 100% operacional.
 
-### Passo 5 — Validação, Ordenação PVPS e Visão do Dono
-* Ao confirmar o formulário, a validação obrigatória bloqueia nome ou data vazios.
-* Os lotes salvos entram na lista ordenada por **PVPS (Primeiro que Vence, Primeiro que Sai)** com cores de urgência (*Vencido*, *Vence hoje*, *Até 3 dias*, *No prazo*).
-* O botão **Descartado** registra perdas em 1 toque no bloco **"Visão do dono"**, evitando que o prejuízo só apareça no fim do mês.
+### Passo 5 — Validação, Ordenação PVPS com 4 Cores Semânticas e Visão do Dono
+* Os lotes salvos entram ordenados por **PVPS (Primeiro que Vence, Primeiro que Sai)** com cores consistentes nos temas **escuro e claro**: **Roxo/Vinho** (*Vencido*), **Vermelho pulsando em alerta** (*Vence hoje*), **Laranja** (*Vence em breve*) e **Azul** (*Dentro do prazo*).
+* O botão **Descartado** registra perdas em 1 toque no histórico visível ao dono.
+
+---
+
+## 4. Roadmap de Notas Fiscais em 3 Fases (Brasil)
+
+1. **Fase 1 — MVP Atual (Implementada):** upload/simulação de XML NF-e no navegador (`DOMParser`), extração de `<rastro>`, trava contra nota repetida e conferência por voz (**VoicePill**). Custo zero de infraestrutura.
+2. **Fase 2 — Piloto SEFAZ (Próxima entrega do piloto online):** integração com **SEFAZ Distribuição DF-e** via Certificado Digital A1 no backend seguro (recebendo `resNFe` → Ciência da Operação → download automático do `procNFe`), leitura de **QR Code da NFC-e** e tabela de **De/Para de fornecedores** no Supabase.
+3. **Fase 3 — Câmera na Cozinha / Vision (Escala):** leitura da data de validade impressa na embalagem (OCR/Visão) e foto de romaneio/recibo para compras de feira e hortifrúti sem XML.
 
 ---
 

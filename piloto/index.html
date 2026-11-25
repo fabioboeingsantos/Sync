@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../css/estoque.css">
   <!-- Reutiliza o padrão de botões definido para o projeto. -->
   <link rel="stylesheet" href="../css/botoes.css">
+  <script src="../Insumo%20vencendo%20na%20cozinha/abertura/js/tema.js"></script>
   <script type="module" src="../estoque.js"></script>
 </head>
 <body>
@@ -28,6 +29,17 @@
         <span class="conta-topo" id="conta-topo" hidden></span>
         <button class="botao botao-secundario" id="minha-conta" type="button" hidden>Minha conta</button>
         <button class="botao botao-secundario" id="sair" type="button" hidden>Sair</button>
+        <button type="button" class="theme-toggle theme-toggle-inline" data-theme-toggle aria-pressed="false" aria-label="Modo escuro ativo (Lua). Clique para ativar modo claro (Sol).">
+          <span class="sky-track" aria-hidden="true">
+            <span class="sky-stars"></span>
+            <span class="sky-clouds"></span>
+            <span class="sky-rays"></span>
+            <span class="celestial-thumb">
+              <img class="orb orb-sun" src="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/sol-realista.webp" alt="" width="40" height="40">
+              <img class="orb orb-moon" src="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/lua-realista.webp" alt="" width="40" height="40">
+            </span>
+          </span>
+        </button>
       </div>
     </div>
   </header>
@@ -160,6 +172,16 @@
 
       <section class="painel painel-lista" aria-labelledby="titulo-lista">
         <h2 id="titulo-lista" tabindex="-1">Lotes por validade</h2>
+        <div class="barra-filtros-estoque" id="barra-filtros-estoque" hidden>
+          <div class="filtros-estoque" id="filtros-estoque" role="group" aria-label="Filtrar lotes por validade">
+            <button type="button" class="botao botao-secundario" data-filtro-estoque="todos" aria-pressed="true">Todos</button>
+            <button type="button" class="botao botao-secundario" data-filtro-estoque="vencido" aria-pressed="false">Vencido</button>
+            <button type="button" class="botao botao-secundario" data-filtro-estoque="hoje" aria-pressed="false">Vence hoje</button>
+            <button type="button" class="botao botao-secundario" data-filtro-estoque="breve" aria-pressed="false">Vence em breve</button>
+            <button type="button" class="botao botao-secundario" data-filtro-estoque="em_dia" aria-pressed="false">Dentro do prazo</button>
+          </div>
+          <p class="contagem-estoque" id="contagem-estoque" role="status"></p>
+        </div>
         <p id="mensagem-lista" class="mensagem" role="status"></p>
         <button type="button" class="botao botao-secundario" id="recarregar" hidden>Tentar novamente</button>
         <div id="tabela-estoque" hidden>

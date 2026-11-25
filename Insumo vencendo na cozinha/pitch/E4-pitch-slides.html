@@ -625,11 +625,11 @@
           <div class="grid-3">
             <div class="card destaque">
               <h3>1. Registrar em segundos</h3>
-              <p>Insumo + validade obrigatória, por formulário rápido ou assistente de texto/voz com conferência manual.</p>
+              <p>Manual, por <strong>voz no microfone</strong> ou importando o <strong>XML da NF-e</strong>, com conferência humana e aviso contra lote repetido.</p>
             </div>
             <div class="card">
               <h3>2. Ver o que vence primeiro</h3>
-              <p>Ordenação automática <strong>PVPS</strong> (Primeiro que Vence, Primeiro que Sai) com rótulos claros por texto e cor.</p>
+              <p>Ordenação automática <strong>PVPS</strong> com 4 cores nos temas claro e escuro — destacando <strong>Vence hoje pulsando em alerta</strong>.</p>
             </div>
             <div class="card alerta">
               <h3>3. Agir e registrar perdas</h3>
@@ -646,14 +646,15 @@
             <div class="card destaque">
               <h3>O que você vê rodando agora</h3>
               <ul>
-                <li>Lista ordenada automaticamente pelo vencimento (<strong>PVPS</strong>).</li>
-                <li>Correção de validade → sobe na hora sem duplicar o lote.</li>
-                <li>Bloqueio de uso em lote vencido + descarte visível ao dono.</li>
-                <li><strong>Plus online:</strong> banco na nuvem, <code>/equipe/</code> e <strong>22/22 testes</strong>.</li>
+                <li>Lista <strong>PVPS</strong> com 4 cores de urgência (<strong>Vence hoje pulsando</strong>) nos temas claro e escuro.</li>
+                <li>Trava contra <strong>lote repetido</strong>, data ambígua e bloqueio de uso em item vencido.</li>
+                <li>Assistente com <strong>microfone (voz)</strong>, 5 simulações e <strong>importação de XML NF-e</strong>.</li>
+                <li><strong>Plus online:</strong> banco na nuvem, <code>/equipe/</code> e <strong>26/26 testes</strong>.</li>
               </ul>
               <div class="cta-row">
                 <a class="cta-link" href="https://sync-solucoes.vercel.app/estoque/" target="_blank" rel="noopener">Abrir ao vivo ↗</a>
-                <a class="cta-link sec" href="../htmls/E3-mvp-validade.html" target="_blank">MVP offline ↗</a>
+                <a class="cta-link sec" href="../htmls/agente-ia-cadastro.html" target="_blank">Assistente IA ↗</a>
+                <a class="cta-link sec" href="../htmls/E3-mvp-validade.html" target="_blank">MVP manual ↗</a>
               </div>
             </div>
             <div class="video-frame" id="demoVideoFrame">
@@ -665,10 +666,10 @@
             </div>
             <div class="card demo-fallback" id="demoFallback">
               <h3>Plus de viabilidade — já publicado no ar</h3>
-              <p>Além do MVP offline, o Time SYNC publicou a versão web completa com banco em nuvem, abertura/fracionamento e controle de equipe (<code>/equipe/</code>).</p>
+              <p>Além do MVP com assistente (voz + XML NF-e), o Time SYNC publicou a versão web completa com banco em nuvem, abertura/fracionamento e controle de equipe (<code>/equipe/</code>).</p>
               <div class="cta-row">
                 <a class="cta-link" href="https://sync-solucoes.vercel.app" target="_blank" rel="noopener">Abrir VisionChef online ↗</a>
-                <a class="cta-link sec" href="../htmls/E3-mvp-validade.html" target="_blank">MVP offline ↗</a>
+                <a class="cta-link sec" href="../htmls/agente-ia-cadastro.html" target="_blank">Assistente IA ↗</a>
               </div>
             </div>
           </div>
@@ -676,22 +677,22 @@
       },
       {
         html: `
-          <h2 class="slide-title">Por que funciona no restaurante pequeno</h2>
+          <h2 class="slide-title">Viabilidade hoje e roadmap fiscal em 3 fases</h2>
           <div class="grid-2">
             <div class="card destaque">
-              <h3>Viabilidade e Impacto</h3>
+              <h3>Por que funciona no restaurante pequeno</h3>
               <ul>
-                <li><strong>Sem barreira de entrada:</strong> roda no celular que a cozinha já tem, sem hardware caro.</li>
+                <li><strong>Sem barreira de entrada:</strong> roda no celular que a cozinha já tem, com custo quase zero.</li>
                 <li><strong>Menos desperdício:</strong> lote prestes a vencer vira prato do dia antes de estragar.</li>
-                <li><strong>Decisão semanal para o dono:</strong> compras mais assertivas e perdas visíveis antes do fim do mês.</li>
+                <li><strong>Realidade das notas no Brasil:</strong> XML de alimentos raramente traz validade (<code>&lt;rastro&gt;</code>) — nossa assistente resolve esse gargalo na cozinha.</li>
               </ul>
             </div>
             <div class="card">
-              <h3>Próximos passos de validação</h3>
+              <h3>Roadmap Notas Fiscais + Assistente</h3>
               <ul>
-                <li>Medir tempo de consulta (&lt; 30s) e coletar feedback em rodada com cozinhas pequenas reais.</li>
-                <li>Avaliar alertas diários antes do preparo do almoço.</li>
-                <li>Validar modelo freemium acessível após o piloto.</li>
+                <li><strong>Fase 1 (Ativa no MVP):</strong> importação local de XML NF-e (<code>&lt;rastro&gt;</code>) + voz para completar validades faltantes.</li>
+                <li><strong>Fase 2 (Piloto SEFAZ):</strong> captura automática via SEFAZ DF-e (Certificado A1), QR Code de NFC-e e De/Para por fornecedor.</li>
+                <li><strong>Fase 3 (Câmera / Vision):</strong> leitura da validade na embalagem (OCR) e foto de romaneio de feira.</li>
               </ul>
             </div>
           </div>
@@ -705,7 +706,7 @@
               <p class="slide-lead" style="margin-top: 14px;">Visibilidade diária na cozinha. Menos desperdício. Mais controle para o dono.</p>
               <div class="card destaque" style="margin-top: 18px;">
                 <h3>Obrigado! · Time SYNC — VisionChef</h3>
-                <p>Teste agora no celular: <strong>https://sync-solucoes.vercel.app</strong></p>
+                <p>Escaneie e teste agora o assistente (simulações, voz e XML NF-e): <strong>https://sync-solucoes.vercel.app</strong></p>
               </div>
             </div>
             <div class="qr-box">

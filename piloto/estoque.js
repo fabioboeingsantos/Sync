@@ -45,6 +45,12 @@ const painelDescartes = porId('painel-descartes');
 const historicoDescartes = porId('historico-descartes');
 const descricaoLote = porId('descricao-lote');
 const statusAssistente = porId('status-assistente');
+const barraFiltrosEstoque = porId('barra-filtros-estoque');
+const filtrosEstoque = porId('filtros-estoque');
+const contagemEstoque = porId('contagem-estoque');
+let filtroSituacao = 'todos';
+let lotesCarregados = [];
+let duplicadoConfirmado = null;
 let parteEmSaida = null;
 let envioSaida = null;
 let restaurante = null;
@@ -119,6 +125,7 @@ async function mostrarSessao(focar = false) {
     painelDescartes.hidden = true;
     historicoDescartes.replaceChildren();
     porId('tabela-estoque').hidden = true;
+    if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = true;
     ocupado(recarregar, false);
     if (focar) porId(!autenticado ? 'titulo-entrada' : 'titulo-sem-restaurante').focus();
     return;
@@ -167,6 +174,7 @@ function adicionarCelula(linha, conteudo, rotulo) {
 function mostrarLote(lote) {
   const linha = document.createElement('tr');
   linha.setAttribute('role', 'row');
+  linha.dataset.situacao = lote.situacao;
   const insumo = adicionarCelula(linha, lote.insumo);
   if (lote.codigo_fabricante) {
     const codigo = document.createElement('small');
@@ -228,6 +236,35 @@ function focarAcao(parte, acao) {
   (botao ?? porId('titulo-lista')).focus();
 }
 
+function aplicarFiltroEstoque() {
+  const linhas = [...porId('lotes').querySelectorAll('tr[data-situacao]')];
+  let visiveis = 0;
+  for (const linha of linhas) {
+    const mostrar = filtroSituacao === 'todos' || linha.dataset.situacao === filtroSituacao;
+    linha.hidden = !mostrar;
+    if (mostrar) visiveis += 1;
+  }
+  if (filtrosEstoque) {
+    for (const botao of filtrosEstoque.querySelectorAll('[data-filtro-estoque]')) {
+      botao.setAttribute('aria-pressed', String(botao.dataset.filtroEstoque === filtroSituacao));
+    }
+  }
+  if (contagemEstoque) {
+    contagemEstoque.textContent = visiveis === 1 ? '1 lote exibido.' : `${visiveis} lotes exibidos.`;
+  }
+  if (linhas.length > 0) {
+    porId('tabela-estoque').hidden = visiveis === 0;
+    mensagemLista.textContent = visiveis === 0 ? 'Nenhum lote nesta categoria.' : '';
+  }
+}
+
+filtrosEstoque?.addEventListener('click', (evento) => {
+  const selecionado = evento.target.closest('button[data-filtro-estoque]');
+  if (!selecionado) return;
+  filtroSituacao = selecionado.dataset.filtroEstoque;
+  aplicarFiltroEstoque();
+});
+
 async function atualizarEstoque() {
   if (!restaurante) return;
   // Ignora respostas antigas se a pessoa sair ou outra consulta começar antes do retorno.
@@ -239,15 +276,19 @@ async function atualizarEstoque() {
   try {
     const lotes = await api.estoque(restaurante.id);
     if (consulta !== versaoConsulta) return;
+    lotesCarregados = lotes;
     porId('lotes').replaceChildren(...lotes.map(mostrarLote));
     porId('tabela-estoque').hidden = lotes.length === 0;
+    if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = lotes.length === 0;
     mensagemLista.textContent = lotes.length === 0 ? 'Nenhum lote cadastrado.' : '';
+    if (lotes.length > 0) aplicarFiltroEstoque();
     void atualizarDescartes(restaurante.id, consulta);
     return lotes;
   } catch (erro) {
     if (consulta !== versaoConsulta) return;
     porId('lotes').replaceChildren();
     porId('tabela-estoque').hidden = true;
+    if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = true;
     if (erro.status === 401) {
       await mostrarSessao(true);
       mensagemSessao.textContent = 'Entre novamente para acessar o estoque.';
@@ -611,6 +652,8 @@ async function encerrarSessao(botaoAcionado, escopo = 'local') {
     feedback.textContent = '';
     porId('lotes').replaceChildren();
     porId('tabela-estoque').hidden = true;
+    if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = true;
+    filtroSituacao = 'todos';
     porId('painel-cadastro').hidden = true;
     abrirCadastro.setAttribute('aria-expanded', 'false');
     await mostrarSessao(true);
@@ -639,6 +682,26 @@ porId('cancelar-cadastro').addEventListener('click', () => {
 });
 recarregar.addEventListener('click', atualizarEstoque);
 
+function normalizarTextoChave(valor) {
+  return String(valor ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function buscarLoteDuplicado(insumo, codigo, validade) {
+  const nomeChave = normalizarTextoChave(insumo);
+  const codigoChave = normalizarTextoChave(codigo);
+  return lotesCarregados.find((item) => {
+    if (normalizarTextoChave(item.insumo) !== nomeChave) return false;
+    if (item.validade_embalagem !== validade && item.validade_aplicavel !== validade) return false;
+    const itemCodigo = normalizarTextoChave(item.codigo_fabricante);
+    return itemCodigo === codigoChave || !itemCodigo || !codigoChave;
+  }) ?? null;
+}
+
 formLote.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const botao = formLote.querySelector('[type="submit"]');
@@ -666,6 +729,18 @@ formLote.addEventListener('submit', async (evento) => {
     p_medida: dados.medida,
     p_quantidade: quantidade,
   };
+
+  // Evita cadastro acidental de lote repetido; um segundo clique confirma o envio intencional.
+  const chaveDup = `${normalizarTextoChave(lote.p_insumo)}|${normalizarTextoChave(lote.p_codigo_fabricante)}|${lote.p_validade}`;
+  const existente = buscarLoteDuplicado(lote.p_insumo, lote.p_codigo_fabricante, lote.p_validade);
+  if (existente && duplicadoConfirmado !== chaveDup) {
+    duplicadoConfirmado = chaveDup;
+    const codigoInfo = existente.codigo_fabricante ? ` (Lote ${existente.codigo_fabricante})` : '';
+    erroCadastro.textContent = `Lote repetido: “${existente.insumo}”${codigoInfo} com validade ${formatarData(existente.validade_aplicavel)} já está no estoque. Confira na lista ou clique novamente em “Salvar lote” para cadastrar mesmo assim.`;
+    botao.focus();
+    return;
+  }
+  duplicadoConfirmado = null;
   // Uma nova tentativa com os mesmos dados reaproveita a chave de cadastro.
   const conteudo = JSON.stringify(lote);
   if (envioPendente?.conteudo !== conteudo) envioPendente = { conteudo, id: crypto.randomUUID() };
@@ -730,7 +805,10 @@ function preencherComAssistente() {
 }
 
 porId('sugerir-lote').addEventListener('click', preencherComAssistente);
-formLote.addEventListener('input', (evento) => evento.target.classList.remove('sugestao'));
+formLote.addEventListener('input', (evento) => {
+  evento.target.classList.remove('sugestao');
+  duplicadoConfirmado = null;
+});
 
 // Quando disponível, o navegador transforma a fala em texto para a mesma etapa de conferência.
 const Reconhecimento = window.SpeechRecognition || window.webkitSpeechRecognition;
