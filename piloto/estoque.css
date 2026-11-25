@@ -40,6 +40,31 @@ h2 { font-size: 1.25rem; letter-spacing: -.02em; color: #0f4c5c; }
 .marca-link { color: #ffffff; text-decoration: none; }
 .marca-link:focus-visible, .link-topo:focus-visible { outline: 3px solid #a8d5dd; outline-offset: 3px; border-radius: 6px; }
 .marca-icone { width: 2.35rem; height: 2.35rem; object-fit: contain; display: block; }
+/* Símbolo pictórico do VisionChef (chapéu + olho + barras) no cabeçalho e no cartão de login. */
+.vc-pictorica-topo,
+.vc-pictorica-entrada {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  overflow: hidden;
+  background: #ffffff;
+  aspect-ratio: 10 / 6.7;
+  border: 1.5px solid #a8d5dd;
+}
+.vc-pictorica-topo { width: 3.15rem; border-radius: 9px; box-shadow: 0 3px 10px rgb(0 0 0 / 22%); }
+.vc-pictorica-entrada { width: 5.4rem; margin: 0 auto .55rem; border-radius: 13px; border-color: #2a7f8e; box-shadow: 0 6px 16px rgb(15 76 92 / 16%); }
+.vc-pictorica-topo img,
+.vc-pictorica-entrada img {
+  position: absolute;
+  top: -2%;
+  left: 50%;
+  width: 178%;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+  display: block;
+  pointer-events: none;
+}
 .marca small { font-weight: 400; color: #a8d5dd; }
 .link-topo { color: #e6f3f6; font-size: .92rem; font-weight: 700; text-decoration: none; padding: .45rem .65rem; border-radius: 8px; }
 .link-topo:hover { background: rgb(255 255 255 / 12%); color: #ffffff; }

@@ -375,6 +375,9 @@ function AcessoVisionChef({ destino }) {
           <button className="botao-fechar-acesso" type="button" aria-label="Fechar acesso"
             onClick={() => definirDialogoAberto(false)}>×</button>
           <div className="marca-acesso">
+            <span className="vc-pictorica vc-pictorica-modal" aria-hidden="true">
+              <img src="Insumo%20vencendo%20na%20cozinha/imagens/visionchef-logo.jpg" width="1356" height="759" alt="" />
+            </span>
             <p className="marca-acesso-titulo">VisionChef</p>
             <p className="marca-acesso-subtitulo">Acesso da equipe e do restaurante</p>
           </div>

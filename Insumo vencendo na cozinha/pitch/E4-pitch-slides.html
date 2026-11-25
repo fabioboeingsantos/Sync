@@ -324,18 +324,35 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      padding: 22px 28px;
+      gap: 12px;
+      padding: 20px 26px;
       border-radius: 18px;
       border: 1.5px solid var(--border);
       background: var(--card-bg-strong);
       text-align: center;
     }
 
-    .cover-badge img {
-      width: clamp(86px, 9vw, 126px);
-      height: clamp(86px, 9vw, 126px);
-      object-fit: contain;
+    /* Recorte exato do símbolo pictórico do VisionChef (chapéu de chef + olho + barras) */
+    .vc-slide-pictorica {
+      position: relative;
+      width: clamp(132px, 13vw, 190px);
+      aspect-ratio: 10 / 6.7;
+      overflow: hidden;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 2px solid rgba(168, 213, 221, 0.72);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+    }
+
+    .vc-slide-pictorica img {
+      position: absolute;
+      top: -2%;
+      left: 50%;
+      width: 178%;
+      max-width: none;
+      height: auto;
+      transform: translateX(-50%);
+      display: block;
     }
 
     .cover-badge strong {
@@ -509,14 +526,15 @@
     const slides = [
       {
         html: `
-          <span class="slide-tag">Ato 1 • Gancho</span>
           <div class="hero-cover">
             <div>
               <h1 class="slide-title">Insumo vencendo na cozinha</h1>
               <p class="slide-lead" style="margin-top: 14px;">“Você abre um creme de leite novo no almoço e, no sábado, descobre dois potes vencidos escondidos no fundo da geladeira.”</p>
             </div>
             <div class="cover-badge">
-              <img src="../abertura/imagens/coruja-sync-icone.png" width="88" height="88" alt="Emblema do Time SYNC" />
+              <div class="vc-slide-pictorica">
+                <img src="../imagens/visionchef-logo.jpg" width="1356" height="759" alt="Logo pictórica do VisionChef" />
+              </div>
               <strong>VisionChef</strong>
               <span>Time SYNC</span>
             </div>
@@ -529,7 +547,6 @@
       },
       {
         html: `
-          <span class="slide-tag">Ato 1 • A Dor (E1)</span>
           <h2 class="slide-title">O prejuízo invisível do caderno</h2>
           <div class="grid-3">
             <div class="card alerta">
@@ -550,7 +567,6 @@
       },
       {
         html: `
-          <span class="slide-tag">Ato 2 • Matriz CSD (E1)</span>
           <h2 class="slide-title">O que investigamos antes de desenhar a solução</h2>
           <div class="grid-3">
             <div class="card destaque">
@@ -580,7 +596,6 @@
       },
       {
         html: `
-          <span class="slide-tag">Ato 2 • Validação do Problema (E2)</span>
           <h2 class="slide-title">O que os relatos revelaram sobre a rotina</h2>
           <div class="grid-2">
             <div class="card">
@@ -600,12 +615,11 @@
               </ul>
             </div>
           </div>
-          <p class="nota-rodape">* Relatos simulados no treino UC6 (S1–S5 confirmadas e D1, D5 e D6 respondidas), preparados para validação complementar com cozinhas reais.</p>
+          <p class="nota-rodape">* Relatos simulados do treino, prontos para validação complementar com cozinhas reais.</p>
         `
       },
       {
         html: `
-          <span class="slide-tag">Ato 3 • A Solução (E3)</span>
           <h2 class="slide-title">VisionChef: simples como o caderno, ágil como PVPS</h2>
           <p class="slide-lead">Foco na dor da cozinha: zero burocracia de ERP, direto no celular, respondendo em segundos o que usar primeiro.</p>
           <div class="grid-3">
@@ -626,7 +640,6 @@
       },
       {
         html: `
-          <span class="slide-tag">Ato 3 • Demo, Testes e Plus Online (E3)</span>
           <h2 class="slide-title">MVP funcionando na prática e validado</h2>
           <div class="demo-grid">
             <div class="card destaque">
@@ -647,16 +660,14 @@
                 <span>sync-solucoes.vercel.app/estoque/</span>
                 <button type="button" onclick="reiniciarDemoVideo()">↻ Reiniciar</button>
               </div>
-              <!-- Salve a gravação de 45s como demo-visionchef.mp4 nesta mesma pasta (pitch/) -->
               <video id="demoVideo" src="demo-visionchef.mp4" autoplay muted loop playsinline controls onerror="ativarFallbackDemo()"></video>
             </div>
             <div class="card demo-fallback" id="demoFallback">
               <h3>Plus de viabilidade — já publicado no ar</h3>
-              <p>Além do MVP offline da E3, o Time SYNC publicou a versão web completa com banco em nuvem, abertura/fracionamento e controle de equipe (<code>/equipe/</code>).</p>
-              <p class="nota-rodape">Para exibir a gravação automática aqui no slide, salve o vídeo em <code>pitch/demo-visionchef.mp4</code>.</p>
+              <p>Além do MVP offline, o Time SYNC publicou a versão web completa com banco em nuvem, abertura/fracionamento e controle de equipe (<code>/equipe/</code>).</p>
               <div class="cta-row">
                 <a class="cta-link" href="https://sync-solucoes.vercel.app" target="_blank" rel="noopener">Abrir VisionChef online ↗</a>
-                <a class="cta-link sec" href="../htmls/E3-mvp-validade.html" target="_blank">MVP E3 offline ↗</a>
+                <a class="cta-link sec" href="../htmls/E3-mvp-validade.html" target="_blank">MVP offline ↗</a>
               </div>
             </div>
           </div>
@@ -664,7 +675,6 @@
       },
       {
         html: `
-          <span class="slide-tag">Ato 3 • Viabilidade e Impacto</span>
           <h2 class="slide-title">Por que funciona no restaurante pequeno</h2>
           <div class="grid-2">
             <div class="card destaque">
@@ -688,7 +698,6 @@
       },
       {
         html: `
-          <span class="slide-tag">Fechamento • Time SYNC</span>
           <div class="closing-grid">
             <div>
               <h1 class="slide-title">Nenhum insumo vencendo escondido no fundo da geladeira.</h1>
