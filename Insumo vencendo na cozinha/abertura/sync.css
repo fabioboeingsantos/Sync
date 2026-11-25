@@ -132,10 +132,10 @@ section[id] { scroll-margin-top: 5.5rem; }
 .site-nav { display: flex; flex-wrap: wrap; gap: 0 clamp(.8rem, 2.5vw, 2rem); }
 .header-actions { display: inline-flex; align-items: center; gap: .75rem; }
 .header-cta { padding-inline: .9rem; border: 1px solid var(--control-line); border-radius: .35rem; color: var(--foreground); }
-/* Destaca a criação de conta sem confundir a ação principal de login. */
-.header-signup { border-color: #2f6b3b; background: #2f6b3b; color: #fff; }
-.header-signup:hover { border-color: #1f4d2e; background: #1f4d2e; color: #fff; }
-.header-signup:focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
+/* Destaca a criação de conta na paleta Aço Inox com acabamento GlassSurface. */
+.header-signup { border-color: rgba(168, 213, 221, 0.55); background: linear-gradient(160deg, rgba(42, 127, 142, 0.88), rgba(15, 76, 92, 0.95)); color: #fff; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.header-signup:hover { border-color: #a8d5dd; background: #0f4c5c; color: #fff; }
+.header-signup:focus-visible { outline: 3px solid var(--btn-foco, #a8d5dd); outline-offset: 3px; }
 
 /* Alternador compacto de tema claro/escuro com Sol e Lua ultra-realistas */
 .theme-toggle {
@@ -493,51 +493,70 @@ html[data-theme="light"] .section .login-feedback { color: #9d211a; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
-/* A abertura da Sync ocupa a primeira tela descontando o cabeçalho. */
+/* A abertura da Sync ocupa exatamente 100% da primeira tela (full-bleed) descontando o cabeçalho, sem exigir rolagem. */
 #inicio.hero {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  min-height: calc(100svh - var(--altura-cabecalho-sync, 4.75rem));
-  padding-block: clamp(.5rem, 2svh, 1.5rem);
+  width: 100%;
+  max-width: none;
+  padding-inline: max(clamp(1rem, 5vw, 5rem), calc((100% - 80rem) / 2));
+  height: calc(100svh - var(--altura-cabecalho-sync, 4.75rem));
+  min-height: 28rem;
+  max-height: calc(100svh - var(--altura-cabecalho-sync, 4.75rem));
+  padding-block: clamp(.5rem, 2svh, 1.25rem);
+  align-items: center;
+  align-content: center;
+  gap: clamp(.75rem, 2vw, 2rem);
 }
-/* Camada de fundo Horizon Bloom atrás do conteúdo da abertura, sem bloquear leitura nem cliques. */
+/* Camada de fundo Horizon Bloom de ponta a ponta atrás do conteúdo da abertura, sem bloquear leitura nem cliques. */
 .hero-horizon-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 88%, transparent 100%);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 92%, transparent 100%);
 }
 .horizon-bloom-canvas { display: block; width: 100%; height: 100%; }
 #inicio .hero-copy { position: relative; z-index: 1; padding-block: 0; }
+#inicio h1 { font-size: clamp(2.6rem, min(8vw, 11svh), 5.4rem); line-height: .96; }
+#inicio .tagline { font-size: clamp(1.25rem, min(2.6vw, 3.6svh), 2.15rem); margin-top: clamp(.45rem, 1.2svh, .9rem); }
+#inicio .hero-action > p { margin-block: clamp(.6rem, 1.8svh, 1.25rem); }
 #inicio .scene {
-  width: min(100%, max(0px, calc((100svh - var(--altura-cabecalho-sync, 4.75rem) - 3rem) * 1.12)));
+  width: min(100%, max(0px, calc((100svh - var(--altura-cabecalho-sync, 4.75rem) - 3rem) * 0.96)));
+  max-height: calc(100svh - var(--altura-cabecalho-sync, 4.75rem) - 3rem);
   position: relative;
   z-index: 1;
   justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-#inicio .owl { object-fit: contain; }
+#inicio .owl { width: 100%; height: auto; max-height: calc(100svh - var(--altura-cabecalho-sync, 4.75rem) - 3.5rem); object-fit: contain; }
 body:has(#inicio.hero) section[id] {
   scroll-margin-top: calc(var(--altura-cabecalho-sync, 5.5rem) + .5rem);
 }
 @media (max-width: 43rem) {
-  /* No celular, o texto e o botão vêm primeiro e a animação ocupa menos espaço. */
+  /* No celular, mantém toda a hero visível na primeira dobra sem rolagem. */
   #inicio.hero {
-    min-height: calc(100svh - var(--altura-cabecalho-sync, 7.5rem));
+    height: calc(100svh - var(--altura-cabecalho-sync, 7.5rem));
+    max-height: calc(100svh - var(--altura-cabecalho-sync, 7.5rem));
+    min-height: 24rem;
     align-content: center;
-    gap: .5rem;
+    gap: .45rem;
   }
-  #inicio .tagline { font-size: clamp(1.45rem, 6vw, 2.2rem); }
-  #inicio .hero-action > p { margin-block: .65rem .85rem; }
-  #inicio .scene { width: min(62vw, 25svh, 13rem); }
+  #inicio h1 { font-size: clamp(2.2rem, min(10vw, 8svh), 3.4rem); }
+  #inicio .tagline { font-size: clamp(1.1rem, min(4.8vw, 2.8svh), 1.65rem); }
+  #inicio .hero-action > p { margin-block: .5rem .75rem; font-size: .95rem; }
+  #inicio .scene { width: min(56vw, 22svh, 11.5rem); max-height: 22svh; }
+  #inicio .owl { max-height: 22svh; }
 }
 @media (max-height: 38rem) and (min-width: 43.01rem) {
-  #inicio h1 { font-size: clamp(2.5rem, 10svh, 4.5rem); }
-  #inicio .tagline { font-size: clamp(1.35rem, 5svh, 2.4rem); }
-  #inicio .hero-action > p { margin-block: .65rem .85rem; }
+  #inicio h1 { font-size: clamp(2.2rem, 9svh, 3.8rem); }
+  #inicio .tagline { font-size: clamp(1.15rem, 4.2svh, 1.9rem); }
+  #inicio .hero-action > p { margin-block: .5rem .75rem; }
 }
 
 /* Diálogo de login do VisionChef com estrutura do Cesta do Vale e paleta oficial Aço Inox (style-guide.md). */

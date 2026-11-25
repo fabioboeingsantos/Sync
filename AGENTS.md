@@ -26,3 +26,7 @@ Todos os botões existentes e futuros criados em qualquer página ou componente 
   - Respeitar `prefers-reduced-motion: reduce` (desliga distorção SVG, elevação e transições).
 - **Exceção para controles compactos:** controles compactos (como botão `×` de fechar, olho da senha, estrelas, seletores de quantidade e alternador de tema) preservam suas dimensões próprias, aplicando o mesmo acabamento vítreo Aço Inox sem quebrar layout.
 - **Proteção contra sobrescrita:** nunca crie regras globais genéricas de `button { ... }` que sobrescrevam `.botao-primario` ou `.botao-secundario`; quando precisar estilizar outros botões, use `button:not(.botao)` ou classes específicas.
+
+## Padrão obrigatório de primeira dobra (Hero sem rolagem)
+
+A seção hero (`#inicio.hero`) deve ocupar **100% da primeira tela** descontando o cabeçalho (`height: calc(100svh - var(--altura-cabecalho-sync))`), exibindo título, subtítulo, ação principal, emblema e o efeito de fundo completo (**Horizon Bloom** em largura total) **sem exigir rolagem vertical** em desktop, notebook ou celular.
