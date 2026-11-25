@@ -70,34 +70,34 @@
     }
 
     body {
-      background: var(--bg-outer);
+      background: var(--slide-bg-print);
       color: var(--text-primary);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
       transition: background 0.2s ease, color 0.2s ease;
     }
 
-    /* Moldura 16:9 para projetor e gravação do vídeo de 3 minutos */
+    /* Tela cheia real sem bordas externas desperdiçadas — pensado para auditório com 20 fileiras */
     .deck-shell {
-      width: 100%;
-      max-width: 1440px;
-      aspect-ratio: 16 / 9;
+      width: 100vw;
+      height: 100vh;
       background: var(--slide-bg);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+      border-radius: 0;
+      border: 0;
+      box-shadow: none;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: clamp(22px, 2.8vw, 42px);
+      padding: clamp(14px, 1.6vw, 24px) clamp(20px, 2.2vw, 34px);
       overflow: hidden;
     }
 
     @media (max-width: 960px) {
-      .deck-shell { aspect-ratio: auto; min-height: 85vh; }
+      body { height: auto; min-height: 100vh; overflow: auto; }
+      .deck-shell { width: 100%; height: auto; min-height: 100vh; overflow: visible; }
     }
 
     .top-bar {
@@ -105,22 +105,23 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
     }
 
     .deck-brand {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      font-size: 0.92rem;
+      font-size: clamp(0.95rem, 1.15vw, 1.2rem);
       font-weight: 700;
       color: var(--text-muted);
       letter-spacing: 0.3px;
     }
 
     .deck-brand img {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       object-fit: contain;
       display: block;
     }
@@ -128,6 +129,17 @@
     .top-actions {
       display: flex;
       gap: 8px;
+    }
+
+    /* Em tela cheia no projetor, oculta botões auxiliares para maximizar área de leitura */
+    .deck-shell:fullscreen .top-actions,
+    .deck-shell:-webkit-full-screen .top-actions {
+      opacity: 0.12;
+      transition: opacity 0.2s ease;
+    }
+    .deck-shell:fullscreen .top-actions:hover,
+    .deck-shell:-webkit-full-screen .top-actions:hover {
+      opacity: 1;
     }
 
     .tool-btn {
@@ -145,10 +157,11 @@
 
     .slide-body {
       flex: 1;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: clamp(14px, 1.7vw, 22px);
+      gap: clamp(14px, 1.8vh, 24px);
       animation: fadeSlide 0.22s ease;
     }
 
@@ -160,47 +173,49 @@
     .slide-tag {
       display: inline-block;
       align-self: flex-start;
-      padding: 5px 13px;
+      padding: 6px 16px;
       border-radius: 999px;
-      font-size: clamp(0.8rem, 0.95vw, 0.94rem);
+      font-size: clamp(0.95rem, 1.22vw, 1.25rem);
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.7px;
+      letter-spacing: 0.8px;
       background: var(--tag-bg);
       color: var(--tag-color);
     }
 
+    /* Tipografia ampliada e nítida para leitura a até 20 fileiras de distância em retroprojetor */
     .slide-title {
-      font-size: clamp(1.85rem, 3.05vw, 3.05rem);
+      font-size: clamp(2.35rem, 4.3vw, 4.35rem);
       font-weight: 700;
-      line-height: 1.12;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
       color: var(--text-primary);
     }
 
     .slide-lead {
-      font-size: clamp(1.08rem, 1.48vw, 1.48rem);
-      line-height: 1.42;
+      font-size: clamp(1.32rem, 2.05vw, 2.15rem);
+      line-height: 1.36;
       color: var(--text-soft);
-      max-width: 980px;
+      max-width: 100%;
     }
 
     .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+      gap: clamp(16px, 1.8vw, 26px);
       align-items: stretch;
     }
 
     .demo-grid {
       display: grid;
-      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.28fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.32fr);
+      gap: clamp(16px, 1.8vw, 24px);
       align-items: stretch;
     }
 
     .video-frame {
       background: var(--card-bg-strong);
-      border: 1px solid var(--border);
+      border: 2px solid var(--border);
       border-radius: 14px;
       overflow: hidden;
       display: flex;
@@ -212,20 +227,20 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 7px 12px;
-      background: rgba(15, 76, 92, 0.72);
+      padding: 8px 14px;
+      background: rgba(15, 76, 92, 0.86);
       color: #e6f3f6;
-      font-size: 0.78rem;
+      font-size: clamp(0.86rem, 1.05vw, 1.05rem);
       font-weight: 700;
     }
 
     .video-bar button {
-      background: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.16);
       color: #ffffff;
-      border: 1px solid rgba(168, 213, 221, 0.45);
+      border: 1px solid rgba(168, 213, 221, 0.55);
       border-radius: 6px;
-      padding: 3px 8px;
-      font-size: 0.74rem;
+      padding: 4px 10px;
+      font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
     }
@@ -233,8 +248,8 @@
     .video-frame video {
       width: 100%;
       flex: 1;
-      min-height: 220px;
-      max-height: 360px;
+      min-height: 280px;
+      max-height: 58vh;
       object-fit: contain;
       background: #041015;
       display: block;
@@ -251,7 +266,7 @@
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
+      gap: clamp(14px, 1.6vw, 24px);
       align-items: stretch;
     }
 
@@ -261,13 +276,13 @@
 
     .card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-left: 5px solid var(--bar-primaria);
+      border: 1.5px solid var(--border);
+      border-left: 7px solid var(--bar-primaria);
       border-radius: 14px;
-      padding: clamp(15px, 1.7vw, 22px);
+      padding: clamp(18px, 2vw, 28px);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .card.destaque {
@@ -280,27 +295,28 @@
     }
 
     .card h3 {
-      font-size: clamp(1.06rem, 1.3vw, 1.32rem);
+      font-size: clamp(1.3rem, 1.85vw, 1.9rem);
+      line-height: 1.2;
       color: var(--text-primary);
     }
 
     .card p, .card li {
-      font-size: clamp(0.96rem, 1.12vw, 1.14rem);
-      line-height: 1.44;
+      font-size: clamp(1.12rem, 1.52vw, 1.56rem);
+      line-height: 1.38;
       color: var(--text-soft);
     }
 
     .card ul {
-      padding-left: 20px;
+      padding-left: 24px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 9px;
     }
 
     .hero-cover {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 24px;
+      gap: 28px;
       align-items: center;
     }
 
@@ -308,27 +324,28 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 18px 22px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
+      gap: 10px;
+      padding: 22px 28px;
+      border-radius: 18px;
+      border: 1.5px solid var(--border);
       background: var(--card-bg-strong);
       text-align: center;
     }
 
     .cover-badge img {
-      width: clamp(68px, 7vw, 96px);
-      height: clamp(68px, 7vw, 96px);
+      width: clamp(86px, 9vw, 126px);
+      height: clamp(86px, 9vw, 126px);
       object-fit: contain;
     }
 
     .cover-badge strong {
-      font-size: 1.15rem;
+      font-size: clamp(1.3rem, 1.7vw, 1.7rem);
       color: var(--text-primary);
     }
 
     .cover-badge span {
-      font-size: 0.9rem;
+      font-size: clamp(1rem, 1.2vw, 1.2rem);
+      font-weight: 700;
       color: var(--text-muted);
     }
 
@@ -336,21 +353,21 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .cta-link {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 11px 18px;
+      padding: 12px 20px;
       border-radius: 10px;
       background: var(--btn-bg);
       color: var(--btn-text);
       border: 1px solid rgba(168, 213, 221, 0.45);
       text-decoration: none;
       font-weight: 700;
-      font-size: clamp(0.92rem, 1.05vw, 1.05rem);
+      font-size: clamp(1rem, 1.2vw, 1.2rem);
     }
 
     .cta-link.sec {
@@ -364,36 +381,37 @@
     .closing-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 24px;
+      gap: 28px;
       align-items: center;
     }
 
     .qr-box {
       background: #ffffff;
       color: #0f4c5c;
-      border: 2px solid #2a7f8e;
-      border-radius: 16px;
-      padding: 14px;
+      border: 3px solid #2a7f8e;
+      border-radius: 18px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       text-align: center;
-      min-width: 196px;
+      min-width: 248px;
     }
 
     .qr-box img {
-      width: 164px;
-      height: 164px;
+      width: clamp(190px, 16vw, 240px);
+      height: clamp(190px, 16vw, 240px);
       display: block;
       border-radius: 6px;
     }
 
-    .qr-box strong { font-size: 0.92rem; color: #0f4c5c; }
-    .qr-box span { font-size: 0.78rem; color: #2a7f8e; word-break: break-all; }
+    .qr-box strong { font-size: 1.15rem; color: #0f4c5c; }
+    .qr-box span { font-size: 0.96rem; font-weight: 700; color: #2a7f8e; word-break: break-all; }
 
     .nota-rodape {
-      font-size: clamp(0.82rem, 0.95vw, 0.95rem);
+      font-size: clamp(1rem, 1.24vw, 1.26rem);
+      line-height: 1.38;
       color: var(--text-muted);
     }
 
@@ -402,34 +420,36 @@
       align-items: center;
       justify-content: flex-end;
       gap: 8px;
-      margin-top: 12px;
+      margin-top: 6px;
+      flex-shrink: 0;
     }
 
     .footer-info {
-      font-size: 0.78rem;
+      font-size: 0.84rem;
+      font-weight: 700;
       color: var(--text-muted);
       margin-right: auto;
     }
 
     .nav-btn {
-      padding: 6px 12px;
+      padding: 6px 13px;
       border-radius: 8px;
       border: 1px solid var(--border);
       background: var(--btn-sec-bg);
       color: var(--btn-sec-text);
-      font-size: 0.8rem;
+      font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
     }
 
     .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    /* Modo impressão 16:9 limpo para exportar PDF da E5 (Ctrl+P -> Salvar como PDF) */
+    /* Modo impressão 16:9 limpo sem bordas largas para exportar PDF da E5 (Ctrl+P -> Salvar como PDF) */
     .print-deck { display: none; }
 
     @media print {
       @page { size: 16in 9in; margin: 0; }
-      body { background: #ffffff; padding: 0; display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #ffffff; padding: 0; display: block; width: auto; height: auto; overflow: visible; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .deck-shell { display: none !important; }
       .print-deck { display: block; }
       /* Na exportação PDF da E5, exibe o cartão com link no lugar do vídeo interativo. */
@@ -441,11 +461,11 @@
         page-break-after: always;
         background: var(--slide-bg-print);
         color: var(--text-primary);
-        padding: 46px 56px;
+        padding: 26px 36px;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 22px;
+        gap: 20px;
       }
       .print-slide:last-child { page-break-after: auto; }
     }
