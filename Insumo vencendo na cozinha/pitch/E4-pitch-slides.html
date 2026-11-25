@@ -191,6 +191,63 @@
       align-items: stretch;
     }
 
+    .demo-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.28fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .video-frame {
+      background: var(--card-bg-strong);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 12px;
+      background: rgba(15, 76, 92, 0.72);
+      color: #e6f3f6;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .video-bar button {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      border: 1px solid rgba(168, 213, 221, 0.45);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .video-frame video {
+      width: 100%;
+      flex: 1;
+      min-height: 220px;
+      max-height: 360px;
+      object-fit: contain;
+      background: #041015;
+      display: block;
+    }
+
+    .demo-fallback {
+      display: none;
+    }
+
+    .demo-fallback.ativo {
+      display: flex;
+    }
+
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -199,7 +256,7 @@
     }
 
     @media (max-width: 820px) {
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .demo-grid { grid-template-columns: 1fr; }
     }
 
     .card {
@@ -375,6 +432,9 @@
       body { background: #ffffff; padding: 0; display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .deck-shell { display: none !important; }
       .print-deck { display: block; }
+      /* Na exportação PDF da E5, exibe o cartão com link no lugar do vídeo interativo. */
+      .print-deck .video-frame { display: none !important; }
+      .print-deck .demo-fallback { display: flex !important; }
       .print-slide {
         width: 100vw;
         height: 100vh;
@@ -548,19 +608,32 @@
         html: `
           <span class="slide-tag">Ato 3 • Demo, Testes e Plus Online (E3)</span>
           <h2 class="slide-title">MVP funcionando na prática e validado</h2>
-          <div class="grid-2">
+          <div class="demo-grid">
             <div class="card destaque">
-              <h3>Demonstração ao vivo + testes</h3>
+              <h3>O que você vê rodando agora</h3>
               <ul>
-                <li>Cadastro de lotes → ordenação automática por vencimento (PVPS).</li>
-                <li>Correção de validade → reordenação imediata sem duplicar registro.</li>
-                <li>Bloqueio de uso em lote vencido + registro de descarte visível ao dono.</li>
-                <li><strong>22/22 testes automatizados aprovados</strong> + CI verde.</li>
+                <li>Lista ordenada automaticamente pelo vencimento (<strong>PVPS</strong>).</li>
+                <li>Correção de validade → sobe na hora sem duplicar o lote.</li>
+                <li>Bloqueio de uso em lote vencido + descarte visível ao dono.</li>
+                <li><strong>Plus online:</strong> banco na nuvem, <code>/equipe/</code> e <strong>22/22 testes</strong>.</li>
               </ul>
+              <div class="cta-row">
+                <a class="cta-link" href="https://sync-solucoes.vercel.app/estoque/" target="_blank" rel="noopener">Abrir ao vivo ↗</a>
+                <a class="cta-link sec" href="../htmls/E3-mvp-validade.html" target="_blank">MVP offline ↗</a>
+              </div>
             </div>
-            <div class="card">
-              <h3>Plus de viabilidade — já no ar</h3>
+            <div class="video-frame" id="demoVideoFrame">
+              <div class="video-bar">
+                <span>sync-solucoes.vercel.app/estoque/</span>
+                <button type="button" onclick="reiniciarDemoVideo()">↻ Reiniciar</button>
+              </div>
+              <!-- Salve a gravação de 45s como demo-visionchef.mp4 nesta mesma pasta (pitch/) -->
+              <video id="demoVideo" src="demo-visionchef.mp4" autoplay muted loop playsinline controls onerror="ativarFallbackDemo()"></video>
+            </div>
+            <div class="card demo-fallback" id="demoFallback">
+              <h3>Plus de viabilidade — já publicado no ar</h3>
               <p>Além do MVP offline da E3, o Time SYNC publicou a versão web completa com banco em nuvem, abertura/fracionamento e controle de equipe (<code>/equipe/</code>).</p>
+              <p class="nota-rodape">Para exibir a gravação automática aqui no slide, salve o vídeo em <code>pitch/demo-visionchef.mp4</code>.</p>
               <div class="cta-row">
                 <a class="cta-link" href="https://sync-solucoes.vercel.app" target="_blank" rel="noopener">Abrir VisionChef online ↗</a>
                 <a class="cta-link sec" href="../htmls/E3-mvp-validade.html" target="_blank">MVP E3 offline ↗</a>
@@ -621,11 +694,31 @@
 
     let index = 0;
 
+    function ativarFallbackDemo() {
+      const quadro = document.getElementById('demoVideoFrame');
+      const reserva = document.getElementById('demoFallback');
+      if (quadro) quadro.style.display = 'none';
+      if (reserva) reserva.classList.add('ativo');
+    }
+
+    function reiniciarDemoVideo() {
+      const video = document.getElementById('demoVideo');
+      if (!video) return;
+      video.currentTime = 0;
+      video.play?.().catch(() => {});
+    }
+
     function render() {
       document.getElementById('slideMount').innerHTML = slides[index].html;
       document.getElementById('slideCounter').textContent = `Slide ${index + 1} de ${slides.length} • Setas ← →`;
       document.getElementById('prevBtn').disabled = index === 0;
       document.getElementById('nextBtn').disabled = index === slides.length - 1;
+      // Garante que o vídeo do Slide 6 reinicie do 00:00 sempre que o apresentador chegar nele.
+      const video = document.getElementById('demoVideo');
+      if (video) {
+        video.currentTime = 0;
+        video.play?.().catch(() => {});
+      }
     }
 
     function buildPrintDeck() {

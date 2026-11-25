@@ -26,8 +26,57 @@
 ---
 
 ## Checklist rápido antes de apresentar ou gravar (E4)
+- [ ] Gravar o vídeo de tela real de **45s** em `https://sync-solucoes.vercel.app/estoque/` (lista PVPS → corrigir validade → bloqueio de uso + descarte no histórico do dono → `/equipe/`) e salvar como `Insumo vencendo na cozinha/pitch/demo-visionchef.mp4`.
+- [ ] Abrir [E4-pitch-slides.html](E4-pitch-slides.html), ir ao Slide 6 e confirmar que o vídeo inicia automaticamente do `00:00` (mudo e em loop).
 - [ ] Conferir a leitura do **QR Code** do Slide 8 no celular antes de exportar o PDF.
-- [ ] Exportar PDF via botão **Exportar PDF** (`Ctrl + P`, paisagem, gráficos de fundo ativados) e revisar se nenhum texto cortou.
-- [ ] Ensaiar falando e clicando com cronômetro (meta: fechar em **2min50s**).
-- [ ] Manter um vídeo curto de reserva da demonstração salvo localmente para o caso de queda de internet no ao vivo.
+- [ ] Exportar PDF via botão **Exportar PDF** (`Ctrl + P`, paisagem, gráficos de fundo ativados) — na impressão o Slide 6 troca automaticamente o vídeo pelo cartão com o link.
+- [ ] Ensaiar falando e avançando os slides com cronômetro (meta: fechar em **2min45s–2min50s**).
 - [ ] Se houver rodada presencial de feedback antes da gravação, citar 1 frase real de quem testou no Slide 6!
+
+---
+
+## Fala calibrada palavra por palavra (~375 palavras · meta 2min45s)
+
+1. **Slide 1 (`0:00–0:14`):** *"Imagina abrir um creme de leite novo na correria do almoço… [pausa 1s] …e, no sábado, descobrir dois potes vencidos escondidos no fundo da geladeira. Olá, banca! Eu sou [seu nome], representante do Time SYNC — com [nomes dos integrantes] — e nós criamos o VisionChef."*
+2. **Slide 2 (`0:14–0:36`):** *"Em restaurantes pequenos, o dono e o cozinheiro controlam o estoque no caderno. Quando chega compra nova, os lotes antigos são empurrados para o fundo da geladeira. Os ingredientes vencem sem ninguém perceber, e o prejuízo só aparece no fechamento do mês. Nossa pergunta foi direta: como ajudar essa equipe a ver o que vence primeiro sem parar o preparo para folhear um caderno?"*
+3. **Slide 3 (`0:36–0:54`):** *"Antes de pensar em tela ou código, montamos nossa Matriz CSD separando certezas, suposições e dúvidas. E escolhemos uma dúvida prioritária, a D1: na prática, como a equipe escolhe qual lote usar primeiro — e em que momento descobre que um insumo venceu?"*
+4. **Slide 4 (`0:54–1:14`):** *"Na validação do problema, os relatos do cozinheiro e do dono deixaram o gargalo evidente: o caderno fica fora da cozinha, caneta apaga com a umidade da geladeira, lousa ninguém atualiza, e um sistema ERP no computador foi abandonado por ser caro e trabalhoso. Na cozinha pequena, a única ferramenta sempre à mão é o celular."*
+5. **Slide 5 (`1:14–1:30`):** *"É aí que entra o VisionChef: simples como o caderno, inteligente como o PVPS — Primeiro que Vence, Primeiro que Sai. Em três passos no celular: primeiro, registra o lote em segundos — digitando ou por voz; segundo, ordena automaticamente pelo vencimento; e terceiro, dá baixa de uso ou descarte com um toque."*
+6. **Slide 6 (`1:30–2:20` · vídeo `demo-visionchef.mp4` rodando automaticamente no slide):** *"Olha funcionando na prática aqui na tela. O cozinheiro já bate o olho e vê no topo o que vence primeiro, com estado por texto e cor de apoio. Se errar uma data, ele corrige sem duplicar o lote e a lista reordena na hora. Se um insumo já venceu, o sistema bloqueia o registro de uso por segurança sanitária e libera o descarte em um clique — e o dono já acompanha essa perda na hora no histórico, sem esperar o fim do mês. E como plus de viabilidade, o Time SYNC já publicou o piloto completo no ar com banco em nuvem, controle de equipe e 22 testes automatizados passando."*
+7. **Slide 7 (`2:20–2:38`):** *"Por que isso funciona de verdade no restaurante pequeno? Porque não exige hardware caro nem treinamento longo — roda no navegador do celular que a cozinha já tem. O lote perto de vencer vira prato do dia antes de estragar, e o dono passa a enxergar perdas na semana, não só no fim do mês."*
+8. **Slide 8 (`2:38–2:50`):** *"VisionChef, do Time SYNC: para nenhum insumo vencer escondido no fundo da geladeira. [pausa 1s] O QR Code está na tela para vocês testarem agora no celular. Muito obrigado!"*
+
+---
+
+## Guia de postura, oratória e presença
+
+- **Comece 10% mais devagar:** a adrenalina acelera os primeiros 20 segundos; ritmo firme e pausado transmite domínio.
+- **Pausas intencionais:** faça **1 segundo de silêncio** após o gancho do Slide 1 e antes da frase final do Slide 8.
+- **Olhar:** no online, olhe para a lente da câmera na abertura e no fechamento; no presencial, distribua o olhar por toda a banca (2–3s por jurado).
+- **Mãos e postura:** coluna reta, ombros soltos, gestos naturais na altura do peito (conte 1, 2, 3 no Slide 5); evite muletas verbais (*"ééé"*, *"tipo"*, *"né"*).
+
+## Como reagir a imprevistos
+
+| Situação | Reação recomendada |
+| --- | --- |
+| **Branco rápido (2s)** | Não peça desculpa; olhe para o título do slide atual (sua âncora) e retome com suas palavras. |
+| **Vídeo ou aba falhou** | Troque imediatamente para `E3-mvp-validade.html?demo=ux` (Aba reserva) dizendo: *"Para respeitar nossos 3 minutos, vou mostrar nossa versão local."* |
+| **Cronômetro chegou em 2:35 no Slide 6** | Encerre a demonstração, entregue 1 frase do Slide 7 e garanta o fechamento firme no Slide 8 (nunca deixe o cronômetro cortar o final). |
+
+## Respostas rápidas para a banca (Método P.R.E. — máx. 30s)
+
+1. **Pausa** (ouça até o fim) → **Reconhece** (*"Ótima pergunta!"*) → **Entrega** objetiva e honesta:
+   - ***"Por que não usar planilha ou um ERP já existente?"***  
+     *"Na validação vimos que o dono testou ERP no PC e a equipe abandonou na segunda semana por custo e excesso de telas, e planilha no celular trava na correria do preparo. O VisionChef corta o excesso e resolve em segundos o que vence primeiro."*
+   - ***"E se o cozinheiro esquecer de cadastrar na correria?"***  
+     *"Por isso deixamos apenas dois campos obrigatórios — insumo e validade — e criamos também o preenchimento assistido por texto ou voz, onde a pessoa fala o lote e só confirma."*
+   - ***"Vocês testaram com restaurantes reais?"***  
+     *"Nesta etapa de treino, nossas entrevistas foram simuladas com foco na rotina real de cozinhas pequenas e validamos o sistema com 22 testes automatizados (concorrência, bloqueio de vencidos e acesso de equipe). Nosso próximo passo imediato é rodar o teste de 20 minutos em cozinhas reais — o sistema já está no ar no QR Code pronto para isso."*
+   - ***"Como isso se sustenta / gera receita?"***  
+     *"No piloto rodamos em camadas gratuitas na nuvem (Vercel e Supabase), com custo quase zero. A hipótese pós-piloto é um modelo freemium: gratuito para 1 restaurante testar e assinatura mensal enxuta para múltiplos usuários, alertas diários e histórico estendido."*
+
+## Treino express (15 minutos — 3 rodadas)
+
+1. **Rodada 1 (só voz + cronômetro):** ler em voz alta adaptando qualquer palavra ao seu jeito natural.
+2. **Rodada 2 (slides + vídeo do Slide 6 + cronômetro):** fechar entre **2min40s e 2min50s**.
+3. **Rodada 3 (gravação no celular):** assistir 1 vez conferindo volume, ritmo e olhar para a câmera.

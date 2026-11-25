@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estúdio de Ensaio e Voz | VisionChef · Time SYNC</title>
+  <link rel="icon" type="image/png" sizes="128x128" href="../abertura/imagens/coruja-sync-icone.png">
+  <!-- Reutiliza o padrão global GlassSurface + Paleta Aço Inox -->
+  <link rel="stylesheet" href="../../css/botoes.css">
+  <style>
+    :root {
+      font-family: Arial, Helvetica, sans-serif;
+      color-scheme: dark;
+      --bg: #06151b;
+      --painel: #0c2630;
+      --painel-forte: #113542;
+      --borda: rgba(168, 213, 221, 0.28);
+      --texto: #ffffff;
+      --texto-suave: #e6f3f6;
+      --destaque: #a8d5dd;
+      --secundaria: #2a7f8e;
+      --primaria: #0f4c5c;
+      --alerta: #f87171;
+      --aviso: #fbbf24;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top right, #113b49 0%, #06151b 60%);
+      color: var(--texto);
+      padding: 18px;
+      line-height: 1.5;
+    }
+
+    .container {
+      width: min(100%, 1260px);
+      margin-inline: auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .topo {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: var(--painel);
+      border: 1px solid var(--borda);
+    }
+
+    .marca {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .marca img { width: 34px; height: 34px; object-fit: contain; }
+    .marca h1 { font-size: 1.15rem; color: var(--texto); }
+    .marca p { font-size: 0.86rem; color: var(--destaque); }
+
+    .cronometro-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      background: var(--painel-forte);
+      border: 1px solid var(--borda);
+    }
+
+    .tempo-total {
+      font-size: 1.85rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--destaque);
+      min-width: 5.5rem;
+      text-align: center;
+    }
+
+    .tempo-total.aviso { color: var(--aviso); }
+    .tempo-total.limite { color: var(--alerta); }
+
+    .meta-tempo { font-size: 0.8rem; color: var(--texto-suave); }
+
+    .controles {
+      display: grid;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: var(--painel);
+      border: 1px solid var(--borda);
+    }
+
+    .botoes-linha {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .config-linha {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    label.campo {
+      display: grid;
+      gap: 4px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--destaque);
+    }
+
+    label.campo input,
+    label.campo select {
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--borda);
+      background: #071b23;
+      color: #ffffff;
+      font: 400 0.94rem Arial, sans-serif;
+    }
+
+    .barra-progresso {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(168, 213, 221, 0.16);
+      overflow: hidden;
+    }
+
+    .barra-progresso > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2a7f8e, #a8d5dd);
+      transition: width 220ms linear;
+    }
+
+    .palco {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 900px) {
+      .palco { grid-template-columns: 1fr; }
+    }
+
+    .painel {
+      padding: 22px;
+      border-radius: 16px;
+      background: var(--painel);
+      border: 1px solid var(--borda);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .tag {
+      align-self: flex-start;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(168, 213, 221, 0.16);
+      color: var(--destaque);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .slide-titulo {
+      font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+      line-height: 1.2;
+      color: #ffffff;
+    }
+
+    .pontos {
+      padding-left: 20px;
+      display: grid;
+      gap: 8px;
+      color: var(--texto-suave);
+      font-size: 0.98rem;
+    }
+
+    .dica-postura {
+      margin-top: auto;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border-left: 4px solid var(--destaque);
+      background: var(--painel-forte);
+      color: var(--texto-suave);
+      font-size: 0.92rem;
+    }
+
+    .dica-postura strong { color: var(--destaque); }
+
+    .teleprompter-texto {
+      font-size: clamp(1.22rem, 1.9vw, 1.55rem);
+      line-height: 1.62;
+      color: #ffffff;
+      background: #071920;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      padding: 20px;
+      flex: 1;
+    }
+
+    .pausa-marcador {
+      display: inline-block;
+      padding: 1px 8px;
+      margin-inline: 3px;
+      border-radius: 6px;
+      background: rgba(251, 191, 36, 0.2);
+      color: var(--aviso);
+      font-size: 0.85em;
+      font-weight: 700;
+    }
+
+    .navegacao-slides {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pilulas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pilula {
+      min-width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--borda);
+      background: var(--painel-forte);
+      color: var(--texto-suave);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pilula[aria-current="step"] {
+      background: #0f4c5c;
+      border-color: var(--destaque);
+      color: #ffffff;
+    }
+
+    .status-voz {
+      font-size: 0.9rem;
+      color: var(--destaque);
+      min-height: 1.4em;
+    }
+
+    /* Ajusta botões secundários GlassSurface para alto contraste sobre o tema escuro */
+    .botao.botao-secundario {
+      --btn-secundario-fundo: rgba(15, 76, 92, 0.55);
+      --btn-secundario-gradiente: linear-gradient(160deg, rgba(42, 127, 142, 0.36) 0%, rgba(15, 76, 92, 0.62) 100%);
+      --btn-secundario-gradiente-hover: linear-gradient(160deg, rgba(42, 127, 142, 0.54) 0%, rgba(15, 76, 92, 0.78) 100%);
+      --btn-secundario-texto: #ffffff;
+      --btn-secundario-borda: rgba(168, 213, 221, 0.5);
+      --btn-secundario-borda-hover: #a8d5dd;
+      --btn-foco: #a8d5dd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="topo">
+      <div class="marca">
+        <img src="../abertura/imagens/coruja-sync-icone.png" width="34" height="34" alt="">
+        <div>
+          <h1>Estúdio de Ensaio e Voz · Time SYNC (VisionChef)</h1>
+          <p>Use no Microsoft Edge para ouvir vozes neurais PT-BR como referência e treinar seu pitch de 3 minutos.</p>
+        </div>
+      </div>
+      <div class="cronometro-box" aria-live="polite">
+        <div>
+          <div class="meta-tempo">Cronômetro (meta 02:50)</div>
+          <div class="meta-tempo" id="tempoSlide">Slide 1 · alvo 14s</div>
+        </div>
+        <div class="tempo-total" id="relogio">00:00</div>
+      </div>
+    </header>
+
+    <section class="controles" aria-label="Controles de reprodução e ensaio">
+      <div class="botoes-linha">
+        <button type="button" class="botao botao-primario" id="btnOuvir">▶ Ouvir referência (Voz + Slides)</button>
+        <button type="button" class="botao botao-secundario" id="btnEnsaiar">⏱️ Modo Teleprompter (Minha voz)</button>
+        <button type="button" class="botao botao-secundario" id="btnPausar" disabled>⏸ Pausar</button>
+        <button type="button" class="botao botao-secundario danger" id="btnParar" disabled>⏹ Parar / Zerar</button>
+        <a class="botao botao-secundario" href="E4-pitch-slides.html" target="_blank">Abrir slides oficiais ↗</a>
+      </div>
+
+      <div class="config-linha">
+        <label class="campo">
+          Voz de referência (no Edge escolha Antonio ou Francisca Online)
+          <select id="seletorVoz"></select>
+        </label>
+        <label class="campo">
+          Velocidade da fala (<span id="valorVelocidade">1.00x</span>)
+          <input id="velocidade" type="range" min="0.85" max="1.20" step="0.05" value="1.00">
+        </label>
+        <label class="campo">
+          Seu nome (apenas para o ensaio)
+          <input id="campoNome" type="text" placeholder="Ex.: Fábio" value="Fábio">
+        </label>
+        <label class="campo">
+          Nomes dos integrantes (opcional na fala)
+          <input id="campoEquipe" type="text" placeholder="Ex.: Ana, Lucas e Pedro" value="">
+        </label>
+      </div>
+
+      <div class="barra-progresso" aria-hidden="true"><span id="barraTotal"></span></div>
+      <p class="status-voz" id="statusVoz" role="status">Pronto. Escolha “Ouvir referência” para escutar o pitch inteiro ou “Modo Teleprompter” para treinar falando.</p>
+    </section>
+
+    <main class="palco">
+      <section class="painel" aria-label="Resumo do slide atual">
+        <span class="tag" id="slideTag"></span>
+        <h2 class="slide-titulo" id="slideTitulo"></h2>
+        <ul class="pontos" id="slidePontos"></ul>
+        <div class="dica-postura" id="dicaPostura"></div>
+      </section>
+
+      <section class="painel" aria-label="Teleprompter com fala cronometrada">
+        <span class="tag" id="faixaTempo"></span>
+        <div class="teleprompter-texto" id="teleprompter"></div>
+        <div class="navegacao-slides">
+          <div class="pilulas" id="pilulas" aria-label="Ir para o slide"></div>
+          <div class="botoes-linha">
+            <button type="button" class="botao botao-secundario" id="btnAnterior">← Anterior</button>
+            <button type="button" class="botao botao-secundario" id="btnProximo">Próximo →</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    /*
+      ESTÚDIO DE ENSAIO E VOZ — TIME SYNC · VISIONCHEF
+      - Modo 1 ("Ouvir referência"): narra os 8 slides usando Web Speech API (vozes neurais PT-BR do Edge)
+        com pausas intencionais de 1 segundo e avanço automático dos slides.
+      - Modo 2 ("Teleprompter"): roda apenas o cronômetro (meta 02:50 / limite 03:00) e avança cada slide
+        conforme a duração planejada, para o apresentador treinar com a própria voz.
+    */
+    const etapas = [
+      {
+        tag: 'Slide 1 · Ato 1 · Gancho',
+        titulo: 'Insumo vencendo na cozinha (VisionChef · Time SYNC)',
+        faixa: '00:00 – 00:14 · Alvo: 14 segundos',
+        segundos: 14,
+        pontos: [
+          'Cena concreta do creme de leite esquecido na geladeira.',
+          'Apresentação do Time SYNC e do produto VisionChef.',
+          'Fale os nomes dos integrantes de forma rápida e natural.'
+        ],
+        postura: '<strong>Postura e voz:</strong> Olhe direto na lente da câmera. Faça 1 segundo real de silêncio depois de “correria do almoço” para criar impacto.',
+        blocosFala: [
+          { texto: 'Imagina abrir um creme de leite novo na correria do almoço...', pausaDepoisMs: 900 },
+          { texto: 'e, no sábado, descobrir dois potes vencidos escondidos no fundo da geladeira. Olá, banca! Eu sou {NOME}, representante do Time SYNC{EQUIPE}, e nós criamos o VisionChef.', pausaDepoisMs: 600 }
+        ]
+      },
+      {
+        tag: 'Slide 2 · Ato 1 · A Dor (E1)',
+        titulo: 'O prejuízo invisível do caderno',
+        faixa: '00:14 – 00:36 · Alvo: 22 segundos',
+        segundos: 22,
+        pontos: [
+          'Dono e cozinheiro de restaurante pequeno controlam no caderno.',
+          'Compra nova empurra lote antigo para o fundo da geladeira.',
+          'Desperdício só aparece nas contas no fim do mês.'
+        ],
+        postura: '<strong>Postura e voz:</strong> Ritmo firme, 10% mais calmo do que a vontade inicial. Dê ênfase em “fundo da geladeira” e “fim do mês”.',
+        blocosFala: [
+          { texto: 'Em restaurantes pequenos, o dono e o cozinheiro controlam o estoque no caderno. Quando chega compra nova, os lotes antigos são empurrados para o fundo da geladeira. Os ingredientes vencem sem ninguém perceber, e o prejuízo só aparece no fechamento do mês. Nossa pergunta foi direta: como ajudar essa equipe a ver o que vence primeiro sem precisar parar o preparo para folhear um caderno?', pausaDepoisMs: 600 }
+        ]
+      },
+      {
+        tag: 'Slide 3 · Ato 2 · Matriz CSD (E1)',
+        titulo: 'O que investigamos antes de codar',
+        faixa: '00:36 – 00:54 · Alvo: 18 segundos',
+        segundos: 18,
+        pontos: [
+          'Certezas (C1–C4), Suposições (S1–S6) e Dúvidas (D1–D6).',
+          'Dúvida prioritária D1: como escolhem qual lote usar primeiro?'
+        ],
+        postura: '<strong>Postura e voz:</strong> Mostre método e clareza. Essa parte convence a banca de que a solução não foi chutada.',
+        blocosFala: [
+          { texto: 'Antes de pensar em tela ou código, montamos nossa Matriz CSD separando certezas, suposições e dúvidas. E escolhemos uma dúvida prioritária, a D1: na prática, como a equipe escolhe qual lote usar primeiro e em que momento descobre que um insumo venceu?', pausaDepoisMs: 600 }
+        ]
+      },
+      {
+        tag: 'Slide 4 · Ato 2 · Validação do Problema (E2)',
+        titulo: 'O que os relatos revelaram sobre a rotina',
+        faixa: '00:54 – 01:14 · Alvo: 20 segundos',
+        segundos: 20,
+        pontos: [
+          'Caderno fica fora da cozinha; caneta apaga na geladeira; lousa não é atualizada.',
+          'ERP de computador foi abandonado por ser caro e trabalhoso.',
+          'Única ferramenta sempre à mão na cozinha: o celular.'
+        ],
+        postura: '<strong>Postura e voz:</strong> Destaque com a mão a palavra “celular” — ela faz a ponte perfeita para a solução no próximo slide.',
+        blocosFala: [
+          { texto: 'Na validação do problema, os relatos do cozinheiro e do dono deixaram o gargalo evidente: o caderno fica fora da cozinha, caneta apaga com a umidade da geladeira, lousa ninguém atualiza, e um sistema ERP no computador foi abandonado por ser caro e trabalhoso. Na cozinha pequena, a única ferramenta sempre à mão é o celular.', pausaDepoisMs: 600 }
+        ]
+      },
+      {
+        tag: 'Slide 5 · Ato 3 · A Solução (E3)',
+        titulo: 'VisionChef: simples como o caderno, ágil como PVPS',
+        faixa: '01:14 – 01:30 · Alvo: 16 segundos',
+        segundos: 16,
+        pontos: [
+          '1. Registrar em segundos (manual ou assistido por texto/voz).',
+          '2. Ordenação automática PVPS (Primeiro que Vence, Primeiro que Sai).',
+          '3. Baixa de uso ou descarte com 1 toque, visível ao dono.'
+        ],
+        postura: '<strong>Postura e voz:</strong> Conte nos dedos “primeiro, segundo, terceiro” na altura do peito. Dá clareza e energia visual.',
+        blocosFala: [
+          { texto: 'É aí que entra o VisionChef: simples como o caderno, inteligente como o PVPS, Primeiro que Vence, Primeiro que Sai. Em três passos no celular: primeiro, registra o lote em segundos, digitando ou por voz; segundo, ordena automaticamente pelo vencimento; e terceiro, dá baixa de uso ou descarte com um toque.', pausaDepoisMs: 600 }
+        ]
+      },
+      {
+        tag: 'Slide 6 · Ato 3 · Demo + Plus Online (E3)',
+        titulo: 'MVP funcionando na prática e validado',
+        faixa: '01:30 – 02:20 · Alvo: 50 segundos (vídeo rodando no slide)',
+        segundos: 50,
+        pontos: [
+          'O vídeo demo-visionchef.mp4 toca automaticamente no Slide 6.',
+          'Aponte com a voz: PVPS no topo → correção sem duplicar → bloqueio de vencido + descarte no histórico do dono.',
+          'Feche citando o plus online (nuvem, /equipe/ e 22 testes passando).'
+        ],
+        postura: '<strong>Postura e voz:</strong> Mantenha calma enquanto o vídeo roda de fundo; acompanhe as cenas sem correr e sorria ao citar os 22 testes e o site já no ar.',
+        blocosFala: [
+          { texto: 'Olha funcionando na prática aqui na tela. O cozinheiro já bate o olho e vê no topo o que vence primeiro, com estado por texto e cor de apoio.', pausaDepoisMs: 700 },
+          { texto: 'Se errar uma data, ele corrige sem duplicar o lote e a lista reordena na hora.', pausaDepoisMs: 700 },
+          { texto: 'Se um insumo já venceu, o sistema bloqueia o registro de uso por segurança sanitária e libera o descarte em um clique, e o dono já acompanha essa perda na hora no histórico, sem esperar o fim do mês.', pausaDepoisMs: 700 },
+          { texto: 'E como um plus de viabilidade, além do MVP da E3, o Time SYNC já publicou o piloto completo no ar com banco em nuvem, controle de equipe e 22 testes automatizados passando.', pausaDepoisMs: 600 }
+        ]
+      },
+      {
+        tag: 'Slide 7 · Ato 3 · Viabilidade e Impacto',
+        titulo: 'Por que funciona no restaurante pequeno',
+        faixa: '02:20 – 02:38 · Alvo: 18 segundos',
+        segundos: 18,
+        pontos: [
+          'Zero hardware caro — roda no navegador do celular que a cozinha já tem.',
+          'Lote perto de vencer vira prato do dia antes de estragar.',
+          'Dono acompanha perdas na semana, não só no fim do mês.'
+        ],
+        postura: '<strong>Postura e voz:</strong> Tom seguro de negócio: mostre que é viável hoje e que resolve desperdício real.',
+        blocosFala: [
+          { texto: 'Por que isso funciona de verdade no restaurante pequeno? Porque não exige hardware caro nem treinamento longo, roda no navegador do celular que a cozinha já tem. O lote perto de vencer vira prato do dia antes de estragar, e o dono passa a enxergar perdas na semana, não só no fim do mês.', pausaDepoisMs: 600 }
+        ]
+      },
+      {
+        tag: 'Slide 8 · Fechamento + QR Code',
+        titulo: 'Nenhum insumo vencendo escondido no fundo da geladeira',
+        faixa: '02:38 – 02:50 · Alvo: 12 segundos',
+        segundos: 12,
+        pontos: [
+          'Retoma a frase-gancho inicial.',
+          'Convida a banca a escanear o QR Code (sync-solucoes.vercel.app).',
+          'Agradece firme pelo Time SYNC.'
+        ],
+        postura: '<strong>Postura e voz:</strong> Desacelere levemente, olhe firme na câmera, faça 1 segundo de pausa antes de agradecer e mantenha um sorriso tranquilo ao terminar.',
+        blocosFala: [
+          { texto: 'VisionChef, do Time SYNC: para nenhum insumo vencer escondido no fundo da geladeira.', pausaDepoisMs: 900 },
+          { texto: 'O QR Code está na tela para vocês testarem agora no celular. Muito obrigado!', pausaDepoisMs: 400 }
+        ]
+      }
+    ];
+
+    const porId = (id) => document.getElementById(id);
+    const seletorVoz = porId('seletorVoz');
+    const sliderVelocidade = porId('velocidade');
+    const valorVelocidade = porId('valorVelocidade');
+    const campoNome = porId('campoNome');
+    const campoEquipe = porId('campoEquipe');
+    const relogio = porId('relogio');
+    const tempoSlide = porId('tempoSlide');
+    const barraTotal = porId('barraTotal');
+    const statusVoz = porId('statusVoz');
+    const btnOuvir = porId('btnOuvir');
+    const btnEnsaiar = porId('btnEnsaiar');
+    const btnPausar = porId('btnPausar');
+    const btnParar = porId('btnParar');
+    const btnAnterior = porId('btnAnterior');
+    const btnProximo = porId('btnProximo');
+
+    let indiceAtual = 0;
+    let modo = 'parado'; // 'parado' | 'voz' | 'teleprompter'
+    let pausado = false;
+    let segundosDecorridos = 0;
+    let segundosNoSlide = 0;
+    let intervaloRelogio = null;
+    let timerPausaFala = null;
+    let execucaoId = 0;
+    let vozesDisponiveis = [];
+
+    function formatarTempo(totalSegundos) {
+      const min = String(Math.floor(totalSegundos / 60)).padStart(2, '0');
+      const seg = String(totalSegundos % 60).padStart(2, '0');
+      return `${min}:${seg}`;
+    }
+
+    function personalizarTexto(texto) {
+      const nome = campoNome.value.trim() || 'seu nome';
+      const equipeBruta = campoEquipe.value.trim();
+      const trechoEquipe = equipeBruta ? `, junto com ${equipeBruta}` : '';
+      return texto.replaceAll('{NOME}', nome).replaceAll('{EQUIPE}', trechoEquipe);
+    }
+
+    function renderizarSlide() {
+      const etapa = etapas[indiceAtual];
+      porId('slideTag').textContent = etapa.tag;
+      porId('slideTitulo').textContent = etapa.titulo;
+      porId('faixaTempo').textContent = etapa.faixa;
+      porId('slidePontos').innerHTML = etapa.pontos.map((item) => `<li>${item}</li>`).join('');
+      porId('dicaPostura').innerHTML = etapa.postura;
+      tempoSlide.textContent = `Slide ${indiceAtual + 1} de ${etapas.length} · alvo ${etapa.segundos}s`;
+
+      const htmlFala = etapa.blocosFala
+        .map((bloco, i) => {
+          const trecho = personalizarTexto(bloco.texto);
+          const temPausaInterna = i < etapa.blocosFala.length - 1 && bloco.pausaDepoisMs >= 700;
+          return temPausaInterna ? `${trecho} <span class="pausa-marcador">[pausa 1s]</span> ` : `${trecho} `;
+        })
+        .join('');
+      porId('teleprompter').innerHTML = htmlFala;
+
+      porId('pilulas').innerHTML = etapas
+        .map((_, idx) => `<button type="button" class="pilula" data-idx="${idx}" ${idx === indiceAtual ? 'aria-current="step"' : ''}>${idx + 1}</button>`)
+        .join('');
+
+      btnAnterior.disabled = indiceAtual === 0;
+      btnProximo.disabled = indiceAtual === etapas.length - 1;
+    }
+
+    function atualizarRelogioVisual() {
+      relogio.textContent = formatarTempo(segundosDecorridos);
+      relogio.classList.toggle('aviso', segundosDecorridos >= 150 && segundosDecorridos < 170);
+      relogio.classList.toggle('limite', segundosDecorridos >= 170);
+      barraTotal.style.width = `${Math.min(100, (segundosDecorridos / 180) * 100)}%`;
+    }
+
+    function carregarVozes() {
+      if (!('speechSynthesis' in window)) {
+        seletorVoz.innerHTML = '<option value="">Síntese de voz não suportada neste navegador</option>';
+        return;
+      }
+      const todas = window.speechSynthesis.getVoices();
+      const ptBr = todas.filter((v) => v.lang.toLowerCase().startsWith('pt'));
+      vozesDisponiveis = ptBr.length ? ptBr : todas;
+      // Prioriza vozes neurais PT-BR do Edge (Antonio / Francisca / Thalita) quando disponíveis.
+      vozesDisponiveis.sort((a, b) => {
+        const peso = (voz) => {
+          const nome = voz.name.toLowerCase();
+          if (nome.includes('antonio') && nome.includes('online')) return 0;
+          if (nome.includes('francisca') && nome.includes('online')) return 1;
+          if (nome.includes('natural') || nome.includes('online')) return 2;
+          if (voz.lang.toLowerCase() === 'pt-br') return 3;
+          return 4;
+        };
+        return peso(a) - peso(b);
+      });
+      seletorVoz.innerHTML = vozesDisponiveis
+        .map((voz, i) => `<option value="${i}">${voz.name} (${voz.lang})</option>`)
+        .join('') || '<option value="">Nenhuma voz carregada ainda</option>';
+    }
+
+    function pararTudo(mensagem = 'Ensaio parado e cronômetro zerado.') {
+      execucaoId += 1;
+      modo = 'parado';
+      pausado = false;
+      clearInterval(intervaloRelogio);
+      clearTimeout(timerPausaFala);
+      intervaloRelogio = null;
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      segundosDecorridos = 0;
+      segundosNoSlide = 0;
+      atualizarRelogioVisual();
+      btnPausar.disabled = true;
+      btnPausar.textContent = '⏸ Pausar';
+      btnParar.disabled = true;
+      statusVoz.textContent = mensagem;
+    }
+
+    function iniciarCronometro(autoAvancarPorTempo) {
+      clearInterval(intervaloRelogio);
+      intervaloRelogio = setInterval(() => {
+        if (pausado) return;
+        segundosDecorridos += 1;
+        segundosNoSlide += 1;
+        atualizarRelogioVisual();
+
+        if (autoAvancarPorTempo && segundosNoSlide >= etapas[indiceAtual].segundos) {
+          if (indiceAtual < etapas.length - 1) {
+            indiceAtual += 1;
+            segundosNoSlide = 0;
+            renderizarSlide();
+            statusVoz.textContent = `Modo Teleprompter: Slide ${indiceAtual + 1} de ${etapas.length} — siga falando no ritmo!`;
+          } else {
+            const tempoFinal = formatarTempo(segundosDecorridos);
+            pararTudo(`Fim do ensaio em ${tempoFinal}! Excelente — meta oficial é fechar abaixo de 03:00.`);
+          }
+        }
+      }, 1000);
+    }
+
+    function falarEtapa(idAtual, idxSlide, idxBloco = 0) {
+      if (idAtual !== execucaoId || modo !== 'voz') return;
+      if (idxSlide >= etapas.length) {
+        const tempoFinal = formatarTempo(segundosDecorridos);
+        pararTudo(`Referência concluída em ${tempoFinal}. Agora clique em “Modo Teleprompter” para treinar com a sua voz!`);
+        return;
+      }
+
+      if (indiceAtual !== idxSlide) {
+        indiceAtual = idxSlide;
+        segundosNoSlide = 0;
+        renderizarSlide();
+      }
+
+      const blocos = etapas[idxSlide].blocosFala;
+      if (idxBloco >= blocos.length) {
+        falarEtapa(idAtual, idxSlide + 1, 0);
+        return;
+      }
+
+      const bloco = blocos[idxBloco];
+      const fala = new SpeechSynthesisUtterance(personalizarTexto(bloco.texto));
+      fala.lang = 'pt-BR';
+      fala.rate = Number(sliderVelocidade.value) || 1.0;
+      const vozEscolhida = vozesDisponiveis[Number(seletorVoz.value)];
+      if (vozEscolhida) fala.voice = vozEscolhida;
+
+      fala.onend = () => {
+        if (idAtual !== execucaoId || modo !== 'voz') return;
+        timerPausaFala = setTimeout(() => falarEtapa(idAtual, idxSlide, idxBloco + 1), bloco.pausaDepoisMs);
+      };
+
+      fala.onerror = () => {
+        if (idAtual !== execucaoId) return;
+        pararTudo('Não foi possível reproduzir a voz neste navegador. Abra esta página no Microsoft Edge para vozes neurais em português.');
+      };
+
+      statusVoz.textContent = `Ouvindo referência: Slide ${idxSlide + 1} de ${etapas.length} (${etapas[idxSlide].tag}).`;
+      window.speechSynthesis.speak(fala);
+    }
+
+    btnOuvir.addEventListener('click', () => {
+      if (!('speechSynthesis' in window)) {
+        statusVoz.textContent = 'Este navegador não suporta síntese de voz. Abra no Microsoft Edge.';
+        return;
+      }
+      pararTudo();
+      modo = 'voz';
+      execucaoId += 1;
+      const idAtual = execucaoId;
+      btnPausar.disabled = false;
+      btnParar.disabled = false;
+      iniciarCronometro(false);
+      falarEtapa(idAtual, indiceAtual, 0);
+    });
+
+    btnEnsaiar.addEventListener('click', () => {
+      pararTudo();
+      modo = 'teleprompter';
+      btnPausar.disabled = false;
+      btnParar.disabled = false;
+      statusVoz.textContent = `Modo Teleprompter ativo: comece a falar o Slide ${indiceAtual + 1}! O texto avança no tempo certo.`;
+      iniciarCronometro(true);
+    });
+
+    btnPausar.addEventListener('click', () => {
+      if (modo === 'parado') return;
+      pausado = !pausado;
+      btnPausar.textContent = pausado ? '▶ Retomar' : '⏸ Pausar';
+      if (modo === 'voz' && 'speechSynthesis' in window) {
+        if (pausado) window.speechSynthesis.pause();
+        else window.speechSynthesis.resume();
+      }
+      statusVoz.textContent = pausado ? 'Pausado.' : (modo === 'voz' ? 'Retomando referência de voz…' : 'Retomando teleprompter…');
+    });
+
+    btnParar.addEventListener('click', () => pararTudo());
+
+    btnAnterior.addEventListener('click', () => {
+      if (indiceAtual === 0) return;
+      indiceAtual -= 1;
+      segundosNoSlide = 0;
+      renderizarSlide();
+      if (modo === 'voz') {
+        window.speechSynthesis.cancel();
+        clearTimeout(timerPausaFala);
+        execucaoId += 1;
+        falarEtapa(execucaoId, indiceAtual, 0);
+      }
+    });
+
+    btnProximo.addEventListener('click', () => {
+      if (indiceAtual >= etapas.length - 1) return;
+      indiceAtual += 1;
+      segundosNoSlide = 0;
+      renderizarSlide();
+      if (modo === 'voz') {
+        window.speechSynthesis.cancel();
+        clearTimeout(timerPausaFala);
+        execucaoId += 1;
+        falarEtapa(execucaoId, indiceAtual, 0);
+      }
+    });
+
+    porId('pilulas').addEventListener('click', (evento) => {
+      const botao = evento.target.closest('.pilula');
+      if (!botao) return;
+      indiceAtual = Number(botao.dataset.idx);
+      segundosNoSlide = 0;
+      renderizarSlide();
+      if (modo === 'voz') {
+        window.speechSynthesis.cancel();
+        clearTimeout(timerPausaFala);
+        execucaoId += 1;
+        falarEtapa(execucaoId, indiceAtual, 0);
+      }
+    });
+
+    sliderVelocidade.addEventListener('input', () => {
+      valorVelocidade.textContent = `${Number(sliderVelocidade.value).toFixed(2)}x`;
+    });
+
+    campoNome.addEventListener('input', renderizarSlide);
+    campoEquipe.addEventListener('input', renderizarSlide);
+
+    if ('speechSynthesis' in window) {
+      carregarVozes();
+      window.speechSynthesis.onvoiceschanged = carregarVozes;
+    }
+    renderizarSlide();
+  </script>
+</body>
+</html>
