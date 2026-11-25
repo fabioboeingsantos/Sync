@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pitch E4 — VisionChef · Time SYNC</title>
-  <link rel="icon" type="image/png" sizes="128x128" href="../abertura/imagens/coruja-sync-icone.png" />
+  <link rel="icon" type="image/png" href="../abertura/imagens/LogoOficial.png" />
   <style>
     /* =========================================================================
        SLIDES DO PITCH (E4) — TIME SYNC · VISIONCHEF
@@ -120,8 +120,8 @@
     }
 
     .deck-brand img {
-      width: 30px;
-      height: 30px;
+      width: 44px;
+      height: 44px;
       object-fit: contain;
       display: block;
     }
@@ -492,7 +492,7 @@
   <div class="deck-shell" id="deckRoot">
     <div class="top-bar">
       <span class="deck-brand">
-        <img src="../abertura/imagens/coruja-sync-icone.png" width="28" height="28" alt="" />
+        <img src="../abertura/imagens/LogoOficial.png" width="44" height="44" alt="Logo oficial SYNC" />
         <span>Time SYNC · VisionChef — Insumo vencendo na cozinha</span>
       </span>
       <div class="top-actions">
@@ -636,6 +636,7 @@
               <p>Baixa de uso ou descarte em 1 toque, bloqueando uso de lote vencido e mostrando perdas ao dono na hora.</p>
             </div>
           </div>
+          <p class="nota-rodape"><strong>PVPS</strong> significa <strong>Primeiro que Vence, Primeiro que Sai</strong> (em inglês, FEFO — First Expired, First Out).</p>
         `
       },
       {
@@ -751,8 +752,9 @@
     }
 
     function buildPrintDeck() {
+      const marcaTopo = `<div class="deck-brand" style="margin-bottom: 6px;"><img src="../abertura/imagens/LogoOficial.png" width="40" height="40" alt="" /><span>Time SYNC · VisionChef</span></div>`;
       document.getElementById('printDeck').innerHTML = slides
-        .map((s) => `<section class="print-slide">${s.html}</section>`)
+        .map((s) => `<section class="print-slide">${marcaTopo}${s.html}</section>`)
         .join('');
     }
 
