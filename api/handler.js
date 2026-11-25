@@ -1,4 +1,5 @@
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import nodemailer from 'nodemailer';
 
 // Lê e valida toda configuração privada no servidor, sem incorporá-la ao JavaScript público.
 function configuracao() {
@@ -22,8 +23,17 @@ function configuracao() {
     cookieSeguro: ambiente.JWT_COOKIE_SECURE === 'true',
     limiteLogin: numero('AUTH_LOGIN_LIMIT', 5, 1, 100),
     limiteCadastro: numero('AUTH_SIGNUP_LIMIT', 3, 1, 100),
+    // Mantém limite próprio para evitar envio abusivo do e-mail de confirmação.
+    limiteConfirmacao: numero('AUTH_CONFIRMATION_LIMIT', 3, 1, 100),
     janela: numero('AUTH_RATE_WINDOW_SECONDS', 900, 30, 86400),
     bloqueio: numero('AUTH_BLOCK_SECONDS', 900, 30, 86400),
+    // Credenciais SMTP são privadas e usadas somente pela função Node da Vercel.
+    smtpHost: ambiente.SMTP_HOST?.trim(),
+    smtpPorta: numero('SMTP_PORT', 587, 1, 65535),
+    smtpSeguranca: ambiente.SMTP_SECURITY ?? 'starttls',
+    smtpRemetente: ambiente.SMTP_FROM?.trim(),
+    smtpUsuario: ambiente.SMTP_USER?.trim(),
+    smtpSenha: ambiente.SMTP_PASSWORD,
   };
 }
 
@@ -102,9 +112,10 @@ function chaveLimite(ip, categoria, identificador = '') {
 
 // Pede ao Supabase uma contagem compartilhada entre instâncias da Vercel, assinando a chamada interna.
 async function controlarLimite(cfg, operacao, chave, acao = 'verificar') {
+  const limites = { login: cfg.limiteLogin, cadastro: cfg.limiteCadastro, confirmacao: cfg.limiteConfirmacao };
   const corpo = JSON.stringify({
     acao, operacao, chave,
-    limite: operacao === 'login' ? cfg.limiteLogin : cfg.limiteCadastro,
+    limite: limites[operacao],
     janela_segundos: cfg.janela, bloqueio_segundos: cfg.bloqueio,
   });
   const horario = String(Math.floor(Date.now() / 1000));
@@ -119,6 +130,50 @@ async function controlarLimite(cfg, operacao, chave, acao = 'verificar') {
   });
   if (!remoto.ok) throw Object.assign(new Error('Controle de tentativas indisponível.'), { status: 503 });
   return remoto.json();
+}
+
+// Assina operações privadas para a Edge Function que grava o estado facultativo no banco.
+async function verificacaoEmail(cfg, dados) {
+  const corpo = JSON.stringify(dados);
+  const horario = String(Math.floor(Date.now() / 1000));
+  const assinatura = createHmac('sha256', cfg.jwtSecret).update(`${horario}.${corpo}`).digest('hex');
+  const remoto = await fetch(new URL('/functions/v1/verificacao-email', cfg.url), {
+    method: 'POST',
+    headers: {
+      apikey: cfg.chavePublica, 'Content-Type': 'application/json',
+      'x-vc-timestamp': horario, 'x-vc-signature': assinatura,
+    },
+    body: corpo,
+  });
+  const resultado = await remoto.json().catch(() => null);
+  if (!remoto.ok) throw Object.assign(new Error('Serviço de confirmação indisponível.'), { status: remoto.status, detalhes: resultado });
+  return resultado;
+}
+
+// Cria uma conexão SMTP somente quando a pessoa solicita a confirmação da própria conta.
+async function enviarConfirmacao(cfg, destinatario, token, origem) {
+  if (!cfg.smtpHost || !cfg.smtpRemetente || !cfg.smtpUsuario || !cfg.smtpSenha) {
+    throw Object.assign(new Error('SMTP não configurado.'), { status: 503 });
+  }
+  if (!['ssl', 'starttls'].includes(cfg.smtpSeguranca)) throw Object.assign(new Error('Segurança SMTP inválida.'), { status: 503 });
+  const transporter = nodemailer.createTransport({
+    host: cfg.smtpHost,
+    port: cfg.smtpPorta,
+    secure: cfg.smtpSeguranca === 'ssl',
+    requireTLS: cfg.smtpSeguranca === 'starttls',
+    auth: { user: cfg.smtpUsuario, pass: cfg.smtpSenha },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  });
+  const link = `${origem}/#confirmar-email=${token}`;
+  await transporter.sendMail({
+    from: cfg.smtpRemetente,
+    to: destinatario,
+    subject: 'Confirme seu e-mail do VisionChef',
+    text: `Você solicitou a confirmação deste endereço para sua conta VisionChef.\n\n${link}\n\nO link expira em 24 horas e pode ser usado uma vez. Se não fez esta solicitação, ignore esta mensagem.`,
+    html: `<p>Você solicitou a confirmação deste endereço para sua conta VisionChef.</p><p><a href="${link}">Confirmar e-mail</a></p><p>O link expira em 24 horas e pode ser usado uma vez. Se não fez esta solicitação, ignore esta mensagem.</p>`,
+  });
 }
 
 // Extrai a sessão do cookie e atualiza tokens Supabase perto do vencimento.
@@ -216,7 +271,12 @@ export async function tratarApi(requisicao) {
         metodo: 'POST', corpo: { email, password: senha, data: { nome_usuario: nome } },
       });
       if (!cadastro.ok) return resposta({ erro: 'Não foi possível criar a conta. Confira os dados ou tente outro usuário e e-mail.' }, cadastro.status >= 500 ? 503 : cadastro.status);
-      return resposta({ criada: true, mensagem: 'Conta criada. Confirme o e-mail e solicite ao dono a liberação do restaurante.' }, 201);
+      // Com Confirm Email desligado no Supabase, o cadastro retorna sessão e abre a área da própria conta.
+      if (cadastro.dados?.access_token && cadastro.dados?.refresh_token && cadastro.dados?.user?.id) {
+        const token = assinarSessao(cadastro.dados, cfg);
+        return resposta({ criada: true, autenticado: true }, 201, { 'Set-Cookie': cookieSessao(token, cfg, requisicao) });
+      }
+      return resposta({ criada: true, autenticado: false, mensagem: 'Conta criada. Entre após concluir a confirmação de e-mail.' }, 201);
     }
 
     if (caminho === 'auth/recover' && requisicao.method === 'POST') {
@@ -241,6 +301,23 @@ export async function tratarApi(requisicao) {
       return resposta({ atualizada: true }, 200, { 'Set-Cookie': cookieRemovido(cfg, requisicao) });
     }
 
+    if (caminho === 'auth/verify-email' && requisicao.method === 'POST') {
+      // Limita tentativas de consumo por IP antes de validar o token enviado no link.
+      const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
+      const chave = chaveLimite(ip, 'confirmacao-link');
+      const limite = await controlarLimite(cfg, 'confirmacao', chave);
+      if (!limite.permitido) return resposta({ erro: 'Muitas tentativas. Aguarde e tente novamente.' }, 429, { 'Retry-After': String(limite.retry_after ?? cfg.bloqueio) });
+      const dados = await jsonEntrada(requisicao, 2048);
+      const token = typeof dados.token === 'string' ? dados.token : '';
+      if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return resposta({ erro: 'O link é inválido ou expirou.' }, 400);
+      try {
+        await verificacaoEmail(cfg, { acao: 'consumir', token_hash: createHash('sha256').update(token).digest('hex') });
+      } catch (erro) {
+        return resposta({ erro: erro.status === 400 ? 'O link é inválido, expirou ou já foi utilizado.' : 'Não foi possível confirmar agora.' }, erro.status === 400 ? 400 : 503);
+      }
+      return resposta({ verificado: true, mensagem: 'E-mail confirmado.' });
+    }
+
     if (caminho === 'auth/logout' && requisicao.method === 'POST') {
       const estado = await obterSessao(requisicao, cfg);
       if (estado.sessao) await supabase(cfg, '/auth/v1/logout?scope=local', { metodo: 'POST', token: estado.sessao.access_token }).catch(() => null);
@@ -263,7 +340,32 @@ export async function tratarApi(requisicao) {
       ]);
       if (!usuario.ok) return resposta({ erro: 'Entre novamente para continuar.' }, 401, { ...cookieAtualizado, 'Set-Cookie': cookieRemovido(cfg, requisicao) });
       if (!restaurantes.ok) return erroBanco(restaurantes);
-      return resposta({ user: usuario.dados, restaurantes: restaurantes.dados }, 200, cookieAtualizado);
+      const confirmacao = await verificacaoEmail(cfg, { acao: 'estado', access_token: token });
+      return resposta({ user: usuario.dados, restaurantes: restaurantes.dados, email_verificado_app: confirmacao.verificado, email_verificado_em: confirmacao.verificado_em }, 200, cookieAtualizado);
+    }
+
+    if (caminho === 'auth/request-email-verification' && requisicao.method === 'POST') {
+      const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
+      const chave = chaveLimite(ip, 'confirmacao', estado.sessao.sub);
+      const limite = await controlarLimite(cfg, 'confirmacao', chave);
+      if (!limite.permitido) return resposta({ erro: 'Muitos pedidos de confirmação. Aguarde e tente novamente.' }, 429, { 'Retry-After': String(limite.retry_after ?? cfg.bloqueio) });
+      const usuario = await supabase(cfg, '/auth/v1/user', { token });
+      if (!usuario.ok || !usuario.dados?.email) return resposta({ erro: 'Entre novamente para continuar.' }, 401, cookieAtualizado);
+      const estadoAtual = await verificacaoEmail(cfg, { acao: 'estado', access_token: token });
+      if (estadoAtual.verificado) return resposta({ enviado: false, verificado: true, mensagem: 'Este endereço já foi confirmado.' }, 200, cookieAtualizado);
+      const tokenEmail = randomBytes(32).toString('base64url');
+      const emitido = await verificacaoEmail(cfg, {
+        acao: 'emitir', access_token: token,
+        token_hash: createHash('sha256').update(tokenEmail).digest('hex'),
+      });
+      if (!emitido.emitido) return resposta({ enviado: false, verificado: true, mensagem: 'Este endereço já foi confirmado.' }, 200, cookieAtualizado);
+      try {
+        await enviarConfirmacao(cfg, usuario.dados.email, tokenEmail, url.origin);
+      } catch {
+        // Não registra senha, credencial SMTP, endereço do usuário nem conteúdo da mensagem.
+        return resposta({ erro: 'Não foi possível enviar a confirmação agora. Tente novamente mais tarde.' }, 503, cookieAtualizado);
+      }
+      return resposta({ enviado: true, mensagem: 'Enviamos um link para o e-mail da sua conta.' }, 200, cookieAtualizado);
     }
 
     if (caminho === 'restaurantes' && requisicao.method === 'GET') {

@@ -10,3 +10,8 @@ entrypoint = "./functions/login-usuario/index.js"
 # A assinatura HMAC do backend protege a função sem exigir JWT do navegador.
 verify_jwt = false
 entrypoint = "./functions/limitar-autenticacao/index.js"
+
+[functions.verificacao-email]
+# A confirmação facultativa é chamada somente pela API da Vercel com assinatura HMAC.
+verify_jwt = false
+entrypoint = "./functions/verificacao-email/index.js"

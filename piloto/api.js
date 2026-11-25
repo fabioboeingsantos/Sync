@@ -19,12 +19,21 @@ async function restaurantes() {
   catch (erro) { if (erro.status === 401) return null; throw erro; }
 }
 
+// Consulta o perfil autenticado e o estado facultativo de confirmação dentro da área da conta.
+async function sessao() {
+  try { return await solicitar('auth/session'); }
+  catch (erro) { if (erro.status === 401) return null; throw erro; }
+}
+
 // Encaminha alterações do estoque ao backend, que repassa o JWT individual e mantém a RLS ativa.
 export const api = {
   modoLocal: false,
   entrar: (identificador, senha) => solicitar('auth/login', { metodo: 'POST', corpo: { identificador, senha } }),
   criarConta: ({ nomeUsuario, email, senha }) => solicitar('auth/signup', { metodo: 'POST', corpo: { nomeUsuario, email, senha } }),
   recuperarSenha: (email) => solicitar('auth/recover', { metodo: 'POST', corpo: { email } }),
+  sessao,
+  solicitarConfirmacaoEmail: () => solicitar('auth/request-email-verification', { metodo: 'POST', corpo: {} }),
+  confirmarEmail: (token) => solicitar('auth/verify-email', { metodo: 'POST', corpo: { token } }),
   atualizarSenha: (senha) => {
     const hash = new URLSearchParams(window.location.hash.slice(1));
     return solicitar('auth/update-password', { metodo: 'POST', corpo: { senha, access_token: hash.get('access_token') } });

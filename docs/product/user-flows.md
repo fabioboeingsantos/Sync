@@ -4,7 +4,10 @@
 
 | Tela ou ação | Quem usa | Caminho principal e estados a revisar |
 | --- | --- | --- |
-| Entrar | Dono e funcionário | Entrar com conta individual e abrir o estoque. Se a sessão expirar, orientar a entrar novamente. Se a conta não tiver acesso, informar que o estoque está indisponível para ela. |
+| Landing e cadastro | Pessoa interessada | Criar conta individual com usuário, e-mail e senha. O cadastro não concede papel nem acesso ao estoque. Com sessão válida, abrir a área da conta mesmo antes de existir vínculo com restaurante. |
+| Entrar | Dono e funcionário | Entrar com usuário ou e-mail e senha. A tela oferece recuperação de senha como ação secundária. Se a sessão expirar, orientar a entrar novamente. Se a conta não tiver vínculo, manter a área da conta acessível e informar que o estoque aguarda a autorização do dono. |
+| Minha conta | Pessoa autenticada | Consultar e-mail e estado de confirmação opcional; solicitar o e-mail de confirmação somente nesta área; confirmar por link de uso único. Permitir sair da conta. A confirmação não substitui o vínculo com restaurante. |
+| Recuperar senha | Pessoa sem sessão | Informar o e-mail e receber resposta genérica. O link abre o formulário para escolher nova senha. Não oferecer reenvio de confirmação nesta tela. |
 | Estoque | Dono e funcionário | Consultar o saldo e a validade aplicável. Identificar as partes abertas e fechadas pelo texto. Se estiver vazio, oferecer o cadastro do primeiro lote. Se houver falha de conexão, permitir nova tentativa. |
 | Cadastrar ou corrigir lote | Dono e funcionário | Informar insumo, quantidade, medida e validade no cadastro. Corrigir os dados quando necessário. Mostrar os campos inválidos e confirmar quando o registro for salvo. |
 | Registrar abertura ou fracionamento | Dono e funcionário | Selecionar o lote, indicar quanto foi aberto ou fracionado, a data da operação e a validade aplicável. Conferir no estoque a quantidade aberta e a fechada, com suas respectivas datas. |

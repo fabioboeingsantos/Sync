@@ -28,7 +28,7 @@ Sync/
 ├── piloto/                     HTML, CSS, JavaScript e cliente Supabase do piloto
 ├── scripts/                    servidor local, banco de teste e geração de dist/
 ├── supabase/
-│   ├── functions/              funções de servidor para login por usuário e limitação de tentativas
+│   ├── functions/              funções de servidor para login, limites e confirmação facultativa
 │   ├── migrations/             alterações versionadas do banco em SQL
 │   └── config.toml             configuração local do Supabase CLI e da função
 ├── tests/                      testes automatizados de estoque e migração local

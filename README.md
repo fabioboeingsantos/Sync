@@ -42,4 +42,4 @@ Veja os [requisitos do piloto](docs/product/requirements.md), o [desenho técnic
 
 ## Configuração do projeto
 
-O `package.json` define os comandos acima. O Vite compila o componente React para a seção de acesso. O Supabase é acessado pelo backend Node da Vercel na versão integrada. O PGlite roda o banco local e os testes. O `package-lock.json` fixa as versões instaladas por `npm.cmd ci`.
+O `package.json` define os comandos acima. O Vite compila o componente React para a seção de acesso. O backend Node acessa o Supabase e usa Nodemailer com SMTP privado apenas para a confirmação facultativa. O PGlite roda o banco local e os testes. O `package-lock.json` fixa as versões instaladas por `npm.cmd ci`.

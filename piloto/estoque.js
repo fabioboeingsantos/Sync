@@ -16,6 +16,7 @@ const salvarAbertura = formAbertura.querySelector('[type="submit"]');
 const cancelarAbertura = porId('cancelar-abertura');
 const erroAbertura = porId('erro-abertura');
 const sair = porId('sair');
+const minhaConta = porId('minha-conta');
 const abrirCadastro = porId('abrir-cadastro');
 const recarregar = porId('recarregar');
 const mensagemSessao = porId('situacao-sessao');
@@ -68,6 +69,8 @@ async function mostrarSessao(focar = false) {
   porId('sem-restaurante').hidden = restaurantes?.length !== 0;
   porId('aplicacao').hidden = !restaurante;
   sair.hidden = restaurantes === null;
+  // A conta continua acessível para qualquer sessão, mesmo sem vínculo que libere o estoque.
+  minhaConta.hidden = restaurantes === null;
   mensagemSessao.textContent = '';
 
   if (!restaurante) {

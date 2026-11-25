@@ -15,6 +15,8 @@
   <header class="topo">
     <div class="largura topo-conteudo">
       <div class="marca"><span class="marca-sinal" aria-hidden="true">VC</span> VisionChef</div>
+      <!-- Mantém a conta acessível sem misturar gestão de conta com permissões de estoque. -->
+      <a class="botao botao-secundario" id="minha-conta" href="../#prototipos" hidden>Minha conta</a>
       <button class="botao botao-secundario" id="sair" type="button" hidden>Sair</button>
     </div>
   </header>
@@ -46,6 +48,8 @@
     <section id="sem-restaurante" class="painel" aria-labelledby="titulo-sem-restaurante" hidden>
       <h1 id="titulo-sem-restaurante" tabindex="-1">Estoque indisponível</h1>
       <p>Esta conta não tem acesso ativo a um restaurante. Fale com a pessoa responsável pelo acesso.</p>
+      <!-- A confirmação facultativa fica dentro da sessão, nunca na tela de login. -->
+      <p><a href="../#prototipos">Acessar minha conta</a> para gerenciar a confirmação opcional do e-mail.</p>
     </section>
 
     <section id="aplicacao" aria-labelledby="titulo-estoque" hidden>
