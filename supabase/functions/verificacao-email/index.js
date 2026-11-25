@@ -60,6 +60,15 @@ Deno.serve(async (requisicao) => {
       return responder(200, { verificado: true });
     }
 
+    if (dados.acao === 'existe') {
+      // Verifica a existência da conta no servidor antes da recuperação de senha, sempre sob assinatura HMAC.
+      const email = typeof dados.email === 'string' ? dados.email.trim().toLowerCase() : '';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return responder(400, { erro: 'E-mail inválido.' });
+      const consulta = await chamarRpc(url, chaveServidor, 'email_cadastrado', { p_email: email });
+      if (!consulta.ok) return responder(503, { erro: 'Não foi possível consultar a conta agora.' });
+      return responder(200, { existe: Boolean(await consulta.json()) });
+    }
+
     // Consultar e emitir exigem uma sessão Auth válida para impedir confirmação em nome de outra pessoa.
     if (!['estado', 'emitir'].includes(dados.acao) || typeof dados.access_token !== 'string') return responder(400, { erro: 'Solicitação inválida.' });
     const usuario = await obterUsuario(url, chavePublica, dados.access_token);

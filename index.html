@@ -26,7 +26,9 @@
       <a class="header-link" href="#estoque">Demonstração</a>
     </nav>
     <div class="header-actions">
-      <a class="header-link header-cta" href="#prototipos">Acessar VisionChef</a>
+      <!-- As duas ações principais ficam visíveis no cabeçalho em qualquer seção da landing. -->
+      <a class="header-link header-cta" href="#prototipos" data-modo-acesso="entrar">Entrar</a>
+      <a class="header-link header-cta header-signup" href="#prototipos" data-modo-acesso="cadastro">Criar conta</a>
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Modo escuro ativo (Lua). Clique para ativar modo claro (Sol).">
         <span class="sky-track" aria-hidden="true">
           <span class="sky-stars"></span>
@@ -42,6 +44,8 @@
   </header>
   <main id="conteudo" tabindex="-1">
     <section class="hero frame" id="inicio" aria-labelledby="titulo">
+      <!-- Camada decorativa onde o React monta o fundo animado ASCII Stream na paleta Aço Inox / Sync. -->
+      <div class="hero-ascii-bg" id="hero-ascii-stream" aria-hidden="true"></div>
       <div class="hero-copy">
         <div class="hero-title">
           <h1 id="titulo">Sync</h1>
@@ -66,7 +70,9 @@
         <p>Na hora de começar o preparo, sua equipe sabe quais insumos usar primeiro? O VisionChef organiza os lotes por validade, mostra o que precisa de atenção e registra o que foi usado ou descartado.</p>
         <div class="actions">
           <a class="botao botao-primario" href="#estoque">Ver exemplo de estoque</a>
-          <a class="botao botao-secundario" href="#prototipos">Acessar VisionChef</a>
+          <!-- O CTA de cadastro já abre o fluxo correspondente, sem exigir navegação extra. -->
+          <a class="botao botao-secundario" href="#prototipos" data-modo-acesso="entrar">Entrar</a>
+          <a class="botao botao-secundario" href="#prototipos" data-modo-acesso="cadastro">Criar conta</a>
         </div>
       </div>
     </section>
@@ -142,7 +148,7 @@
     <section class="prototypes frame section" id="prototipos" tabindex="-1" aria-labelledby="titulo-prototipos">
       <div>
         <h2 id="titulo-prototipos">Acessar VisionChef</h2>
-        <p>Entre com a conta do seu restaurante para abrir o estoque.</p>
+        <p>Entre na sua conta ou crie seu cadastro. O acesso ao estoque é liberado quando o dono vincula o funcionário ao restaurante.</p>
       </div>
       <div class="login-card">
         <!-- Aberto como arquivo, o link leva à mesma seção no servidor local. O React substitui o link na página servida. -->

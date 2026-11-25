@@ -4,6 +4,8 @@ import { interpretarLote } from './interpretar-lote.js';
 // Controla os estados de acesso, consulta e movimentação da tela de estoque.
 const porId = (id) => document.getElementById(id);
 const formEntrada = porId('form-entrada');
+const campoSenhaEntrada = porId('campo-senha-entrada');
+const alternarSenhaEntrada = porId('alternar-senha-entrada');
 const formLote = porId('form-lote');
 const dialogoValidade = porId('dialogo-validade');
 const formValidade = porId('form-validade');
@@ -17,6 +19,15 @@ const cancelarAbertura = porId('cancelar-abertura');
 const erroAbertura = porId('erro-abertura');
 const sair = porId('sair');
 const minhaConta = porId('minha-conta');
+const contaTopo = porId('conta-topo');
+const abrirContaSemRestaurante = porId('abrir-conta-sem-restaurante');
+const dialogoConta = porId('dialogo-conta');
+const contaEmail = porId('conta-email');
+const contaAcesso = porId('conta-acesso');
+const contaConfirmacao = porId('conta-confirmacao');
+const feedbackConta = porId('feedback-conta');
+const botaoConfirmarEmail = porId('solicitar-confirmacao-email');
+const fecharConta = porId('fechar-conta');
 const abrirCadastro = porId('abrir-cadastro');
 const recarregar = porId('recarregar');
 const mensagemSessao = porId('situacao-sessao');
@@ -35,6 +46,7 @@ const statusAssistente = porId('status-assistente');
 let parteEmSaida = null;
 let envioSaida = null;
 let restaurante = null;
+let sessaoAtual = null;
 let envioPendente = null;
 let versaoConsulta = 0;
 let loteEmCorrecao = null;
@@ -62,15 +74,40 @@ function mensagem(erro, reserva) {
   return conhecidas[erro.code] ?? reserva;
 }
 
+// Atualiza o resumo da sessão no cabeçalho e no diálogo Minha conta.
+function atualizarPainelConta(sessao, restaurantes) {
+  const email = sessao?.user?.email ?? '';
+  contaTopo.textContent = email;
+  contaTopo.hidden = !email;
+  contaEmail.textContent = email || (api.modoLocal ? 'Conta de demonstração local' : 'Não disponível');
+  contaAcesso.textContent = restaurantes?.length
+    ? restaurantes.map((item) => item.nome).join(', ')
+    : 'Sem vínculo ativo (aguardando liberação do dono)';
+  if (api.modoLocal) {
+    contaConfirmacao.textContent = 'Disponível apenas na versão online';
+    botaoConfirmarEmail.hidden = true;
+  } else if (sessao?.email_verificado_app) {
+    contaConfirmacao.textContent = 'Confirmado';
+    botaoConfirmarEmail.hidden = true;
+  } else {
+    contaConfirmacao.textContent = 'Opcional · pendente';
+    botaoConfirmarEmail.hidden = !sessao?.user;
+  }
+}
+
 async function mostrarSessao(focar = false) {
-  const restaurantes = await api.restaurantes();
+  const sessao = api.sessao ? await api.sessao() : null;
+  const restaurantes = sessao?.restaurantes ?? await api.restaurantes();
+  sessaoAtual = sessao;
   restaurante = restaurantes?.[0] ?? null;
-  porId('entrada').hidden = restaurantes !== null;
-  porId('sem-restaurante').hidden = restaurantes?.length !== 0;
+  const autenticado = Boolean(sessao?.user) || restaurantes !== null;
+  porId('entrada').hidden = autenticado;
+  porId('sem-restaurante').hidden = !autenticado || Boolean(restaurante);
   porId('aplicacao').hidden = !restaurante;
-  sair.hidden = restaurantes === null;
+  sair.hidden = !autenticado;
   // A conta continua acessível para qualquer sessão, mesmo sem vínculo que libere o estoque.
-  minhaConta.hidden = restaurantes === null;
+  minhaConta.hidden = !autenticado;
+  atualizarPainelConta(sessao, restaurantes);
   mensagemSessao.textContent = '';
 
   if (!restaurante) {
@@ -80,7 +117,7 @@ async function mostrarSessao(focar = false) {
     historicoDescartes.replaceChildren();
     porId('tabela-estoque').hidden = true;
     ocupado(recarregar, false);
-    if (focar) porId(restaurantes === null ? 'titulo-entrada' : 'titulo-sem-restaurante').focus();
+    if (focar) porId(!autenticado ? 'titulo-entrada' : 'titulo-sem-restaurante').focus();
     return;
   }
 
@@ -463,6 +500,14 @@ function definirCadastro(aberto) {
   else abrirCadastro.focus();
 }
 
+// Alterna visibilidade da senha na tela direta /estoque/ com o botão compacto de olho.
+alternarSenhaEntrada?.addEventListener('click', () => {
+  const visivel = campoSenhaEntrada.type === 'text';
+  campoSenhaEntrada.type = visivel ? 'password' : 'text';
+  alternarSenhaEntrada.setAttribute('aria-pressed', String(!visivel));
+  alternarSenhaEntrada.setAttribute('aria-label', visivel ? 'Mostrar senha' : 'Ocultar senha');
+});
+
 formEntrada.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const botao = formEntrada.querySelector('[type="submit"]');
@@ -483,6 +528,53 @@ formEntrada.addEventListener('submit', async (evento) => {
       : 'Não foi possível entrar. Tente novamente.');
   } finally {
     ocupado(botao, false);
+  }
+});
+
+// Abre o diálogo Minha conta com dados atualizados da sessão e opção de confirmação de e-mail.
+async function abrirMinhaConta() {
+  feedbackConta.textContent = '';
+  feedbackConta.classList.remove('erro');
+  if (api.sessao) {
+    try {
+      const atualizada = await api.sessao();
+      if (atualizada?.user) {
+        sessaoAtual = atualizada;
+        atualizarPainelConta(atualizada, atualizada.restaurantes);
+      }
+    } catch {
+      // Mantém os últimos dados da sessão já carregados se a atualização falhar.
+    }
+  }
+  if (!dialogoConta.open) dialogoConta.showModal();
+}
+
+minhaConta.addEventListener('click', abrirMinhaConta);
+abrirContaSemRestaurante?.addEventListener('click', abrirMinhaConta);
+fecharConta.addEventListener('click', () => dialogoConta.close());
+dialogoConta.addEventListener('click', (evento) => {
+  if (evento.target === dialogoConta) dialogoConta.close();
+});
+
+botaoConfirmarEmail.addEventListener('click', async () => {
+  if (botaoConfirmarEmail.disabled || !api.solicitarConfirmacaoEmail) return;
+  ocupado(botaoConfirmarEmail, true);
+  feedbackConta.textContent = '';
+  feedbackConta.classList.remove('erro');
+  try {
+    const resultado = await api.solicitarConfirmacaoEmail();
+    feedbackConta.textContent = resultado?.mensagem ?? 'Enviamos um link para o e-mail da sua conta.';
+    if (resultado?.verificado && api.sessao) {
+      sessaoAtual = await api.sessao();
+      atualizarPainelConta(sessaoAtual, sessaoAtual?.restaurantes);
+    }
+  } catch (erro) {
+    feedbackConta.classList.add('erro');
+    feedbackConta.textContent = erro.status === 429
+      ? 'Muitos pedidos de confirmação. Aguarde e tente novamente.'
+      : 'Não foi possível enviar a confirmação agora. Tente novamente mais tarde.';
+  } finally {
+    ocupado(botaoConfirmarEmail, false);
   }
 });
 

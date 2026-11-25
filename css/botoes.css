@@ -1,31 +1,100 @@
 /* ==========================================================================
-   Regra global de botões — Padrão visual Cesta do Vale
-   Classes: .botao (base), .botao-primario, .botao-secundario
-   Tokens de cor sobreponíveis pelo tema ativo.
+   Regra global de botões — GlassSurface + Paleta Aço Inox (style-guide.md)
+   Classes: .botao (base), .botao-primario, .botao-secundario, .glass-surface
+   Aplica o acabamento de vidro translúcido (GlassSurface) a todos os botões
+   existentes e futuros em páginas HTML puras e componentes React.
    ========================================================================== */
 
 :root {
-  --btn-primario-inicio: #2F6B3B;
-  --btn-primario-fim: #1F4D2E;
-  --btn-primario-hover: #1F4D2E;
+  /* Paleta oficial Aço Inox (style-guide.md) com transparência controlada para efeito GlassSurface */
+  --btn-primario-inicio: rgba(42, 127, 142, 0.84);
+  --btn-primario-fim: rgba(15, 76, 92, 0.94);
+  --btn-primario-hover: rgba(15, 76, 92, 0.98);
   --btn-primario-texto: #FFFFFF;
-  --btn-primario-borda: #1F4D2E;
-  --btn-primario-sombra: 0 2px 6px rgba(31, 77, 46, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  --btn-primario-sombra-hover: 0 6px 14px rgba(31, 77, 46, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --btn-primario-borda: rgba(168, 213, 221, 0.45);
+  --btn-primario-sombra:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -1px 0 rgba(168, 213, 221, 0.18),
+    0 8px 20px rgba(15, 76, 92, 0.26);
+  --btn-primario-sombra-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(168, 213, 221, 0.24),
+    0 12px 26px rgba(15, 76, 92, 0.36);
 
-  --btn-secundario-fundo: #FFFFFF;
-  --btn-secundario-texto: #1F4D2E;
-  --btn-secundario-borda: #2F6B3B;
-  --btn-secundario-fundo-hover: #E8F3EB;
-  --btn-secundario-sombra-hover: 0 2px 8px rgba(31, 77, 46, 0.14);
+  --btn-secundario-fundo: rgba(255, 255, 255, 0.74);
+  --btn-secundario-texto: #0F4C5C;
+  --btn-secundario-borda: rgba(42, 127, 142, 0.58);
+  --btn-secundario-fundo-hover: rgba(168, 213, 221, 0.36);
+  --btn-secundario-sombra:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 4px 12px rgba(15, 76, 92, 0.12);
+  --btn-secundario-sombra-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 8px 18px rgba(15, 76, 92, 0.18);
 
-  --btn-foco: #1F4D2E;
+  --btn-glass-blur: 11px;
+  --btn-glass-saturacao: 1.35;
+  --btn-foco: #0F4C5C;
   --btn-alerta-texto: #B3261E;
-  --btn-alerta-borda: #B3261E;
-  --btn-alerta-fundo-hover: #FDECEB;
+  --btn-alerta-borda: rgba(179, 38, 30, 0.65);
+  --btn-alerta-fundo-hover: rgba(253, 236, 235, 0.88);
 }
 
+/* Superfície GlassSurface para uso direto com o componente React frontend/components/GlassSurface.jsx */
+.glass-surface {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 260ms ease-out, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.glass-surface__filter {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  z-index: -1;
+}
+
+.glass-surface__content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  position: relative;
+  z-index: 1;
+}
+
+.glass-surface--svg {
+  background: hsl(192 72% 21% / var(--glass-frost, 0.14));
+  backdrop-filter: var(--filter-id, url(#glass-filter)) saturate(var(--glass-saturation, 1.2));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 11px)) saturate(var(--glass-saturation, 1.2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 0 10px 2px rgba(168, 213, 221, 0.18),
+    0 8px 20px rgba(15, 76, 92, 0.22);
+}
+
+.glass-surface--fallback {
+  background: rgba(15, 76, 92, 0.12);
+  backdrop-filter: blur(var(--glass-blur, 11px)) saturate(var(--glass-saturation, 1.35));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 11px)) saturate(var(--glass-saturation, 1.35));
+  border: 1px solid rgba(168, 213, 221, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+    0 8px 20px rgba(15, 76, 92, 0.2);
+}
+
+/* Base global de todos os botões do projeto com efeito GlassSurface */
 .botao {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -33,16 +102,19 @@
   min-height: 48px;
   padding: 12px 20px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 12px;
+  overflow: hidden;
   font-family: inherit;
   font-size: inherit;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(var(--btn-glass-blur)) saturate(var(--btn-glass-saturacao));
+  -webkit-backdrop-filter: blur(var(--btn-glass-blur)) saturate(var(--btn-glass-saturacao));
   transition:
     background-color 160ms ease,
     border-color 160ms ease,
@@ -50,15 +122,24 @@
     transform 160ms ease;
 }
 
+/* Reflexo especular superior característico da superfície de vidro (GlassSurface) */
+.botao::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 48% 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.02) 100%);
+  pointer-events: none;
+}
+
 .botao svg,
 .botao img {
   flex: 0 0 auto;
 }
 
-/* Botão primário */
+/* Botão primário — vidro Aço Inox escuro com alto contraste (>= 9,5:1) */
 .botao.botao-primario {
-  background-color: var(--btn-primario-inicio);
-  background-image: linear-gradient(135deg, var(--btn-primario-inicio), var(--btn-primario-fim));
+  background-color: var(--btn-primario-fim);
+  background-image: linear-gradient(160deg, var(--btn-primario-inicio) 0%, var(--btn-primario-fim) 100%);
   color: var(--btn-primario-texto);
   border-color: var(--btn-primario-borda);
   box-shadow: var(--btn-primario-sombra);
@@ -66,36 +147,38 @@
 
 .botao.botao-primario:hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]):not(.is-loading) {
   background-color: var(--btn-primario-hover);
-  background-image: none;
-  border-color: var(--btn-primario-borda);
+  background-image: linear-gradient(160deg, rgba(42, 127, 142, 0.94) 0%, rgba(15, 76, 92, 0.99) 100%);
+  border-color: rgba(168, 213, 221, 0.7);
   color: var(--btn-primario-texto);
   box-shadow: var(--btn-primario-sombra-hover);
   transform: translateY(-1px);
 }
 
-/* Botão secundário */
+/* Botão secundário — vidro claro fosco com texto e borda Aço Inox */
 .botao.botao-secundario {
   background-color: var(--btn-secundario-fundo);
-  background-image: none;
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.82) 0%, rgba(244, 246, 247, 0.68) 100%);
   color: var(--btn-secundario-texto);
   border-color: var(--btn-secundario-borda);
-  box-shadow: none;
+  box-shadow: var(--btn-secundario-sombra);
 }
 
 .botao.botao-secundario:hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]):not(.is-loading) {
   background-color: var(--btn-secundario-fundo-hover);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.9) 0%, rgba(168, 213, 221, 0.42) 100%);
   color: var(--btn-secundario-texto);
-  border-color: var(--btn-secundario-borda);
+  border-color: #0F4C5C;
   box-shadow: var(--btn-secundario-sombra-hover);
+  transform: translateY(-1px);
 }
 
 .botao.botao-secundario[aria-pressed="true"] {
   background-color: var(--btn-secundario-fundo-hover);
   color: var(--btn-secundario-texto);
-  border-color: var(--btn-primario-borda);
+  border-color: #0F4C5C;
 }
 
-/* Ação destrutiva mantendo base secundária clara */
+/* Ação destrutiva mantendo base de vidro clara com alerta vermelho do style guide */
 .botao.botao-secundario.danger {
   background-color: var(--btn-secundario-fundo);
   color: var(--btn-alerta-texto);
@@ -104,9 +187,23 @@
 
 .botao.botao-secundario.danger:hover:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]):not(.is-loading) {
   background-color: var(--btn-alerta-fundo-hover);
+  background-image: none;
   color: var(--btn-alerta-texto);
-  border-color: var(--btn-alerta-borda);
-  box-shadow: 0 2px 8px rgba(179, 38, 30, 0.14);
+  border-color: #B3261E;
+  box-shadow: 0 4px 12px rgba(179, 38, 30, 0.16);
+}
+
+/* Fallback sólido quando o navegador não suporta backdrop-filter */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .botao.botao-primario {
+    background-color: #0F4C5C;
+    background-image: linear-gradient(160deg, #2A7F8E 0%, #0F4C5C 100%);
+  }
+
+  .botao.botao-secundario {
+    background-color: #FFFFFF;
+    background-image: none;
+  }
 }
 
 /* Foco por teclado */
@@ -157,7 +254,8 @@
 @media (prefers-reduced-motion: reduce) {
   .botao,
   .botao.botao-primario,
-  .botao.botao-secundario {
+  .botao.botao-secundario,
+  .glass-surface {
     transition: none;
     transform: none;
   }

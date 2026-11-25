@@ -4,5 +4,17 @@
   "installCommand": "npm ci --include=dev",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "trailingSlash": true
+  "redirects": [
+    {
+      "source": "/estoque",
+      "destination": "/estoque/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:rota*",
+      "destination": "/api/index?__rota=:rota*"
+    }
+  ]
 }

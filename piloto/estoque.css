@@ -1,75 +1,135 @@
-/* Layout da tela de estoque. Os botões usam os estilos compartilhados em css/botoes.css. */
+/* Layout da tela de estoque na paleta oficial Aço Inox (style-guide.md), sobrepondo os tokens de css/botoes.css. */
 :root {
-  font-family: system-ui, sans-serif;
-  color: #153327;
-  background: #f2f6f3;
+  font-family: Arial, sans-serif;
+  color: #182327;
+  background: #f4f6f7;
   color-scheme: light;
+  --btn-primario-inicio: #2a7f8e;
+  --btn-primario-fim: #0f4c5c;
+  --btn-primario-hover: #0f4c5c;
+  --btn-primario-borda: #0f4c5c;
+  --btn-primario-sombra: 0 2px 6px rgb(15 76 92 / 22%), inset 0 1px 0 rgb(255 255 255 / 22%);
+  --btn-primario-sombra-hover: 0 6px 14px rgb(15 76 92 / 32%), inset 0 1px 0 rgb(255 255 255 / 14%);
+  --btn-secundario-fundo: #ffffff;
+  --btn-secundario-texto: #0f4c5c;
+  --btn-secundario-borda: #2a7f8e;
+  --btn-secundario-fundo-hover: #e6f3f6;
+  --btn-secundario-sombra-hover: 0 2px 8px rgb(15 76 92 / 14%);
+  --btn-foco: #0f4c5c;
 }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; }
 h1, h2, p { margin: 0; }
-h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; letter-spacing: -.04em; }
-h2 { font-size: 1.25rem; letter-spacing: -.025em; }
-.topo { background: #102f22; color: #fff; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.08; letter-spacing: -.03em; color: #0f4c5c; }
+h2 { font-size: 1.25rem; letter-spacing: -.02em; color: #0f4c5c; }
+.topo { background: #0f4c5c; color: #ffffff; }
 .largura { width: min(100% - 2rem, 69rem); margin-inline: auto; }
-.topo-conteudo { min-height: 4.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.topo-conteudo { min-height: 4.75rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; padding-block: .5rem; }
+.acoes-topo { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+/* Identifica visualmente a sessão autenticada na barra superior sem competir com os botões. */
+.conta-topo { padding: .35rem .7rem; border: 1px solid #a8d5dd; border-radius: 999px; background: rgb(255 255 255 / 12%); color: #ffffff; font-size: .875rem; font-weight: 700; max-width: 18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dados-conta { display: grid; gap: .55rem; margin-block: .9rem .4rem; }
+.dados-conta p { overflow-wrap: anywhere; }
 .marca { display: flex; align-items: center; gap: .65rem; font-size: 1.125rem; font-weight: 750; }
-.marca-sinal { display: grid; place-items: center; width: 2.35rem; height: 2.35rem; border: 1px solid #5e9675; border-radius: .7rem; background: #28513b; font-size: .875rem; }
+.marca-sinal { display: grid; place-items: center; width: 2.35rem; height: 2.35rem; border: 1px solid #a8d5dd; border-radius: .7rem; background: #2a7f8e; font-size: .875rem; }
 /* O cabeçalho escuro precisa de um contorno de foco claro. */
-.topo .botao { --btn-foco: #c3f5d5; }
+.topo .botao { --btn-foco: #a8d5dd; }
 main { padding-block: 1.75rem 3rem; }
-.pular { position: fixed; left: 1rem; top: .5rem; padding: .75rem; background: #fff; color: #153327; transform: translateY(-150%); z-index: 1; }
+.pular { position: fixed; left: 1rem; top: .5rem; padding: .75rem; background: #ffffff; color: #0f4c5c; transform: translateY(-150%); z-index: 1; }
 .pular:focus { transform: translateY(0); }
-.aviso-local { display: inline-block; padding: .4rem .65rem; border: 1px solid #bacdc0; border-radius: .5rem; color: #294638; font-size: .875rem; margin-bottom: 1rem; }
-.painel { padding: clamp(1rem, 3vw, 1.6rem); border: 1px solid #d4e1d8; border-radius: 1rem; background: #fff; }
-.entrada { max-width: 29rem; margin: 1rem auto; }
-.entrada h1, #sem-restaurante h1 { font-size: clamp(1.55rem, 4vw, 2rem); }
-.entrada details { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid #d4e1d8; overflow-wrap: anywhere; }
-summary { font-weight: 650; cursor: pointer; }
+.aviso-local { display: inline-block; padding: .4rem .65rem; border: 1px solid #2a7f8e; border-radius: .5rem; color: #0f4c5c; background: #e6f3f6; font-size: .875rem; margin-bottom: 1rem; }
+.painel { padding: clamp(1rem, 3vw, 1.6rem); border: 1px solid #c6dce1; border-radius: 1rem; background: #ffffff; }
+.entrada { max-width: 28rem; margin: 1.5rem auto; padding: clamp(1.4rem, 4vw, 2rem); border-radius: 20px; box-shadow: 0 18px 46px rgb(15 76 92 / 14%); }
+.entrada-marca { text-align: center; }
+.entrada-marca-titulo { color: #0f4c5c; font-size: 1.55rem; font-weight: 700; letter-spacing: -.01em; }
+.entrada-marca-subtitulo { margin-top: .3rem; color: #2a7f8e; font-size: .92rem; }
+.entrada-divisor { width: 100%; height: 1px; margin: 1.15rem 0; border: 0; background: #d2e4e8; }
+.entrada-cabecalho { text-align: center; margin-bottom: 1.15rem; }
+.entrada-rotulo { color: #182327; font-size: .88rem; font-weight: 700; }
+.entrada h1 { margin-top: .35rem; color: #0f4c5c; font-size: clamp(1.7rem, 4vw, 2.05rem); font-weight: 700; }
+.entrada-subtitulo { margin-top: .45rem; color: #182327; font-size: .98rem; }
+#sem-restaurante h1 { font-size: clamp(1.55rem, 4vw, 2rem); }
+/* Botões da entrada herdam a regra global GlassSurface + Aço Inox de css/botoes.css. */
+.entrada .formulario > .botao { width: 100%; justify-self: stretch; min-height: 50px; }
+.campo-senha-estoque { position: relative; display: block; margin-top: .35rem; }
+.campo-senha-estoque input { margin-top: 0; padding-right: 3.6rem; }
+.campo-senha-estoque input::-ms-reveal,
+.campo-senha-estoque input::-ms-clear { display: none; }
+/* Botão compacto de olho na paleta Aço Inox com acabamento GlassSurface. */
+.botao-olho-estoque {
+  position: absolute;
+  top: 50%;
+  right: .4rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  color: #ffffff;
+  background: linear-gradient(160deg, rgb(42 127 142 / 86%) 0%, rgb(15 76 92 / 94%) 100%);
+  border: 1px solid rgb(168 213 221 / 48%);
+  border-radius: 10px;
+  backdrop-filter: blur(11px) saturate(1.35);
+  -webkit-backdrop-filter: blur(11px) saturate(1.35);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 34%), 0 4px 12px rgb(15 76 92 / 24%);
+  cursor: pointer;
+}
+.botao-olho-estoque:hover { background: #0f4c5c; }
+.botao-olho-estoque:focus-visible { outline: 3px solid #0f4c5c; outline-offset: 2px; }
+.acoes-entrada-dupla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-top: .85rem; }
+.acao-link-entrada { width: 100%; min-height: 48px; padding-inline: .75rem; text-decoration: underline; text-underline-offset: 3px; font-size: .94rem; }
+@media (max-width: 440px) {
+  .acoes-entrada-dupla { grid-template-columns: 1fr; }
+}
+.entrada details { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid #d2e4e8; overflow-wrap: anywhere; }
+summary { font-weight: 700; cursor: pointer; }
 .entrada ul { margin: .65rem 0; padding-left: 1.2rem; }
 .entrada li { margin-bottom: .35rem; }
 #sem-restaurante p { margin-top: .7rem; }
 .cabecalho-estoque { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.4rem; }
-.restaurante { color: #4c6556; font-weight: 650; margin-bottom: .35rem; }
+.restaurante { color: #2a7f8e; font-weight: 700; margin-bottom: .35rem; }
 .painel-cadastro { margin-bottom: 1rem; }
 .dialogo-validade { width: min(100% - 2rem, 27rem); color: inherit; }
-.dialogo-validade::backdrop { background: rgb(16 47 34 / 52%); }
+.dialogo-validade::backdrop { background: rgb(15 76 92 / 52%); }
 #lote-em-correcao, #lote-em-abertura { margin-top: .75rem; overflow-wrap: anywhere; }
-#validade-atual, #saldo-fechado { color: #4c6556; }
+#validade-atual, #saldo-fechado { color: #2a7f8e; }
 .formulario { display: grid; gap: .9rem; margin-top: 1rem; }
 .formulario > .botao { justify-self: start; }
 .grade-formulario { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
-.formulario label { display: block; font-size: .875rem; font-weight: 650; }
-.formulario label span { font-weight: 400; color: #4c6556; }
-.formulario input, .formulario select, .formulario textarea { display: block; width: 100%; min-width: 0; min-height: 3rem; margin-top: .35rem; padding: .65rem .7rem; border: 1px solid #80978a; border-radius: .65rem; background: #fff; color: inherit; font: 400 1rem system-ui, sans-serif; }
-.formulario select { appearance: none; padding-right: 2rem; background-image: linear-gradient(45deg, transparent 50%, #355746 50%), linear-gradient(135deg, #355746 50%, transparent 50%); background-position: calc(100% - 15px) center, calc(100% - 10px) center; background-size: 5px 5px; background-repeat: no-repeat; }
-.formulario [aria-invalid="true"] { border-color: #a5221d; }
-.formulario :is(input, select, textarea):focus-visible, summary:focus-visible { outline: 3px solid #1f4d2e; outline-offset: 2px; }
+.formulario label { display: block; font-size: .92rem; font-weight: 700; }
+.formulario label span { font-weight: 400; color: #2a7f8e; }
+.formulario input, .formulario select, .formulario textarea { display: block; width: 100%; min-width: 0; min-height: 3rem; margin-top: .35rem; padding: .65rem .75rem; border: 1.5px solid #2a7f8e; border-radius: .75rem; background: #ffffff; color: #182327; font: 400 1rem Arial, sans-serif; }
+.formulario select { appearance: none; padding-right: 2rem; background-image: linear-gradient(45deg, transparent 50%, #0f4c5c 50%), linear-gradient(135deg, #0f4c5c 50%, transparent 50%); background-position: calc(100% - 15px) center, calc(100% - 10px) center; background-size: 5px 5px; background-repeat: no-repeat; }
+.formulario [aria-invalid="true"] { border-color: #b3261e; }
+.formulario :is(input, select, textarea):focus-visible, summary:focus-visible { outline: 3px solid #0f4c5c; outline-offset: 2px; }
 .acoes { display: flex; flex-wrap: wrap; gap: .6rem; }
-.mensagem { color: #3d594b; }
+.mensagem { color: #0f4c5c; }
 .mensagem:not(:empty) { padding-block: .7rem; }
-.mensagem.erro { color: #a5221d; }
+.mensagem.erro { color: #b3261e; }
 .painel-lista h2 { margin-bottom: .75rem; }
 table { border-collapse: collapse; width: 100%; text-align: left; }
-th, td { padding: .85rem .6rem; border-bottom: 1px solid #dce7df; }
-th { color: #4c6556; font-size: .875rem; }
-td:first-child { font-weight: 650; overflow-wrap: anywhere; }
-td small { display: block; color: #4c6556; font-size: .875rem; font-weight: 400; }
+th, td { padding: .85rem .6rem; border-bottom: 1px solid #d2e4e8; }
+th { color: #0f4c5c; font-size: .875rem; }
+td:first-child { font-weight: 700; overflow-wrap: anywhere; }
+td small { display: block; color: #2a7f8e; font-size: .875rem; font-weight: 400; }
 .rotulo-celula { display: none; }
 tbody tr:last-child td { border-bottom: 0; }
 /* O destaque indica campos sugeridos que ainda precisam de conferência. */
 .assistente { margin-top: 1rem; }
 .assistente summary { cursor: pointer; }
-.formulario .sugestao { border-color: #8e6422; background-color: #fff8e7; }
+.formulario .sugestao { border-color: #2a7f8e; background-color: #e6f3f6; }
 .historico { margin-top: 1rem; }
 .historico ul { padding-inline-start: 1.2rem; }
 .historico li + li { margin-top: .55rem; }
-/* A cor complementa o texto dos estados de validade. */
-.estado { display: inline-block; padding: .3rem .55rem; border-radius: .45rem; background: #e8f2eb; color: #23503a; font-size: .875rem; font-weight: 650; }
-.estado[data-situacao="breve"], .estado[data-situacao="hoje"] { background: #fff1d5; color: #6a490a; }
-.estado[data-situacao="vencido"] { background: #fde7e5; color: #8e211b; }
+/* Estados de validade alinhados à tabela da paleta Aço Inox no style-guide.md. */
+.estado { display: inline-block; padding: .3rem .55rem; border-radius: .45rem; background: #ffffff; border: 1px solid #c6dce1; color: #0f4c5c; font-size: .875rem; font-weight: 700; }
+.estado[data-situacao="breve"] { background: #ffffff; border-color: #2a7f8e; color: #2a7f8e; }
+.estado[data-situacao="hoje"] { background: #a8d5dd; border-color: #2a7f8e; color: #182327; }
+.estado[data-situacao="vencido"] { background: #fdecea; border-color: #b3261e; color: #b3261e; }
 
 /* No celular, cada lote mantém seus dados e ações juntos, sem rolagem horizontal. */
 @media (max-width: 620px) {

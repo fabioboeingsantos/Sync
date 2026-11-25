@@ -132,6 +132,10 @@ section[id] { scroll-margin-top: 5.5rem; }
 .site-nav { display: flex; flex-wrap: wrap; gap: 0 clamp(.8rem, 2.5vw, 2rem); }
 .header-actions { display: inline-flex; align-items: center; gap: .75rem; }
 .header-cta { padding-inline: .9rem; border: 1px solid var(--control-line); border-radius: .35rem; color: var(--foreground); }
+/* Destaca a criação de conta sem confundir a ação principal de login. */
+.header-signup { border-color: #2f6b3b; background: #2f6b3b; color: #fff; }
+.header-signup:hover { border-color: #1f4d2e; background: #1f4d2e; color: #fff; }
+.header-signup:focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
 
 /* Alternador compacto de tema claro/escuro com Sol e Lua ultra-realistas */
 .theme-toggle {
@@ -491,13 +495,28 @@ html[data-theme="light"] .section .login-feedback { color: #9d211a; }
 
 /* A abertura da Sync ocupa a primeira tela descontando o cabeçalho. */
 #inicio.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: calc(100svh - var(--altura-cabecalho-sync, 4.75rem));
   padding-block: clamp(.5rem, 2svh, 1.5rem);
 }
-#inicio .hero-copy { padding-block: 0; }
+/* Camada de fundo ASCII Stream atrás do conteúdo da abertura, sem bloquear leitura nem cliques. */
+.hero-ascii-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  mask-image: radial-gradient(ellipse 88% 82% at 50% 50%, #000 52%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 50%, #000 52%, transparent 100%);
+}
+.ascii-stream-canvas { display: block; width: 100%; height: 100%; }
+#inicio .hero-copy { position: relative; z-index: 1; padding-block: 0; }
 #inicio .scene {
   width: min(100%, max(0px, calc((100svh - var(--altura-cabecalho-sync, 4.75rem) - 3rem) * 1.12)));
   position: relative;
+  z-index: 1;
   justify-self: center;
 }
 #inicio .owl { object-fit: contain; }
@@ -521,36 +540,117 @@ body:has(#inicio.hero) section[id] {
   #inicio .hero-action > p { margin-block: .65rem .85rem; }
 }
 
-/* O diálogo aproxima o acesso do VisionChef ao fluxo de conta usado na página do Cesta do Vale. */
+/* Diálogo de login do VisionChef com estrutura do Cesta do Vale e paleta oficial Aço Inox (style-guide.md). */
 .dialogo-acesso-sync {
-  width: min(100% - 2rem, 34rem);
-  max-width: 34rem;
-  max-height: min(90vh, 52rem);
+  width: min(100% - 1.5rem, 29rem);
+  max-width: 29rem;
+  max-height: min(92vh, 52rem);
   padding: 0;
   overflow: auto;
-  color: var(--texto, #f5f7fb);
-  background: var(--fundo-cartao, #101a2c);
-  border: 1px solid rgba(255, 255, 255, .18);
-  border-radius: 18px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, .45);
+  color: #182327;
+  background: #ffffff;
+  color-scheme: light;
+  border: 0;
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(15, 76, 92, .38);
+  font-family: Arial, sans-serif;
+  --btn-primario-inicio: #2a7f8e;
+  --btn-primario-fim: #0f4c5c;
+  --btn-primario-hover: #0f4c5c;
+  --btn-primario-borda: #0f4c5c;
+  --btn-primario-sombra: inset 0 1px 0 rgba(255, 255, 255, .28), 0 8px 18px rgba(15, 76, 92, .26);
+  --btn-primario-sombra-hover: inset 0 1px 0 rgba(255, 255, 255, .18), 0 10px 22px rgba(15, 76, 92, .34);
+  --btn-secundario-texto: #0f4c5c;
+  --btn-secundario-borda: #2a7f8e;
+  --btn-secundario-fundo-hover: #e6f3f6;
+  --btn-foco: #0f4c5c;
 }
-.dialogo-acesso-sync::backdrop { background: rgba(2, 7, 18, .78); backdrop-filter: blur(5px); }
-.cartao-acesso { position: relative; display: grid; gap: 1rem; padding: clamp(1.25rem, 4vw, 2rem); }
-.cabecalho-acesso { padding-right: 2rem; }
-.cabecalho-acesso h2 { margin: .25rem 0 .5rem; }
-.rotulo-acesso { margin: 0; color: #9fc4ff; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.botao-fechar-acesso { position: absolute; top: .7rem; right: .8rem; width: 2.5rem; height: 2.5rem; color: inherit; background: transparent; border: 0; border-radius: 50%; font-size: 1.7rem; cursor: pointer; }
-.botao-fechar-acesso:focus-visible, .acoes-acesso button:focus-visible { outline: 3px solid var(--btn-foco, #8ec5ff); outline-offset: 3px; }
-.formulario-acesso { display: grid; gap: .85rem; }
-.formulario-acesso label { display: grid; gap: .35rem; font-weight: 650; }
-.formulario-acesso input { width: 100%; min-height: 48px; padding: .7rem .8rem; color: #152033; background: #fff; border: 1px solid #98a5b7; border-radius: 10px; font: inherit; }
-.formulario-acesso input:focus-visible { outline: 3px solid var(--btn-foco, #8ec5ff); outline-offset: 2px; }
-.formulario-acesso .botao { justify-self: stretch; }
-.mensagem-acesso { margin: 0; padding: .8rem; color: #fff; background: rgba(47, 107, 59, .28); border-radius: 10px; }
-.acoes-acesso { display: flex; flex-wrap: wrap; gap: .75rem 1rem; }
-.acoes-acesso button { padding: .35rem 0; color: #b9d3ff; background: transparent; border: 0; text-decoration: underline; cursor: pointer; font: inherit; }
-html[data-theme="light"] .dialogo-acesso-sync { color: #152033; background: #fff; }
-html[data-theme="light"] .rotulo-acesso, html[data-theme="light"] .acoes-acesso button { color: #1f4d2e; }
+.dialogo-acesso-sync::backdrop { background: rgba(10, 34, 42, .74); backdrop-filter: blur(6px); }
+.cartao-acesso { position: relative; display: grid; gap: 1rem; padding: clamp(1.4rem, 4vw, 2rem); }
+.marca-acesso { text-align: center; padding-top: .35rem; }
+.dialogo-acesso-sync .marca-acesso-titulo { margin: 0; color: #0f4c5c; font-size: 1.55rem; font-weight: 700; letter-spacing: -.01em; }
+.dialogo-acesso-sync .marca-acesso-subtitulo { margin: .3rem 0 0; color: #2a7f8e; font-size: .92rem; }
+.divisor-acesso { width: 100%; height: 1px; margin: .15rem 0; border: 0; background: #d2e4e8; }
+.cabecalho-acesso { text-align: center; padding-inline: .25rem; }
+.dialogo-acesso-sync .rotulo-acesso { margin: 0; color: #182327; font-size: .88rem; font-weight: 700; }
+.dialogo-acesso-sync .cabecalho-acesso h2 { margin: .4rem 0 .45rem; color: #0f4c5c; font-size: clamp(1.7rem, 4vw, 2.05rem); font-weight: 700; line-height: 1.15; letter-spacing: -.01em; }
+.dialogo-acesso-sync .subtitulo-acesso { margin: 0; color: #182327; font-size: .98rem; line-height: 1.45; }
+/* Botão compacto de fechar na paleta Aço Inox com o mesmo acabamento de relevo. */
+.botao-fechar-acesso {
+  position: absolute;
+  top: .85rem;
+  right: .85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  color: #ffffff;
+  background: linear-gradient(180deg, #2a7f8e 0%, #0f4c5c 100%);
+  border: 1px solid #0b3a47;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 6px 14px rgba(15, 76, 92, .26);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+.botao-fechar-acesso:hover { background: #0f4c5c; }
+.botao-fechar-acesso:focus-visible { outline: 3px solid #0f4c5c; outline-offset: 2px; }
+.formulario-acesso { display: grid; gap: .95rem; }
+.formulario-acesso label { display: grid; gap: .4rem; color: #182327; font-size: .92rem; font-weight: 700; text-align: left; }
+.formulario-acesso input {
+  width: 100%;
+  min-height: 50px;
+  padding: .75rem .95rem;
+  color: #182327;
+  background: #ffffff;
+  color-scheme: light;
+  border: 1.5px solid #2a7f8e;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 400;
+}
+.formulario-acesso input::placeholder { color: #677d84; }
+.formulario-acesso input:focus-visible { outline: 3px solid #0f4c5c; outline-offset: 2px; border-color: #0f4c5c; }
+/* Botão compacto de olho na paleta Aço Inox encaixado dentro do campo de senha, ocultando o ícone nativo do Edge. */
+.campo-senha-sync { position: relative; display: block; }
+.campo-senha-sync input { padding-right: 3.6rem; }
+.campo-senha-sync input::-ms-reveal,
+.campo-senha-sync input::-ms-clear { display: none; }
+.botao-olho-senha {
+  position: absolute;
+  top: 50%;
+  right: .4rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  color: #ffffff;
+  background: linear-gradient(180deg, #2a7f8e 0%, #0f4c5c 100%);
+  border: 1px solid #0b3a47;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 4px 10px rgba(15, 76, 92, .24);
+  cursor: pointer;
+}
+.botao-olho-senha:hover { background: #0f4c5c; }
+.botao-olho-senha:focus-visible { outline: 3px solid #0f4c5c; outline-offset: 2px; }
+/* Botões do diálogo herdam a regra global GlassSurface + Aço Inox de css/botoes.css. */
+.glass-botao-wrap { width: 100%; }
+.glass-botao-wrap .botao { width: 100%; height: 100%; min-height: 50px; border-radius: inherit; }
+.dialogo-acesso-sync .botao.botao-primario,
+.dialogo-acesso-sync .botao.botao-secundario { width: 100%; min-height: 50px; border-radius: 12px; }
+.mensagem-acesso { margin: 0; padding: .8rem .95rem; color: #182327; background: #e6f3f6; border: 1px solid #2a7f8e; border-radius: 12px; font-size: .92rem; text-align: center; }
+.acoes-acesso { display: grid; gap: .75rem; }
+.acoes-acesso-dupla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.acao-link-acesso { padding-inline: .75rem; text-decoration: underline; text-underline-offset: 3px; font-size: .94rem; }
+@media (max-width: 440px) {
+  .acoes-acesso-dupla { grid-template-columns: 1fr; }
+}
 @media (prefers-reduced-motion: reduce) {
   .dialogo-acesso-sync, .dialogo-acesso-sync * { scroll-behavior: auto; transition: none !important; animation: none !important; }
 }

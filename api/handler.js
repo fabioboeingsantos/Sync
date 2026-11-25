@@ -5,22 +5,25 @@ import nodemailer from 'nodemailer';
 function configuracao() {
   const ambiente = process.env;
   const numero = (nome, padrao, minimo, maximo) => {
-    const valor = Number(ambiente[nome] ?? padrao);
+    const bruto = ambiente[nome]?.trim();
+    const valor = Number(bruto ? bruto : padrao);
     if (!Number.isInteger(valor) || valor < minimo || valor > maximo) throw new Error(`Configuração inválida: ${nome}.`);
     return valor;
   };
   const url = ambiente.VISIONCHEF_SUPABASE_URL?.trim();
   const chavePublica = ambiente.VISIONCHEF_SUPABASE_PUBLISHABLE_KEY?.trim();
-  const jwtSecret = ambiente.JWT_SECRET_KEY ?? '';
+  // Remove espaços ou quebras de linha acidentais nas bordas sem alterar o segredo interno.
+  const jwtSecret = (ambiente.JWT_SECRET_KEY ?? '').trim();
   if (!url?.startsWith('https://') || !chavePublica?.startsWith('sb_publishable_') || jwtSecret.length < 32) {
     throw new Error('Configuração do backend ausente ou inválida.');
   }
-  if ((ambiente.JWT_ALGORITHM ?? 'HS256') !== 'HS256') throw new Error('O backend aceita somente JWT HS256.');
+  const algoritmo = ambiente.JWT_ALGORITHM?.trim() || 'HS256';
+  if (algoritmo !== 'HS256') throw new Error('O backend aceita somente JWT HS256.');
   return {
     url: url.replace(/\/$/, ''), chavePublica, jwtSecret,
     expiraMinutos: numero('JWT_EXPIRATION_MINUTES', 1440, 15, 10080),
-    nomeCookie: ambiente.JWT_COOKIE_NAME ?? 'access_token',
-    cookieSeguro: ambiente.JWT_COOKIE_SECURE === 'true',
+    nomeCookie: ambiente.JWT_COOKIE_NAME?.trim() || 'access_token',
+    cookieSeguro: ambiente.JWT_COOKIE_SECURE?.trim().toLowerCase() === 'true',
     limiteLogin: numero('AUTH_LOGIN_LIMIT', 5, 1, 100),
     limiteCadastro: numero('AUTH_SIGNUP_LIMIT', 3, 1, 100),
     // Mantém limite próprio para evitar envio abusivo do e-mail de confirmação.
@@ -30,10 +33,11 @@ function configuracao() {
     // Credenciais SMTP são privadas e usadas somente pela função Node da Vercel.
     smtpHost: ambiente.SMTP_HOST?.trim(),
     smtpPorta: numero('SMTP_PORT', 587, 1, 65535),
-    smtpSeguranca: ambiente.SMTP_SECURITY ?? 'starttls',
+    // Normaliza caixa e espaços para aceitar configurações como "SSL" ou "ssl" na Vercel.
+    smtpSeguranca: (ambiente.SMTP_SECURITY?.trim() || 'starttls').toLowerCase(),
     smtpRemetente: ambiente.SMTP_FROM?.trim(),
     smtpUsuario: ambiente.SMTP_USER?.trim(),
-    smtpSenha: ambiente.SMTP_PASSWORD,
+    smtpSenha: ambiente.SMTP_PASSWORD?.trim(),
   };
 }
 
@@ -167,13 +171,21 @@ async function enviarConfirmacao(cfg, destinatario, token, origem) {
     socketTimeout: 15000,
   });
   const link = `${origem}/#confirmar-email=${token}`;
-  await transporter.sendMail({
+  // Envia versão em texto e HTML com identidade VisionChef em português claro e acolhedor.
+  const resultado = await transporter.sendMail({
     from: cfg.smtpRemetente,
     to: destinatario,
-    subject: 'Confirme seu e-mail do VisionChef',
-    text: `Você solicitou a confirmação deste endereço para sua conta VisionChef.\n\n${link}\n\nO link expira em 24 horas e pode ser usado uma vez. Se não fez esta solicitação, ignore esta mensagem.`,
-    html: `<p>Você solicitou a confirmação deste endereço para sua conta VisionChef.</p><p><a href="${link}">Confirmar e-mail</a></p><p>O link expira em 24 horas e pode ser usado uma vez. Se não fez esta solicitação, ignore esta mensagem.</p>`,
+    subject: 'Confirme seu e-mail no VisionChef',
+    text: `Olá!\n\nRecebemos seu pedido para confirmar este e-mail na sua conta do VisionChef.\n\nAcesse o link abaixo para concluir:\n${link}\n\nEsse link vale por 24 horas e pode ser usado uma única vez. Se não foi você quem pediu, pode ignorar esta mensagem com tranquilidade.\n\nEquipe VisionChef · Sync`,
+    html: `<!doctype html><html lang="pt-BR"><body style="margin:0;padding:24px;background:#f4f6f7;font-family:Arial,sans-serif;color:#182327;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #2a7f8e;border-radius:14px;overflow:hidden;"><tr><td style="background:#0f4c5c;padding:20px 24px;color:#ffffff;"><p style="margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a8d5dd;font-weight:700;">Sync · VisionChef</p><h1 style="margin:6px 0 0;font-size:20px;line-height:1.25;">Confirme seu e-mail</h1></td></tr><tr><td style="padding:24px;"><p style="margin:0 0 14px;font-size:15px;line-height:1.55;">Olá! Tudo bem?</p><p style="margin:0 0 20px;font-size:15px;line-height:1.55;">Recebemos o seu pedido para confirmar este endereço na sua conta do <strong>VisionChef</strong>. É só clicar no botão abaixo:</p><p style="margin:0 0 22px;"><a href="${link}" style="display:inline-block;padding:13px 22px;background:#0f4c5c;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">Confirmar meu e-mail</a></p><p style="margin:0 0 12px;font-size:13px;line-height:1.5;color:#2a7f8e;">Esse link vale por 24 horas e pode ser usado uma única vez. Se você não fez esse pedido, pode ignorar esta mensagem sem problemas.</p><p style="margin:0;font-size:12px;line-height:1.5;color:#2a7f8e;word-break:break-all;">Se o botão não abrir, copie este endereço no navegador:<br>${link}</p></td></tr></table></body></html>`,
   });
+  const aceitos = Array.isArray(resultado?.accepted) ? resultado.accepted.length : 0;
+  const rejeitados = Array.isArray(resultado?.rejected) ? resultado.rejected.length : 0;
+  // Só considera o envio aceito quando o servidor SMTP confirma pelo menos um destinatário sem rejeição.
+  if (aceitos < 1 || rejeitados > 0) {
+    throw Object.assign(new Error('Servidor SMTP não aceitou o destinatário.'), { status: 503, code: 'ESMTP_REJECTED' });
+  }
+  return { aceitos, rejeitados };
 }
 
 // Extrai a sessão do cookie e atualiza tokens Supabase perto do vencimento.
@@ -210,9 +222,18 @@ function erroBanco(remoto) {
 // Atende login, cadastro, sessão e dados do estoque sem entregar tokens Supabase ao navegador.
 export async function tratarApi(requisicao) {
   let cfg;
-  try { cfg = configuracao(); } catch { return resposta({ erro: 'Backend não configurado.' }, 503); }
+  try { cfg = configuracao(); } catch (erro) {
+    // Registra apenas o motivo técnico da validação, sem valores de variáveis ou segredos.
+    console.error('Configuração inválida da API:', erro?.message ?? 'desconhecida');
+    return resposta({ erro: 'Backend não configurado.' }, 503);
+  }
   const url = new URL(requisicao.url);
-  const caminho = url.pathname.replace(/^\/api\/?/, '');
+  // Aceita a rota direta (com ou sem barra final) e o rewrite da Vercel para /api/index?__rota=...
+  const rotaDireta = url.pathname.replace(/^\/api\/?/, '').replace(/\/+$/, '');
+  const rotaRewrite = (url.searchParams.get('__rota') ?? '').replace(/^\/+|\/+$/g, '');
+  const caminho = (!rotaDireta || rotaDireta === 'index' || rotaDireta === 'index.js') && rotaRewrite
+    ? rotaRewrite
+    : rotaDireta;
   const origem = requisicao.headers.get('origin');
   if (requisicao.method !== 'GET' && requisicao.method !== 'HEAD' && origem !== url.origin) {
     return resposta({ erro: 'Origem não autorizada.' }, 403);
@@ -287,9 +308,26 @@ export async function tratarApi(requisicao) {
       const chave = chaveLimite(ip, 'login', email);
       const limite = await controlarLimite(cfg, 'login', chave);
       if (!limite.permitido) return resposta({ erro: 'Muitas solicitações. Aguarde e tente novamente.' }, 429);
+      // Confere no servidor se o e-mail está cadastrado para dar retorno claro ao usuário (protegido pelo limite acima).
+      let verificadoExiste = null;
+      try {
+        const consulta = await verificacaoEmail(cfg, { acao: 'existe', email });
+        verificadoExiste = Boolean(consulta?.existe);
+      } catch (erro) {
+        // Mantém compatibilidade caso a Edge Function ainda não tenha sido atualizada no Supabase.
+        console.warn('Verificação prévia de conta na recuperação indisponível:', { status: erro?.status ?? 503 });
+      }
+      if (verificadoExiste === false) {
+        return resposta({ erro: 'Nenhuma conta foi encontrada para esse e-mail.' }, 404);
+      }
       const remoto = await supabase(cfg, `/auth/v1/recover?redirect_to=${encodeURIComponent(url.origin)}`, { metodo: 'POST', corpo: { email } });
       if (!remoto.ok) return resposta({ erro: 'Não foi possível solicitar a recuperação agora.' }, remoto.status >= 500 ? 503 : remoto.status);
-      return resposta({ enviada: true, mensagem: 'Se houver uma conta para esse e-mail, enviaremos um link de recuperação.' });
+      return resposta({
+        enviada: true,
+        mensagem: verificadoExiste === true
+          ? 'Enviamos um link de recuperação para o seu e-mail. A entrega pode levar alguns minutos.'
+          : 'Se houver uma conta para esse e-mail, enviaremos um link de recuperação.',
+      });
     }
 
     if (caminho === 'auth/update-password' && requisicao.method === 'POST') {
@@ -340,8 +378,14 @@ export async function tratarApi(requisicao) {
       ]);
       if (!usuario.ok) return resposta({ erro: 'Entre novamente para continuar.' }, 401, { ...cookieAtualizado, 'Set-Cookie': cookieRemovido(cfg, requisicao) });
       if (!restaurantes.ok) return erroBanco(restaurantes);
-      const confirmacao = await verificacaoEmail(cfg, { acao: 'estado', access_token: token });
-      return resposta({ user: usuario.dados, restaurantes: restaurantes.dados, email_verificado_app: confirmacao.verificado, email_verificado_em: confirmacao.verificado_em }, 200, cookieAtualizado);
+      // Mantém a sessão do usuário disponível mesmo se a consulta auxiliar de confirmação falhar temporariamente.
+      let confirmacao = { verificado: false, verificado_em: null };
+      try {
+        confirmacao = await verificacaoEmail(cfg, { acao: 'estado', access_token: token });
+      } catch (erro) {
+        console.error('Falha ao consultar estado de confirmação de e-mail:', { status: erro?.status ?? 503 });
+      }
+      return resposta({ user: usuario.dados, restaurantes: restaurantes.dados, email_verificado_app: Boolean(confirmacao?.verificado), email_verificado_em: confirmacao?.verificado_em ?? null }, 200, cookieAtualizado);
     }
 
     if (caminho === 'auth/request-email-verification' && requisicao.method === 'POST') {
@@ -360,9 +404,17 @@ export async function tratarApi(requisicao) {
       });
       if (!emitido.emitido) return resposta({ enviado: false, verificado: true, mensagem: 'Este endereço já foi confirmado.' }, 200, cookieAtualizado);
       try {
-        await enviarConfirmacao(cfg, usuario.dados.email, tokenEmail, url.origin);
-      } catch {
-        // Não registra senha, credencial SMTP, endereço do usuário nem conteúdo da mensagem.
+        const envio = await enviarConfirmacao(cfg, usuario.dados.email, tokenEmail, url.origin);
+        // Registra apenas contadores de aceitação SMTP, sem e-mail, token ou credenciais.
+        console.info('Confirmação opcional aceita pelo SMTP:', envio);
+      } catch (erro) {
+        // Registra apenas códigos técnicos seguros, sem senha, credencial SMTP, endereço do usuário ou conteúdo.
+        console.error('Falha no envio SMTP da confirmação opcional:', {
+          status: erro?.status ?? null,
+          code: erro?.code ?? null,
+          responseCode: erro?.responseCode ?? null,
+          command: erro?.command ?? null,
+        });
         return resposta({ erro: 'Não foi possível enviar a confirmação agora. Tente novamente mais tarde.' }, 503, cookieAtualizado);
       }
       return resposta({ enviado: true, mensagem: 'Enviamos um link para o e-mail da sua conta.' }, 200, cookieAtualizado);
@@ -410,6 +462,8 @@ export async function tratarApi(requisicao) {
   } catch (erro) {
     if (erro.status === 413) return resposta({ erro: 'Dados enviados excedem o limite permitido.' }, 413);
     if (erro instanceof SyntaxError) return resposta({ erro: 'Envie dados em formato JSON válido.' }, 400);
+    // Registra apenas rota e status técnico interno para diagnóstico, sem expor dados do usuário ou segredos.
+    console.error('Erro interno na API:', { caminho, status: erro?.status ?? 503 });
     return resposta({ erro: 'O servidor não conseguiu concluir a solicitação.' }, 503);
   }
 }

@@ -1,17 +1,81 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { api } from './api.js';
+import AsciiStream from './components/AsciiStream.jsx';
+import GlassSurface from './components/GlassSurface.jsx';
+
+// Encapsula botões React em GlassSurface preservando a semântica nativa de <button>, submit e aria-busy.
+function BotaoGlass({ className = '', children, ...props }) {
+  return (
+    <GlassSurface
+      width="100%"
+      height={50}
+      borderRadius={12}
+      distortionScale={-180}
+      displace={0.5}
+      backgroundOpacity={0.1}
+      blur={11}
+      saturation={1.25}
+      className="glass-botao-wrap"
+    >
+      <button {...props} className={`botao ${className}`.trim()}>
+        {children}
+      </button>
+    </GlassSurface>
+  );
+}
+
+// Exibe o campo de senha com botão compacto de olho em alto contraste dentro do próprio input.
+function CampoSenha({ rotulo, visivel, aoAlternar, ...props }) {
+  return (
+    <label>
+      {rotulo}
+      <span className="campo-senha-sync">
+        <input {...props} type={visivel ? 'text' : 'password'} />
+        <button
+          className="botao-olho-senha"
+          type="button"
+          onClick={aoAlternar}
+          aria-label={visivel ? 'Ocultar senha' : 'Mostrar senha'}
+          aria-pressed={visivel}
+        >
+          {visivel ? (
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C7 20 2.73 16.89 1 12c.73-2.08 2.02-3.88 3.69-5.22" />
+              <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c5 0 9.27 3.11 11 8a11.05 11.05 0 0 1-2.16 3.19" />
+              <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+              <path d="M1 1l22 22" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          )}
+        </button>
+      </span>
+    </label>
+  );
+}
 
 // Este módulo conecta a landing da Sync aos fluxos de sessão, cadastro e recuperação do VisionChef.
 function AcessoVisionChef({ destino }) {
-  const hash = new URLSearchParams(window.location.hash.slice(1));
+  const hashBruto = window.location.hash;
+  const hash = new URLSearchParams(hashBruto.slice(1));
   const tokenConfirmacao = hash.get('confirmar-email') ?? '';
+  const modoInicialHash = tokenConfirmacao ? 'confirmar'
+    : hash.get('type') === 'recovery' ? 'redefinir'
+      : hashBruto === '#cadastro' ? 'cadastro'
+        : hashBruto === '#recuperar' ? 'recuperar'
+          : 'entrar';
   const [temAcesso, definirAcesso] = useState(false);
   const [enviando, definirEnvio] = useState(false);
   const [mensagem, definirMensagem] = useState('');
   const [conta, definirConta] = useState(null);
-  const [modo, definirModo] = useState(tokenConfirmacao ? 'confirmar' : hash.get('type') === 'recovery' ? 'redefinir' : 'entrar');
-  const [dialogoAberto, definirDialogoAberto] = useState(Boolean(tokenConfirmacao) || hash.get('type') === 'recovery');
+  const [modo, definirModo] = useState(modoInicialHash);
+  const [dialogoAberto, definirDialogoAberto] = useState(
+    Boolean(tokenConfirmacao) || hash.get('type') === 'recovery' || hashBruto === '#cadastro' || hashBruto === '#recuperar',
+  );
   const [senhaVisivel, definirSenhaVisivel] = useState(false);
   const envioEmCurso = useRef(false);
   const formulario = useRef(null);
@@ -20,13 +84,14 @@ function AcessoVisionChef({ destino }) {
   useEffect(() => {
     let paginaAtiva = true;
     (async () => {
-      // A sessão libera o estoque quando há vínculo; sem vínculo, mantém a pessoa na área da conta.
+      // A sessão libera o estoque quando há vínculo; sem vínculo ou via #minha-conta, abre a área da conta.
       const sessao = api.sessao ? await api.sessao() : null;
       const restaurantes = sessao?.restaurantes ?? await api.restaurantes();
       if (!paginaAtiva || envioEmCurso.current || formulario.current?.contains(document.activeElement)) return;
+      if (sessao?.user) definirConta(sessao);
       if (restaurantes?.length) definirAcesso(true);
-      if (sessao?.user && !restaurantes?.length) {
-        definirConta(sessao);
+      const abrirConta = window.location.hash === '#minha-conta';
+      if (sessao?.user && (!restaurantes?.length || abrirConta)) {
         definirModo('conta');
         definirDialogoAberto(true);
       }
@@ -50,7 +115,8 @@ function AcessoVisionChef({ destino }) {
     const abrir = (evento) => {
       evento.preventDefault();
       definirMensagem('');
-      definirModo('entrar');
+      // Cada CTA pode abrir o mesmo diálogo diretamente no fluxo de entrada ou cadastro.
+      definirModo(evento.currentTarget.dataset.modoAcesso === 'cadastro' ? 'cadastro' : 'entrar');
       definirDialogoAberto(true);
     };
     links.forEach((link) => link.addEventListener('click', abrir));
@@ -61,7 +127,10 @@ function AcessoVisionChef({ destino }) {
     // O elemento nativo fornece foco contido, Escape e semântica de diálogo acessível.
     if (!dialogo.current) return;
     if (dialogoAberto && !dialogo.current.open) dialogo.current.showModal();
-    if (!dialogoAberto && dialogo.current.open) dialogo.current.close();
+    if (!dialogoAberto) {
+      definirSenhaVisivel(false);
+      if (dialogo.current.open) dialogo.current.close();
+    }
   }, [dialogoAberto]);
 
   // Mantém a sessão ativa e encaminha ao estoque somente quando existe vínculo autorizado.
@@ -197,7 +266,7 @@ function AcessoVisionChef({ destino }) {
     }
   }
 
-  // Solicita uma recuperação com resposta genérica para reduzir enumeração de contas.
+  // Solicita recuperação e exibe retorno claro quando a conta existe ou não está cadastrada.
   async function recuperarSenha(evento) {
     evento.preventDefault();
     if (envioEmCurso.current) return;
@@ -211,11 +280,15 @@ function AcessoVisionChef({ destino }) {
     definirEnvio(true);
     definirMensagem('');
     try {
-      await api.recuperarSenha(email);
-      definirMensagem('Se houver uma conta para esse e-mail, enviaremos um link de recuperação.');
+      const resultado = await api.recuperarSenha(email);
+      definirMensagem(resultado?.mensagem ?? 'Enviamos um link de recuperação para o seu e-mail.');
       definirModo('resultado');
-    } catch {
-      definirMensagem('Não foi possível solicitar a recuperação agora. Tente novamente mais tarde.');
+    } catch (erro) {
+      if (erro.status === 404 || erro.status === 400 || erro.status === 429) {
+        definirMensagem(erro.message);
+      } else {
+        definirMensagem('Não foi possível solicitar a recuperação agora. Tente novamente mais tarde.');
+      }
     } finally {
       envioEmCurso.current = false;
       definirEnvio(false);
@@ -266,60 +339,71 @@ function AcessoVisionChef({ destino }) {
         onCancel={(evento) => { evento.preventDefault(); definirDialogoAberto(false); }}
         onClick={(evento) => { if (evento.target === dialogo.current) definirDialogoAberto(false); }}>
         <section className="cartao-acesso">
+          {/* Botão compacto de fechar no padrão visual verde arredondado do Cesta do Vale. */}
           <button className="botao-fechar-acesso" type="button" aria-label="Fechar acesso"
             onClick={() => definirDialogoAberto(false)}>×</button>
+          <div className="marca-acesso">
+            <p className="marca-acesso-titulo">VisionChef</p>
+            <p className="marca-acesso-subtitulo">Acesso da equipe e do restaurante</p>
+          </div>
+          <hr className="divisor-acesso" />
           <header className="cabecalho-acesso">
-            <p className="rotulo-acesso">Sync · VisionChef</p>
+            <p className="rotulo-acesso">Acesso ao sistema</p>
             <h2 id="titulo-acesso">{modo === 'entrar' ? 'Entre na sua conta' : modo === 'cadastro' ? 'Crie sua conta' : modo === 'recuperar' ? 'Recupere sua senha' : modo === 'redefinir' ? 'Escolha uma nova senha' : modo === 'conta' ? 'Minha conta' : modo === 'confirmar' ? 'Confirme seu e-mail' : 'Acesso ao VisionChef'}</h2>
-            <p>{modo === 'cadastro' ? 'A confirmação do e-mail é opcional. O acesso ao estoque depende do vínculo do dono do restaurante.' : modo === 'conta' ? 'Gerencie a confirmação facultativa do seu endereço. Isso não concede acesso ao estoque.' : modo === 'confirmar' ? 'Abra esta página a partir do link enviado e confirme abaixo para concluir.' : 'A demonstração pública continua disponível na página.'}</p>
+            <p className="subtitulo-acesso">{modo === 'entrar' ? 'Acesse com seu usuário ou e-mail e sua senha.' : modo === 'cadastro' ? 'A confirmação do e-mail é opcional. O acesso ao estoque depende do vínculo do dono do restaurante.' : modo === 'recuperar' ? 'Informe o e-mail da sua conta para receber o link de redefinição.' : modo === 'conta' ? 'Gerencie a confirmação facultativa do seu endereço. Isso não concede acesso ao estoque.' : modo === 'confirmar' ? 'Abra esta página a partir do link enviado e confirme abaixo para concluir.' : 'A demonstração pública continua disponível na página.'}</p>
           </header>
           {modo === 'entrar' && <form className="formulario-acesso" ref={formulario} onSubmit={entrar}>
-            <label>Usuário ou e-mail<input name="identificador" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required /></label>
-            <label>Senha<input name="senha" type={senhaVisivel ? 'text' : 'password'} autoComplete="current-password" required /></label>
-            <button className="botao botao-secundario" type="button" onClick={() => definirSenhaVisivel(!senhaVisivel)}>{senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}</button>
-            <button className="botao botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Validando…' : 'Entrar'}</button>
+            <label>Usuário ou e-mail<input name="identificador" type="text" placeholder="Digite seu usuário ou e-mail" autoComplete="username" autoCapitalize="none" spellCheck={false} required /></label>
+            <CampoSenha rotulo="Senha" name="senha" placeholder="Digite sua senha" autoComplete="current-password" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Validando…' : 'Entrar'}</BotaoGlass>
           </form>}
           {modo === 'cadastro' && <form className="formulario-acesso" onSubmit={criarConta}>
-            <label>Nome de usuário<input name="nomeUsuario" type="text" autoComplete="username" minLength="3" maxLength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}" required /></label>
-            <label>E-mail<input name="email" type="email" autoComplete="email" maxLength="254" required /></label>
-            <label>Senha (mínimo de 15 caracteres)<input name="senha" type={senhaVisivel ? 'text' : 'password'} autoComplete="new-password" minLength="15" maxLength="128" required /></label>
-            <label>Confirmar senha<input name="confirmarSenha" type={senhaVisivel ? 'text' : 'password'} autoComplete="new-password" minLength="15" maxLength="128" required /></label>
-            <button className="botao botao-secundario" type="button" onClick={() => definirSenhaVisivel(!senhaVisivel)}>{senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}</button>
-            <button className="botao botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Criando…' : 'Criar conta'}</button>
+            <label>Nome de usuário<input name="nomeUsuario" type="text" placeholder="Digite seu nome de usuário" autoComplete="username" minLength="3" maxLength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}" required /></label>
+            <label>E-mail<input name="email" type="email" placeholder="Digite seu e-mail" autoComplete="email" maxLength="254" required /></label>
+            <CampoSenha rotulo="Senha (mínimo de 15 caracteres)" name="senha" placeholder="Crie sua senha" autoComplete="new-password" minLength="15" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Confirmar senha" name="confirmarSenha" placeholder="Repita sua senha" autoComplete="new-password" minLength="15" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Criando…' : 'Criar conta'}</BotaoGlass>
           </form>}
           {modo === 'recuperar' && <form className="formulario-acesso" onSubmit={recuperarSenha}>
-            <label>E-mail da conta<input name="email" type="email" autoComplete="email" required /></label>
-            <button className="botao botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Enviar link de recuperação</button>
+            <label>E-mail da conta<input name="email" type="email" placeholder="Digite o e-mail da sua conta" autoComplete="email" required /></label>
+            <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Enviar link de recuperação</BotaoGlass>
           </form>}
           {modo === 'redefinir' && <form className="formulario-acesso" onSubmit={redefinirSenha}>
-            <label>Nova senha<input name="senha" type="password" autoComplete="new-password" minLength="15" maxLength="128" required /></label>
-            <label>Confirmar nova senha<input name="confirmarSenha" type="password" autoComplete="new-password" minLength="15" maxLength="128" required /></label>
-            <button className="botao botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Salvar nova senha</button>
+            <CampoSenha rotulo="Nova senha" name="senha" placeholder="Digite a nova senha" autoComplete="new-password" minLength="15" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Confirmar nova senha" name="confirmarSenha" placeholder="Repita a nova senha" autoComplete="new-password" minLength="15" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Salvar nova senha</BotaoGlass>
           </form>}
           {/* A confirmação facultativa só aparece após autenticação, dentro da conta. */}
           {modo === 'conta' && <section className="formulario-acesso" aria-label="Dados da conta">
             <p><strong>E-mail:</strong> {conta?.user?.email ?? 'Não disponível'}</p>
             <p><strong>Confirmação:</strong> {conta?.email_verificado_app ? 'Confirmado' : 'Opcional · ainda não solicitado'}</p>
-            {!conta?.email_verificado_app && <button className="botao botao-primario" type="button" disabled={enviando} aria-busy={enviando || undefined} onClick={solicitarConfirmacaoEmail}>{enviando ? 'Enviando…' : 'Solicitar confirmação de e-mail'}</button>}
+            {!conta?.email_verificado_app && <BotaoGlass className="botao-primario" type="button" disabled={enviando} aria-busy={enviando || undefined} onClick={solicitarConfirmacaoEmail}>{enviando ? 'Enviando…' : 'Solicitar confirmação de e-mail'}</BotaoGlass>}
             {!conta?.restaurantes?.length && <p>Sua conta está ativa, mas o estoque ficará indisponível até o dono vincular você ao restaurante.</p>}
-            <button className="botao botao-secundario" type="button" onClick={sairDaConta}>Sair da conta</button>
+            <BotaoGlass className="botao-secundario" type="button" onClick={sairDaConta}>Sair da conta</BotaoGlass>
           </section>}
           {modo === 'confirmar' && <form className="formulario-acesso" onSubmit={confirmarEmail}>
-            <button className="botao botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Confirmando…' : 'Confirmar e-mail'}</button>
+            <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Confirmando…' : 'Confirmar e-mail'}</BotaoGlass>
           </form>}
           {modo === 'resultado' && <p className="mensagem-acesso" role="status">{mensagem}</p>}
           {mensagem && modo !== 'resultado' && <p className="mensagem-acesso" role="alert">{mensagem}</p>}
-          <nav className="acoes-acesso" aria-label="Ações de acesso">
-            {modo === 'entrar' && <button type="button" onClick={() => { definirMensagem(''); definirModo('recuperar'); }}>Esqueci minha senha</button>}
-            {modo !== 'entrar' && modo !== 'conta' && <button type="button" onClick={() => { definirMensagem(''); definirModo('entrar'); }}>Voltar para entrar</button>}
-          </nav>
+          {modo === 'entrar' && <nav className="acoes-acesso acoes-acesso-dupla" aria-label="Ações de acesso">
+            {/* Mantém o mesmo arranjo de botões lado a lado com GlassSurface, sem opção de reenvio de confirmação. */}
+            <BotaoGlass className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('cadastro'); }}>Criar conta</BotaoGlass>
+            <BotaoGlass className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('recuperar'); }}>Esqueci minha senha</BotaoGlass>
+          </nav>}
+          {modo !== 'entrar' && modo !== 'conta' && <nav className="acoes-acesso" aria-label="Ações de acesso">
+            <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('entrar'); }}>Voltar para entrar</BotaoGlass>
+          </nav>}
         </section>
       </dialog>
     </>
   );
 }
 
-// O build monta o React no espaço de acesso e preserva os links alternativos da landing.
+// O build monta o React no espaço de acesso e no fundo decorativo da abertura da landing.
 const elemento = document.getElementById('acesso-visionchef');
 const destino = elemento?.querySelector('#acesso-estoque')?.href ?? new URL('estoque/', window.location.href).href;
 if (elemento) createRoot(elemento).render(<AcessoVisionChef destino={destino} />);
+
+const fundoAscii = document.getElementById('hero-ascii-stream');
+if (fundoAscii) createRoot(fundoAscii).render(<AsciiStream />);

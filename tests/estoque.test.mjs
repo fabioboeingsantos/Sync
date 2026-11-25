@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -103,7 +103,7 @@ test('dono e funcionário compartilham o estoque em ordem de validade, incluindo
   assert.equal(restaurantes[0].id, restaurantePiloto);
   assert.deepEqual(await (await chamada('restaurantes', { cookie: funcionário })).json(), restaurantes);
   const identificadorInexistente = await chamada('entrar', { dados: { identificador: 'cozinha.inexistente', senha: senhaLocal } });
-  const senhaIncorreta = await chamada('entrar', { dados: { identificador: 'funcionário.piloto', senha: 'senha-incorreta' } });
+  const senhaIncorreta = await chamada('entrar', { dados: { identificador: 'funcionario.piloto', senha: 'senha-incorreta' } });
   assert.equal(identificadorInexistente.status, 401);
   assert.equal(senhaIncorreta.status, 401);
   assert.deepEqual(await identificadorInexistente.json(), await senhaIncorreta.json());
@@ -213,9 +213,11 @@ test('nomes de usuário são únicos entre restaurantes e a consulta de e-mail �
 
 test('a função de login por usuário resolve a conta no servidor e retorna apenas a sessão', async () => {
   const origem = 'https://visionchef.test';
+  const chaveAssinatura = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
   const requisicoes = [];
   const handler = criarLoginUsuario({
     url: 'https://banco.test', chavePublica: 'sb_publishable_teste', chaveServidor: 'sb_secret_teste',
+    chaveAssinatura,
     origens: new Set([origem]),
     // Simula as respostas do serviço de autenticação sem alcançar um projeto Supabase real.
     solicitar: async (url, opcoes) => {
@@ -225,17 +227,37 @@ test('a função de login por usuário resolve a conta no servidor e retorna ape
         return Response.json(dados.p_nome_usuario === 'dono.piloto' ? 'dono@piloto.test' : null);
       }
       if (dados.email === 'dono@piloto.test' && dados.password === senhaLocal) {
-        return Response.json({ access_token: 'token-teste', refresh_token: 'renovacao-teste', user: { email: dados.email } });
+        return Response.json({
+          access_token: 'token-teste',
+          refresh_token: 'renovacao-teste',
+          expires_at: 2000000000,
+          expires_in: 3600,
+          user: { id: '20000000-0000-4000-8000-000000000001', email: dados.email },
+        });
       }
       return Response.json({ message: 'Invalid login credentials' }, { status: 400 });
     },
   });
-  const enviar = (nome, senha, origemDoPedido = origem) => handler(new Request('https://banco.test/functions/v1/login-usuario', {
-    method: 'POST', headers: { Origin: origemDoPedido }, body: JSON.stringify({ nome, senha }),
-  }));
+  // Assina cada chamada interna com HMAC-SHA256 da mesma forma que o backend da Vercel.
+  const enviar = (nome, senha, origemDoPedido = origem, assinaturaCustom = null) => {
+    const corpo = JSON.stringify({ nome, senha });
+    const horario = String(Math.floor(Date.now() / 1000));
+    const assinatura = assinaturaCustom ?? createHmac('sha256', chaveAssinatura).update(`${horario}.${corpo}`).digest('hex');
+    return handler(new Request('https://banco.test/functions/v1/login-usuario', {
+      method: 'POST',
+      headers: { Origin: origemDoPedido, 'x-vc-timestamp': horario, 'x-vc-signature': assinatura },
+      body: corpo,
+    }));
+  };
   const valida = await enviar(' DONO.Piloto ', senhaLocal);
   assert.equal(valida.status, 200);
-  assert.deepEqual(await valida.json(), { access_token: 'token-teste', refresh_token: 'renovacao-teste' });
+  assert.deepEqual(await valida.json(), {
+    access_token: 'token-teste',
+    refresh_token: 'renovacao-teste',
+    expires_at: 2000000000,
+    expires_in: 3600,
+    user: { id: '20000000-0000-4000-8000-000000000001', email: 'dono@piloto.test' },
+  });
   assert.equal(valida.headers.get('Cache-Control'), 'no-store');
   assert.deepEqual(requisicoes.map(({ apikey }) => apikey), ['sb_secret_teste', 'sb_publishable_teste']);
   assert.deepEqual(requisicoes[0].dados, { p_nome_usuario: 'dono.piloto' });
@@ -245,6 +267,8 @@ test('a função de login por usuário resolve a conta no servidor e retorna ape
   assert.equal(nomeNaoCadastrado.status, 401);
   assert.deepEqual(await senhaIncorreta.json(), await nomeNaoCadastrado.json());
   assert.equal((await enviar('dono.piloto', senhaLocal, 'https://nao-autorizado.test')).status, 403);
+  // Chamadas sem assinatura HMAC válida precisam ser recusadas antes de consultar o banco.
+  assert.equal((await enviar('dono.piloto', senhaLocal, origem, '0'.repeat(64))).status, 401);
 });
 
 test('o banco local da primeira versão é atualizado sem perder os lotes existentes', async (t) => {
@@ -287,7 +311,7 @@ test('o banco local da primeira versão é atualizado sem perder os lotes existe
 
 test('abertura mantém o saldo total, o código do lote e a menor das duas validades', async () => {
   const dono = contas.get('dono@piloto.test').id;
-  const cozinha = contas.get('funcionário@piloto.test').id;
+  const cozinha = contas.get('funcionario@piloto.test').id;
   const outro = contas.get('dono@outro.test').id;
   // Usa o mesmo dia civil do restaurante para o cenário continuar válido com o passar do tempo.
   const { rows: [datas] } = await banco.query(`

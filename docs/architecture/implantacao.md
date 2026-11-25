@@ -49,7 +49,7 @@ A função de login por nome recebe somente chamadas com HMAC do backend; a fun�
 
 ## 3. Build e deploy
 
-O projeto Vercel usa a raiz do repositório, framework `Other`, comando `npm run build` e saída `dist/`. As rotas `api/` são funções Node runtime. O build gera arquivos estáticos e não precisa das variáveis privadas; as funções exigem variáveis definidas no runtime da Vercel.
+O projeto Vercel usa a raiz do repositório, framework `Other`, comando `npm run build` e saída `dist/`. O `vercel.json` redireciona `/estoque` para `/estoque/` e reescreve todas as rotas `/api/:rota*` para a função Node única em `api/index.js` (com query `__rota`), evitando `404` e redirecionamentos `308` em chamadas `POST`. O build gera arquivos estáticos e não precisa das variáveis privadas; as funções exigem variáveis definidas no runtime da Vercel.
 
 Depois de configurar os valores e confirmar migrações/funções, publique usando o fluxo de deploy escolhido para o projeto. Para conferir localmente apenas a compilação, execute `npm.cmd run build`; isso não publica código nem modifica o Supabase.
 

@@ -12,9 +12,10 @@ Sync/
 ├── docs/
 │   ├── architecture/            desenho técnico e decisões de arquitetura
 │   ├── futuras-implantacoes/    evolução do piloto e divulgação do portfólio da Sync
+│   ├── implementation/          rastreabilidade de fases, requisitos e evidências (status.yaml)
 │   ├── product/                 escopo, requisitos e fluxos do piloto
 │   └── MAPA-DA-RAIZ.md          inventário e dependências de caminhos
-├── frontend/                   componente React usado no acesso da landing
+├── frontend/                   componente React de acesso e superfícies GlassSurface (components/)
 ├── Insumo vencendo na cozinha/
 │   ├── abertura/               estilos, tema e mídias da abertura da SYNC
 │   ├── agente_IA/              documentação do protótipo de assistente

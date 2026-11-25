@@ -15,9 +15,12 @@
   <header class="topo">
     <div class="largura topo-conteudo">
       <div class="marca"><span class="marca-sinal" aria-hidden="true">VC</span> VisionChef</div>
-      <!-- Mantém a conta acessível sem misturar gestão de conta com permissões de estoque. -->
-      <a class="botao botao-secundario" id="minha-conta" href="../#prototipos" hidden>Minha conta</a>
-      <button class="botao botao-secundario" id="sair" type="button" hidden>Sair</button>
+      <!-- Exibe a sessão ativa e mantém a gestão da própria conta acessível dentro do estoque. -->
+      <div class="acoes-topo">
+        <span class="conta-topo" id="conta-topo" hidden></span>
+        <button class="botao botao-secundario" id="minha-conta" type="button" hidden>Minha conta</button>
+        <button class="botao botao-secundario" id="sair" type="button" hidden>Sair</button>
+      </div>
     </div>
   </header>
   <main class="largura" id="conteudo" tabindex="-1">
@@ -26,12 +29,36 @@
     <p id="situacao-sessao" role="status" class="mensagem">Verificando acesso…</p>
 
     <section class="painel entrada" id="entrada" aria-labelledby="titulo-entrada" hidden>
-      <h1 id="titulo-entrada" tabindex="-1">Entre para ver o estoque</h1>
+      <!-- Mantém na tela direta /estoque/ o mesmo cartão de acesso e padrão de botões do Cesta do Vale. -->
+      <div class="entrada-marca">
+        <p class="entrada-marca-titulo">VisionChef</p>
+        <p class="entrada-marca-subtitulo">Acesso da equipe e do restaurante</p>
+      </div>
+      <hr class="entrada-divisor">
+      <div class="entrada-cabecalho">
+        <p class="entrada-rotulo">Acesso ao sistema</p>
+        <h1 id="titulo-entrada" tabindex="-1">Entre na sua conta</h1>
+        <p class="entrada-subtitulo">Acesse com seu usuário ou e-mail e sua senha.</p>
+      </div>
       <form id="form-entrada" class="formulario">
-        <label>Usuário ou e-mail <input name="identificador" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
-        <label>Senha <input name="senha" type="password" autocomplete="current-password" required></label>
+        <label>Usuário ou e-mail <input name="identificador" type="text" placeholder="Digite seu usuário ou e-mail" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+        <label>Senha
+          <span class="campo-senha-estoque">
+            <input id="campo-senha-entrada" name="senha" type="password" placeholder="Digite sua senha" autocomplete="current-password" required>
+            <button class="botao-olho-estoque" id="alternar-senha-entrada" type="button" aria-label="Mostrar senha" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </span>
+        </label>
         <button type="submit" class="botao botao-primario">Entrar</button>
       </form>
+      <nav class="acoes-entrada-dupla" aria-label="Outras opções de acesso">
+        <a class="botao botao-primario acao-link-entrada" href="../#cadastro">Criar conta</a>
+        <a class="botao botao-primario acao-link-entrada" href="../#recuperar">Esqueci minha senha</a>
+      </nav>
       <!-- contas-ficticias-inicio -->
       <details id="contas-locais" hidden>
         <summary>Contas de teste</summary>
@@ -49,8 +76,25 @@
       <h1 id="titulo-sem-restaurante" tabindex="-1">Estoque indisponível</h1>
       <p>Esta conta não tem acesso ativo a um restaurante. Fale com a pessoa responsável pelo acesso.</p>
       <!-- A confirmação facultativa fica dentro da sessão, nunca na tela de login. -->
-      <p><a href="../#prototipos">Acessar minha conta</a> para gerenciar a confirmação opcional do e-mail.</p>
+      <div class="acoes" style="margin-top: 1rem;">
+        <button class="botao botao-secundario" id="abrir-conta-sem-restaurante" type="button">Abrir minha conta</button>
+      </div>
     </section>
+
+    <!-- Diálogo de sessão do usuário e confirmação opcional de e-mail disponível com ou sem vínculo ao restaurante. -->
+    <dialog id="dialogo-conta" class="painel dialogo-validade" aria-labelledby="titulo-conta">
+      <h2 id="titulo-conta">Minha conta</h2>
+      <div class="dados-conta">
+        <p><strong>E-mail:</strong> <span id="conta-email">Não disponível</span></p>
+        <p><strong>Acesso ao estoque:</strong> <span id="conta-acesso">Sem vínculo ativo</span></p>
+        <p><strong>Confirmação de e-mail:</strong> <span id="conta-confirmacao">Opcional · pendente</span></p>
+      </div>
+      <p id="feedback-conta" class="mensagem" role="status"></p>
+      <div class="acoes">
+        <button class="botao botao-primario" id="solicitar-confirmacao-email" type="button" hidden>Solicitar confirmação de e-mail</button>
+        <button class="botao botao-secundario" id="fechar-conta" type="button">Fechar</button>
+      </div>
+    </dialog>
 
     <section id="aplicacao" aria-labelledby="titulo-estoque" hidden>
       <div class="cabecalho-estoque">
