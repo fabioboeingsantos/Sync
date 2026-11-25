@@ -381,19 +381,19 @@
     */
     const etapas = [
       {
-        tag: 'Slide 1 · Ato 1 · Gancho',
+        tag: 'Slide 1 · Âncora: Geladeira + Time SYNC',
         titulo: 'Insumo vencendo na cozinha (VisionChef · Time SYNC)',
-        faixa: '00:00 – 00:14 · Alvo: 14 segundos',
-        segundos: 14,
+        faixa: '00:00 – 00:16 · Alvo: 16 segundos',
+        segundos: 16,
         pontos: [
           'Cena concreta do creme de leite esquecido na geladeira.',
-          'Apresentação do Time SYNC e do produto VisionChef.',
-          'Fale os nomes dos integrantes de forma rápida e natural.'
+          'Apresentação breve sua, do Time SYNC (soluções simples para o dia a dia das equipes) e dos integrantes.',
+          'Apresenta o sistema VisionChef.'
         ],
-        postura: '<strong>Postura e voz:</strong> Olhe direto na lente da câmera. Faça 1 segundo real de silêncio depois de “correria do almoço” para criar impacto.',
+        postura: '<strong>Palco e voz:</strong> Respiração 4–2–6 antes de começar. Microfone firme a 3 dedos da boca. Faça 1 segundo real de silêncio depois de “correria do almoço”.',
         blocosFala: [
           { texto: 'Imagina abrir um creme de leite novo na correria do almoço...', pausaDepoisMs: 900 },
-          { texto: 'e, no sábado, descobrir dois potes vencidos escondidos no fundo da geladeira. Olá, banca! Eu sou {NOME}, representante do Time SYNC{EQUIPE}, e nós criamos o VisionChef.', pausaDepoisMs: 600 }
+          { texto: 'e, no sábado, descobrir dois potes vencidos escondidos no fundo da geladeira. Olá, banca! Eu sou {NOME}, representante do Time SYNC{EQUIPE}. Nós desenvolvemos soluções simples para o dia a dia das equipes, e hoje apresentamos o VisionChef.', pausaDepoisMs: 600 }
         ]
       },
       {
@@ -456,17 +456,18 @@
         ]
       },
       {
-        tag: 'Slide 6 · Ato 3 · Demo + Plus Online (E3)',
+        tag: 'Slide 6 · Âncora: Demo + 22 testes',
         titulo: 'MVP funcionando na prática e validado',
         faixa: '01:30 – 02:20 · Alvo: 50 segundos (vídeo rodando no slide)',
         segundos: 50,
         pontos: [
-          'O vídeo demo-visionchef.mp4 toca automaticamente no Slide 6.',
-          'Aponte com a voz: PVPS no topo → correção sem duplicar → bloqueio de vencido + descarte no histórico do dono.',
+          'Faça 1s de pausa ao entrar no Slide 6 para a banca olhar o vídeo no telão.',
+          'Aponte sem virar as costas: PVPS no topo → correção sem duplicar → bloqueio de vencido + descarte no histórico do dono.',
           'Feche citando o plus online (nuvem, /equipe/ e 22 testes passando).'
         ],
-        postura: '<strong>Postura e voz:</strong> Mantenha calma enquanto o vídeo roda de fundo; acompanhe as cenas sem correr e sorria ao citar os 22 testes e o site já no ar.',
+        postura: '<strong>Palco e voz:</strong> Peito voltado para a banca; não vire de costas para o telão. Acompanhe o vídeo com calma e sorria ao citar os 22 testes e o site no ar.',
         blocosFala: [
+          { texto: '', pausaDepoisMs: 950 },
           { texto: 'Olha funcionando na prática aqui na tela. O cozinheiro já bate o olho e vê no topo o que vence primeiro, com estado por texto e cor de apoio.', pausaDepoisMs: 700 },
           { texto: 'Se errar uma data, ele corrige sem duplicar o lote e a lista reordena na hora.', pausaDepoisMs: 700 },
           { texto: 'Se um insumo já venceu, o sistema bloqueia o registro de uso por segurança sanitária e libera o descarte em um clique, e o dono já acompanha essa perda na hora no histórico, sem esperar o fim do mês.', pausaDepoisMs: 700 },
@@ -558,6 +559,7 @@
       const htmlFala = etapa.blocosFala
         .map((bloco, i) => {
           const trecho = personalizarTexto(bloco.texto);
+          if (!trecho) return `<span class="pausa-marcador">[pausa 1s — banca olha o telão]</span> `;
           const temPausaInterna = i < etapa.blocosFala.length - 1 && bloco.pausaDepoisMs >= 700;
           return temPausaInterna ? `${trecho} <span class="pausa-marcador">[pausa 1s]</span> ` : `${trecho} `;
         })
@@ -664,7 +666,13 @@
       }
 
       const bloco = blocos[idxBloco];
-      const fala = new SpeechSynthesisUtterance(personalizarTexto(bloco.texto));
+      const textoLimpo = personalizarTexto(bloco.texto).trim();
+      if (!textoLimpo) {
+        statusVoz.textContent = `Slide ${idxSlide + 1}: pausa de 1s para a banca olhar o telão…`;
+        timerPausaFala = setTimeout(() => falarEtapa(idAtual, idxSlide, idxBloco + 1), bloco.pausaDepoisMs);
+        return;
+      }
+      const fala = new SpeechSynthesisUtterance(textoLimpo);
       fala.lang = 'pt-BR';
       fala.rate = Number(sliderVelocidade.value) || 1.0;
       const vozEscolhida = vozesDisponiveis[Number(seletorVoz.value)];

@@ -7,6 +7,9 @@
 **Foco da fala:** 100% na dor da persona (dono e cozinheiro de restaurante pequeno). O site publicado (`https://sync-solucoes.vercel.app`) entra como **plus de viabilidade** na demonstração.  
 **Duração máxima oficial:** 3 minutos (meta de ensaio: **2min50s**, deixando 10s de margem)
 
+> **Cola rápida de 5 segundos (8 palavras-âncora para o palco):**  
+> `1. Geladeira + Time SYNC` → `2. Caderno` → `3. Dúvida D1` → `4. Celular` → `5. 3 passos PVPS` → `6. Demo + 22 testes` → `7. Custo zero` → `8. QR Code`
+
 ---
 
 ## Passo a passo com divisão de tempo
@@ -35,26 +38,29 @@
 
 ---
 
-## Fala calibrada palavra por palavra (~375 palavras · meta 2min45s)
+## Fala calibrada palavra por palavra (~385 palavras · meta 2min45s–2min50s)
 
-1. **Slide 1 (`0:00–0:14`):** *"Imagina abrir um creme de leite novo na correria do almoço… [pausa 1s] …e, no sábado, descobrir dois potes vencidos escondidos no fundo da geladeira. Olá, banca! Eu sou [seu nome], representante do Time SYNC — com [nomes dos integrantes] — e nós criamos o VisionChef."*
-2. **Slide 2 (`0:14–0:36`):** *"Em restaurantes pequenos, o dono e o cozinheiro controlam o estoque no caderno. Quando chega compra nova, os lotes antigos são empurrados para o fundo da geladeira. Os ingredientes vencem sem ninguém perceber, e o prejuízo só aparece no fechamento do mês. Nossa pergunta foi direta: como ajudar essa equipe a ver o que vence primeiro sem parar o preparo para folhear um caderno?"*
+1. **Slide 1 (`0:00–0:16`):** *"Imagina abrir um creme de leite novo na correria do almoço… [pausa 1s] …e, no sábado, descobrir dois potes vencidos escondidos no fundo da geladeira. Olá, banca! Eu sou [seu nome], representante do Time SYNC — com [nomes dos integrantes] — nós desenvolvemos soluções simples para o dia a dia das equipes, e hoje apresentamos o VisionChef."*
+2. **Slide 2 (`0:16–0:36`):** *"Em restaurantes pequenos, o dono e o cozinheiro controlam o estoque no caderno. Quando chega compra nova, os lotes antigos são empurrados para o fundo da geladeira. Os ingredientes vencem sem ninguém perceber, e o prejuízo só aparece no fechamento do mês. Nossa pergunta foi direta: como ajudar essa equipe a ver o que vence primeiro sem parar o preparo para folhear um caderno?"*
 3. **Slide 3 (`0:36–0:54`):** *"Antes de pensar em tela ou código, montamos nossa Matriz CSD separando certezas, suposições e dúvidas. E escolhemos uma dúvida prioritária, a D1: na prática, como a equipe escolhe qual lote usar primeiro — e em que momento descobre que um insumo venceu?"*
 4. **Slide 4 (`0:54–1:14`):** *"Na validação do problema, os relatos do cozinheiro e do dono deixaram o gargalo evidente: o caderno fica fora da cozinha, caneta apaga com a umidade da geladeira, lousa ninguém atualiza, e um sistema ERP no computador foi abandonado por ser caro e trabalhoso. Na cozinha pequena, a única ferramenta sempre à mão é o celular."*
 5. **Slide 5 (`1:14–1:30`):** *"É aí que entra o VisionChef: simples como o caderno, inteligente como o PVPS — Primeiro que Vence, Primeiro que Sai. Em três passos no celular: primeiro, registra o lote em segundos — digitando ou por voz; segundo, ordena automaticamente pelo vencimento; e terceiro, dá baixa de uso ou descarte com um toque."*
    - **Cola rápida para não esquecer (Slide 5):** **PVPS** significa **Primeiro que Vence, Primeiro que Sai** *(em inglês, FEFO — First Expired, First Out)*. Em cozinhas e alimentos, prioriza sempre a data de validade mais próxima (diferente do PEPS, que olha só quem chegou primeiro na compra).
-6. **Slide 6 (`1:30–2:20` · vídeo `demo-visionchef.mp4` rodando automaticamente no slide):** *"Olha funcionando na prática aqui na tela. O cozinheiro já bate o olho e vê no topo o que vence primeiro, com estado por texto e cor de apoio. Se errar uma data, ele corrige sem duplicar o lote e a lista reordena na hora. Se um insumo já venceu, o sistema bloqueia o registro de uso por segurança sanitária e libera o descarte em um clique — e o dono já acompanha essa perda na hora no histórico, sem esperar o fim do mês. E como plus de viabilidade, o Time SYNC já publicou o piloto completo no ar com banco em nuvem, controle de equipe e 22 testes automatizados passando."*
+6. **Slide 6 (`1:30–2:20` · vídeo `demo-visionchef.mp4` rodando automaticamente no slide):** *"[Pausa 1s para a banca olhar o vídeo no telão] Olha funcionando na prática aqui na tela. O cozinheiro já bate o olho e vê no topo o que vence primeiro, com estado por texto e cor de apoio. Se errar uma data, ele corrige sem duplicar o lote e a lista reordena na hora. Se um insumo já venceu, o sistema bloqueia o registro de uso por segurança sanitária e libera o descarte em um clique — e o dono já acompanha essa perda na hora no histórico, sem esperar o fim do mês. E como plus de viabilidade, o Time SYNC já publicou o piloto completo no ar com banco em nuvem, controle de equipe e 22 testes automatizados passando."*
 7. **Slide 7 (`2:20–2:38`):** *"Por que isso funciona de verdade no restaurante pequeno? Porque não exige hardware caro nem treinamento longo — roda no navegador do celular que a cozinha já tem. O lote perto de vencer vira prato do dia antes de estragar, e o dono passa a enxergar perdas na semana, não só no fim do mês."*
 8. **Slide 8 (`2:38–2:50`):** *"VisionChef, do Time SYNC: para nenhum insumo vencer escondido no fundo da geladeira. [pausa 1s] O QR Code está na tela para vocês testarem agora no celular. Muito obrigado!"*
 
 ---
 
-## Guia de postura, oratória e presença
+## Guia de postura, palco, microfone e oratória
 
-- **Comece 10% mais devagar:** a adrenalina acelera os primeiros 20 segundos; ritmo firme e pausado transmite domínio.
-- **Pausas intencionais:** faça **1 segundo de silêncio** após o gancho do Slide 1 e antes da frase final do Slide 8.
-- **Olhar:** no online, olhe para a lente da câmera na abertura e no fechamento; no presencial, distribua o olhar por toda a banca (2–3s por jurado).
-- **Mãos e postura:** coluna reta, ombros soltos, gestos naturais na altura do peito (conte 1, 2, 3 no Slide 5); evite muletas verbais (*"ééé"*, *"tipo"*, *"né"*).
+- **30 segundos antes de subir (Respiração 4–2–6):** inspire 4s, segure 2s, solte devagar 6s (2 ciclos) para baixar o batimento cardíaco.
+- **Base e entrada:** suba firme, plante os dois pés no chão (largura dos ombros), olhe a banca, sorria brevemente e espere 1 segundo antes da primeira palavra.
+- **Microfone em auditório (20 fileiras):** segure o microfone a **3–4 dedos da boca** em uma mão (nunca abaixe a mão do microfone ao gesticular!) e gesticule livremente com a outra mão na altura do peito.
+- **Comece 10% mais devagar:** a adrenalina acelera os primeiros 15 segundos; ritmo firme e articulado (120–140 ppm / `0.90x`–`0.95x` no estúdio) garante nitidez até a última fileira.
+- **3 pausas estratégicas de 1 segundo:** após o gancho (Slide 1), na entrada do vídeo (Slide 6) e antes do *"Muito obrigado!"* (Slide 8).
+- **Truque dos 3 rostos:** escolha 3 rostos simpáticos (esquerda, banca ao centro, direita) e alterne o olhar entre eles como uma conversa real; nunca vire as costas para ler o telão.
+- **Saída profissional:** termine firme no *"Muito obrigado!"* e aguarde 2 segundos sorrindo — **nunca** diga *"então é isso"*, *"era só isso pessoal"* ou peça desculpas.
 
 ## Como reagir a imprevistos
 
