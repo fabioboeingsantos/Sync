@@ -104,21 +104,37 @@
 
     .config-linha {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 12px;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 0.85fr) minmax(0, 1fr);
+      gap: 14px;
       align-items: end;
+    }
+
+    @media (max-width: 960px) {
+      .config-linha {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
     }
 
     label.campo {
       display: grid;
-      gap: 4px;
+      gap: 6px;
+      min-width: 0;
       font-size: 0.85rem;
       font-weight: 700;
       color: var(--destaque);
     }
 
+    label.campo .rotulo-texto {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     label.campo input,
     label.campo select {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
       min-height: 40px;
       padding: 8px 10px;
       border-radius: 10px;
@@ -126,6 +142,14 @@
       background: #071b23;
       color: #ffffff;
       font: 400 0.94rem Arial, sans-serif;
+    }
+
+    label.campo input[type="range"] {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      accent-color: var(--destaque);
+      cursor: pointer;
     }
 
     .barra-progresso {
@@ -304,19 +328,19 @@
 
       <div class="config-linha">
         <label class="campo">
-          Voz de referência (no Edge escolha Antonio ou Francisca Online)
+          <span class="rotulo-texto">Voz de referência (Edge: Antonio ou Francisca)</span>
           <select id="seletorVoz"></select>
         </label>
         <label class="campo">
-          Velocidade da fala (<span id="valorVelocidade">1.00x</span>)
-          <input id="velocidade" type="range" min="0.85" max="1.20" step="0.05" value="1.00">
+          <span class="rotulo-texto">Velocidade da fala (<strong id="valorVelocidade">0.95x</strong> · ideal: 0.90x–0.95x)</span>
+          <input id="velocidade" type="range" min="0.80" max="1.20" step="0.05" value="0.95">
         </label>
         <label class="campo">
-          Seu nome (apenas para o ensaio)
+          <span class="rotulo-texto">Seu nome (apenas para o ensaio)</span>
           <input id="campoNome" type="text" placeholder="Ex.: Fábio" value="Fábio">
         </label>
         <label class="campo">
-          Nomes dos integrantes (opcional na fala)
+          <span class="rotulo-texto">Integrantes (opcional na fala)</span>
           <input id="campoEquipe" type="text" placeholder="Ex.: Ana, Lucas e Pedro" value="">
         </label>
       </div>
