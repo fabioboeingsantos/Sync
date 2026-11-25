@@ -3,40 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pitch E4 — Insumo vencendo na cozinha</title>
+  <title>Pitch E4 — VisionChef · Time SYNC</title>
+  <link rel="icon" type="image/png" sizes="128x128" href="../abertura/imagens/coruja-sync-icone.png" />
   <style>
+    /* =========================================================================
+       SLIDES DO PITCH (E4) — TIME SYNC · VISIONCHEF
+       - Identidade visual alinhada à Paleta Oficial Aço Inox (style-guide.md)
+       - Tipografia Arial em alto contraste para retroprojetor e exportação PDF 16:9
+       ========================================================================= */
     :root {
       --font-main: Arial, Helvetica, sans-serif;
+      --aco-primaria: #0f4c5c;
+      --aco-secundaria: #2a7f8e;
+      --aco-destaque: #a8d5dd;
+      --aco-fundo: #f4f6f7;
+      --aco-alerta: #b3261e;
     }
 
     [data-theme="dark"] {
-      --bg-outer: #05070a;
-      --slide-bg: #0e131b;
-      --card-bg: #151c27;
-      --item-bg: #1b2432;
+      --bg-outer: #041015;
+      --slide-bg: linear-gradient(155deg, #081c24 0%, #0d2b36 55%, #071920 100%);
+      --slide-bg-print: #091f28;
+      --card-bg: rgba(15, 76, 92, 0.28);
+      --card-bg-strong: rgba(15, 76, 92, 0.48);
       --text-primary: #ffffff;
-      --text-soft: #e2e8f0;
-      --text-muted: #94a3b8;
-      --border: rgba(255, 255, 255, 0.14);
-      --accent: #fbbf24;
-      --green: #34d399;
-      --red: #f87171;
-      --blue: #38bdf8;
+      --text-soft: #e6f3f6;
+      --text-muted: #a8d5dd;
+      --border: rgba(168, 213, 221, 0.28);
+      --tag-bg: rgba(168, 213, 221, 0.16);
+      --tag-color: #a8d5dd;
+      --bar-primaria: #2a7f8e;
+      --bar-destaque: #a8d5dd;
+      --bar-alerta: #f87171;
+      --btn-bg: linear-gradient(160deg, rgba(42, 127, 142, 0.9) 0%, rgba(15, 76, 92, 0.96) 100%);
+      --btn-text: #ffffff;
+      --btn-sec-bg: rgba(255, 255, 255, 0.1);
+      --btn-sec-text: #e6f3f6;
     }
 
     [data-theme="light"] {
-      --bg-outer: #e2e8f0;
-      --slide-bg: #ffffff;
-      --card-bg: #f8fafc;
-      --item-bg: #ffffff;
-      --text-primary: #0f172a;
-      --text-soft: #1e293b;
-      --text-muted: #475569;
-      --border: #cbd5e1;
-      --accent: #b45309;
-      --green: #047857;
-      --red: #b91c1c;
-      --blue: #0369a1;
+      --bg-outer: #dce6e9;
+      --slide-bg: #f4f6f7;
+      --slide-bg-print: #f4f6f7;
+      --card-bg: #ffffff;
+      --card-bg-strong: #e6f3f6;
+      --text-primary: #0f4c5c;
+      --text-soft: #182327;
+      --text-muted: #2a7f8e;
+      --border: #b8d4da;
+      --tag-bg: #a8d5dd;
+      --tag-color: #182327;
+      --bar-primaria: #0f4c5c;
+      --bar-destaque: #2a7f8e;
+      --bar-alerta: #b3261e;
+      --btn-bg: linear-gradient(160deg, #2a7f8e 0%, #0f4c5c 100%);
+      --btn-text: #ffffff;
+      --btn-sec-bg: #ffffff;
+      --btn-sec-text: #0f4c5c;
     }
 
     * {
@@ -57,15 +80,15 @@
       transition: background 0.2s ease, color 0.2s ease;
     }
 
-    /* Moldura 16:9 para retroprojetor */
+    /* Moldura 16:9 para projetor e gravação do vídeo de 3 minutos */
     .deck-shell {
       width: 100%;
       max-width: 1440px;
       aspect-ratio: 16 / 9;
       background: var(--slide-bg);
-      border-radius: 14px;
+      border-radius: 16px;
       border: 1px solid var(--border);
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -77,20 +100,29 @@
       .deck-shell { aspect-ratio: auto; min-height: 85vh; }
     }
 
-    /* Barra superior discreta */
     .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
-    .deck-label {
-      font-size: 0.85rem;
+    .deck-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.92rem;
       font-weight: 700;
       color: var(--text-muted);
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
+    }
+
+    .deck-brand img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      display: block;
     }
 
     .top-actions {
@@ -99,25 +131,24 @@
     }
 
     .tool-btn {
-      background: var(--card-bg);
+      background: var(--btn-sec-bg);
       border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px 10px;
-      border-radius: 7px;
-      font-size: 0.8rem;
+      color: var(--btn-sec-text);
+      padding: 6px 11px;
+      border-radius: 8px;
+      font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
     }
 
-    .tool-btn:hover { color: var(--text-primary); }
+    .tool-btn:hover { filter: brightness(1.08); }
 
-    /* Área principal do slide */
     .slide-body {
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: clamp(14px, 1.8vw, 24px);
+      gap: clamp(14px, 1.7vw, 22px);
       animation: fadeSlide 0.22s ease;
     }
 
@@ -129,40 +160,42 @@
     .slide-tag {
       display: inline-block;
       align-self: flex-start;
-      padding: 5px 12px;
+      padding: 5px 13px;
       border-radius: 999px;
-      font-size: clamp(0.82rem, 0.95vw, 0.95rem);
+      font-size: clamp(0.8rem, 0.95vw, 0.94rem);
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      background: rgba(245, 158, 11, 0.16);
-      color: var(--accent);
+      letter-spacing: 0.7px;
+      background: var(--tag-bg);
+      color: var(--tag-color);
     }
 
     .slide-title {
-      font-size: clamp(1.8rem, 3.1vw, 3.1rem);
+      font-size: clamp(1.85rem, 3.05vw, 3.05rem);
       font-weight: 700;
       line-height: 1.12;
       color: var(--text-primary);
     }
 
     .slide-lead {
-      font-size: clamp(1.1rem, 1.55vw, 1.55rem);
+      font-size: clamp(1.08rem, 1.48vw, 1.48rem);
       line-height: 1.42;
       color: var(--text-soft);
-      max-width: 960px;
+      max-width: 980px;
     }
 
     .grid-2 {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
+      align-items: stretch;
     }
 
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
+      align-items: stretch;
     }
 
     @media (max-width: 820px) {
@@ -172,24 +205,31 @@
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-left: 5px solid var(--accent);
-      border-radius: 12px;
-      padding: clamp(16px, 1.8vw, 24px);
+      border-left: 5px solid var(--bar-primaria);
+      border-radius: 14px;
+      padding: clamp(15px, 1.7vw, 22px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .card.green { border-left-color: var(--green); }
-    .card.red { border-left-color: var(--red); }
-    .card.blue { border-left-color: var(--blue); }
+    .card.destaque {
+      background: var(--card-bg-strong);
+      border-left-color: var(--bar-destaque);
+    }
+
+    .card.alerta {
+      border-left-color: var(--bar-alerta);
+    }
 
     .card h3 {
-      font-size: clamp(1.08rem, 1.35vw, 1.35rem);
-      margin-bottom: 8px;
+      font-size: clamp(1.06rem, 1.3vw, 1.32rem);
       color: var(--text-primary);
     }
 
     .card p, .card li {
-      font-size: clamp(0.98rem, 1.15vw, 1.16rem);
-      line-height: 1.42;
+      font-size: clamp(0.96rem, 1.12vw, 1.14rem);
+      line-height: 1.44;
       color: var(--text-soft);
     }
 
@@ -200,73 +240,152 @@
       gap: 6px;
     }
 
-    .cta-link {
-      display: inline-block;
-      align-self: flex-start;
-      margin-top: 6px;
-      padding: 12px 20px;
-      border-radius: 10px;
-      background: #175641;
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: clamp(1rem, 1.15vw, 1.15rem);
+    .hero-cover {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: center;
     }
 
-    .cta-link:hover { filter: brightness(1.1); }
+    .cover-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 22px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--card-bg-strong);
+      text-align: center;
+    }
 
-    /* Rodapé discreto */
+    .cover-badge img {
+      width: clamp(68px, 7vw, 96px);
+      height: clamp(68px, 7vw, 96px);
+      object-fit: contain;
+    }
+
+    .cover-badge strong {
+      font-size: 1.15rem;
+      color: var(--text-primary);
+    }
+
+    .cover-badge span {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 11px 18px;
+      border-radius: 10px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid rgba(168, 213, 221, 0.45);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: clamp(0.92rem, 1.05vw, 1.05rem);
+    }
+
+    .cta-link.sec {
+      background: var(--btn-sec-bg);
+      color: var(--btn-sec-text);
+      border-color: var(--border);
+    }
+
+    .cta-link:hover { filter: brightness(1.08); }
+
+    .closing-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .qr-box {
+      background: #ffffff;
+      color: #0f4c5c;
+      border: 2px solid #2a7f8e;
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+      min-width: 196px;
+    }
+
+    .qr-box img {
+      width: 164px;
+      height: 164px;
+      display: block;
+      border-radius: 6px;
+    }
+
+    .qr-box strong { font-size: 0.92rem; color: #0f4c5c; }
+    .qr-box span { font-size: 0.78rem; color: #2a7f8e; word-break: break-all; }
+
+    .nota-rodape {
+      font-size: clamp(0.82rem, 0.95vw, 0.95rem);
+      color: var(--text-muted);
+    }
+
     .footer-bar {
       display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: 8px;
-      margin-top: 14px;
+      margin-top: 12px;
     }
 
     .footer-info {
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
-      opacity: 0.75;
       margin-right: auto;
     }
 
     .nav-btn {
-      padding: 5px 11px;
-      border-radius: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 0.76rem;
+      background: var(--btn-sec-bg);
+      color: var(--btn-sec-text);
+      font-size: 0.8rem;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .nav-btn:hover:not(:disabled) {
-      color: var(--text-primary);
-      background: rgba(128, 128, 128, 0.12);
-    }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-
-    /* Modo impressão para gerar o PDF da E5 (Ctrl+P -> Salvar como PDF) */
+    /* Modo impressão 16:9 limpo para exportar PDF da E5 (Ctrl+P -> Salvar como PDF) */
     .print-deck { display: none; }
 
     @media print {
       @page { size: 16in 9in; margin: 0; }
-      body { background: #ffffff; padding: 0; display: block; }
+      body { background: #ffffff; padding: 0; display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .deck-shell { display: none !important; }
       .print-deck { display: block; }
       .print-slide {
         width: 100vw;
         height: 100vh;
         page-break-after: always;
-        background: var(--slide-bg);
+        background: var(--slide-bg-print);
         color: var(--text-primary);
-        padding: 48px 56px;
+        padding: 46px 56px;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 24px;
+        gap: 22px;
       }
       .print-slide:last-child { page-break-after: auto; }
     }
@@ -275,11 +394,14 @@
 <body>
   <div class="deck-shell" id="deckRoot">
     <div class="top-bar">
-      <span class="deck-label">Insumo vencendo na cozinha</span>
+      <span class="deck-brand">
+        <img src="../abertura/imagens/coruja-sync-icone.png" width="28" height="28" alt="" />
+        <span>Time SYNC · VisionChef — Insumo vencendo na cozinha</span>
+      </span>
       <div class="top-actions">
-        <button class="tool-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema (T)">☀️</button>
-        <button class="tool-btn" onclick="window.print()" title="Exportar slides em PDF (Ctrl+P)">PDF</button>
-        <button class="tool-btn" onclick="toggleFullscreen()" title="Tela cheia (F)">⛶</button>
+        <button class="tool-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema Claro/Escuro (T)">☀️ Claro</button>
+        <button class="tool-btn" onclick="window.print()" title="Exportar slides em PDF (Ctrl+P)">Exportar PDF</button>
+        <button class="tool-btn" onclick="toggleFullscreen()" title="Tela cheia (F)">⛶ Tela cheia</button>
       </div>
     </div>
 
@@ -292,138 +414,157 @@
     </div>
   </div>
 
-  <!-- Container usado apenas ao imprimir/salvar como PDF (gera 1 slide por página 16:9) -->
+  <!-- Container usado apenas na impressão/exportação para PDF (1 slide por página 16:9) -->
   <div class="print-deck" id="printDeck"></div>
 
   <script>
     /*
-      SLIDES DO PITCH (E4):
-      - Estrutura alinhada ao storytelling (Dor -> Caminho -> Resolução) e aos 5 critérios do simulado.
-      - Suporta navegação por clique ou teclado (<-, ->, Espaço), Modo Claro/Escuro (T), Tela Cheia (F)
-        e exportação limpa para PDF via Ctrl+P (para entrega da E5).
+      SLIDES DO PITCH (E4) — TIME SYNC · VISIONCHEF
+      - Protagonismo total na dor da persona (restaurante pequeno, caderno fora da cozinha,
+        insumos vencendo no fundo da geladeira e perda invisível até o fim do mês).
+      - Site publicado (https://sync-solucoes.vercel.app) apresentado como plus de viabilidade.
+      - Sem nomes individuais de integrantes (apresentados oralmente pelo time SYNC).
+      - Atalhos: Setas / Espaço (navegar), T (Claro/Escuro), F (Tela cheia), Ctrl+P (PDF).
     */
     const slides = [
       {
         html: `
           <span class="slide-tag">Ato 1 • Gancho</span>
-          <h1 class="slide-title">Insumo vencendo na cozinha</h1>
-          <p class="slide-lead">“Você abre um creme de leite novo no almoço e, no sábado, descobre dois potes vencidos escondidos no fundo da geladeira.”</p>
-          <div class="card">
+          <div class="hero-cover">
+            <div>
+              <h1 class="slide-title">Insumo vencendo na cozinha</h1>
+              <p class="slide-lead" style="margin-top: 14px;">“Você abre um creme de leite novo no almoço e, no sábado, descobre dois potes vencidos escondidos no fundo da geladeira.”</p>
+            </div>
+            <div class="cover-badge">
+              <img src="../abertura/imagens/coruja-sync-icone.png" width="88" height="88" alt="Emblema do Time SYNC" />
+              <strong>VisionChef</strong>
+              <span>Time SYNC</span>
+            </div>
+          </div>
+          <div class="card destaque">
             <h3>Controle simples de validade (PVPS) para restaurantes pequenos</h3>
-            <p>Simulado Hackathon UC6 · Apresentação da equipe</p>
+            <p>Hackathon Jovem Programador 2026 · Gastronomia · Solução desenvolvida pelo Time SYNC</p>
           </div>
         `
       },
       {
         html: `
-          <span class="slide-tag">Ato 1 • A Dor</span>
+          <span class="slide-tag">Ato 1 • A Dor (E1)</span>
           <h2 class="slide-title">O prejuízo invisível do caderno</h2>
           <div class="grid-3">
-            <div class="card red">
+            <div class="card alerta">
               <h3>Quem sofre</h3>
-              <p>Dono e cozinheiro de restaurante pequeno na rotina corrida do almoço.</p>
+              <p>O dono e o cozinheiro de restaurantes pequenos na rotina corrida do preparo diário.</p>
             </div>
             <div class="card">
-              <h3>Onde trava</h3>
-              <p>O estoque é anotado em um caderno e ingredientes vencem no fundo da geladeira.</p>
+              <h3>Onde a rotina trava</h3>
+              <p>O estoque é anotado em um caderno; compras novas empurram lotes antigos para o fundo da geladeira.</p>
             </div>
-            <div class="card red">
-              <h3>Consequência</h3>
-              <p>O desperdício não aparece no dia a dia — só estoura no fechamento do mês.</p>
+            <div class="card alerta">
+              <h3>Consequência real</h3>
+              <p>Ingredientes vencem sem ninguém notar — e o desperdício só aparece nas contas no fim do mês.</p>
             </div>
           </div>
+          <p class="nota-rodape">Desafio: “Como podemos ajudar donos e cozinheiros de restaurantes pequenos a identificar quais lotes vencem primeiro, sem precisar interromper o preparo para procurar datas no caderno?”</p>
         `
       },
       {
         html: `
           <span class="slide-tag">Ato 2 • Matriz CSD (E1)</span>
-          <h2 class="slide-title">O que precisávamos descobrir antes de codar</h2>
+          <h2 class="slide-title">O que investigamos antes de desenhar a solução</h2>
           <div class="grid-3">
-            <div class="card green">
+            <div class="card destaque">
               <h3>C — Certezas</h3>
               <ul>
-                <li>Controle feito em caderno.</li>
-                <li>Insumos vencem na geladeira.</li>
+                <li>Dono e cozinheiro enfrentam o problema.</li>
+                <li>Estoque controlado em caderno.</li>
+                <li>Insumos vencem no fundo da geladeira.</li>
                 <li>Perda vista só no fim do mês.</li>
               </ul>
             </div>
             <div class="card">
               <h3>S — Suposições</h3>
               <ul>
-                <li>Caderno difícil de consultar no preparo.</li>
-                <li>Compra nova empurra lote antigo.</li>
-                <li>Lista por validade ajuda a decidir.</li>
+                <li>Caderno difícil de consultar no serviço.</li>
+                <li>Lotes entram sem validade na pressa.</li>
+                <li>Compra nova esconde lote antigo.</li>
+                <li>Lista por validade acelera a escolha.</li>
               </ul>
             </div>
-            <div class="card red">
+            <div class="card alerta">
               <h3>D — Dúvida prioritária (D1)</h3>
-              <p><strong>Como a equipe escolhe qual lote usar primeiro</strong> e em que momento percebe um insumo vencido?</p>
+              <p><strong>Como a equipe escolhe qual lote usar primeiro</strong> e em que momento percebe que um insumo venceu?</p>
             </div>
           </div>
         `
       },
       {
         html: `
-          <span class="slide-tag">Ato 2 • O Caminho (E2)</span>
-          <h2 class="slide-title">O que a validação revelou na rotina</h2>
+          <span class="slide-tag">Ato 2 • Validação do Problema (E2)</span>
+          <h2 class="slide-title">O que os relatos revelaram sobre a rotina</h2>
           <div class="grid-2">
             <div class="card">
               <h3>Na visão do cozinheiro (P01)</h3>
               <ul>
-                <li>O caderno fica fora da cozinha — no serviço não dá tempo de folhear.</li>
-                <li>Pega o lote mais acessível na frente; vencidos só aparecem na limpeza.</li>
-                <li>Caneta apaga na geladeira e lousa não é atualizada todo dia.</li>
+                <li>O caderno fica fora da cozinha — no pico do almoço não dá tempo de folhear páginas.</li>
+                <li>Pega o lote mais na frente; vencidos só aparecem na limpeza semanal.</li>
+                <li>Caneta apaga com umidade e lousa não é atualizada todo dia.</li>
               </ul>
             </div>
-            <div class="card blue">
+            <div class="card destaque">
               <h3>Na visão do dono (P02)</h3>
               <ul>
-                <li>Descartes raramente chegam na hora — só sente o impacto nas contas do mês.</li>
+                <li>Descartes não chegam na hora — só percebe nas notas no fechamento do mês.</li>
                 <li>ERP de computador foi abandonado por ser caro e trabalhoso.</li>
-                <li>Na cozinha, a única ferramenta sempre à mão é o celular.</li>
+                <li>Na cozinha, a única ferramenta sempre à mão é o <strong>celular</strong>.</li>
               </ul>
             </div>
           </div>
+          <p class="nota-rodape">* Relatos simulados no treino UC6 (S1–S5 confirmadas e D1, D5 e D6 respondidas), preparados para validação complementar com cozinhas reais.</p>
         `
       },
       {
         html: `
           <span class="slide-tag">Ato 3 • A Solução (E3)</span>
-          <h2 class="slide-title">Simples como o caderno, inteligente como PVPS</h2>
-          <p class="slide-lead">Um fluxo rápido direto no navegador do celular — sem hardware caro, sem ERP complexo.</p>
+          <h2 class="slide-title">VisionChef: simples como o caderno, ágil como PVPS</h2>
+          <p class="slide-lead">Foco na dor da cozinha: zero burocracia de ERP, direto no celular, respondendo em segundos o que usar primeiro.</p>
           <div class="grid-3">
-            <div class="card green">
+            <div class="card destaque">
               <h3>1. Registrar em segundos</h3>
-              <p>Insumo + data de validade obrigatória (quantidade e prateleira opcionais).</p>
+              <p>Insumo + validade obrigatória, por formulário rápido ou assistente de texto/voz com conferência manual.</p>
             </div>
             <div class="card">
-              <h3>2. Ordenar por vencimento</h3>
-              <p>O sistema coloca automaticamente no topo o que vence primeiro (PVPS) com alerta visual.</p>
+              <h3>2. Ver o que vence primeiro</h3>
+              <p>Ordenação automática <strong>PVPS</strong> (Primeiro que Vence, Primeiro que Sai) com rótulos claros por texto e cor.</p>
             </div>
-            <div class="card red">
-              <h3>3. Agir ou registrar perda</h3>
-              <p>1 toque para marcar como <strong>Usado</strong> ou <strong>Descartado</strong>, visível ao dono na hora.</p>
+            <div class="card alerta">
+              <h3>3. Agir e registrar perdas</h3>
+              <p>Baixa de uso ou descarte em 1 toque, bloqueando uso de lote vencido e mostrando perdas ao dono na hora.</p>
             </div>
           </div>
         `
       },
       {
         html: `
-          <span class="slide-tag">Ato 3 • Demo do MVP</span>
-          <h2 class="slide-title">Protótipo funcionando na prática</h2>
+          <span class="slide-tag">Ato 3 • Demo, Testes e Plus Online (E3)</span>
+          <h2 class="slide-title">MVP funcionando na prática e validado</h2>
           <div class="grid-2">
-            <div class="card green">
-              <h3>O que demonstramos ao vivo</h3>
+            <div class="card destaque">
+              <h3>Demonstração ao vivo + testes</h3>
               <ul>
-                <li>Cadastro de dois lotes com validades diferentes → ordenação automática.</li>
-                <li>Correção de validade → reordenação imediata sem duplicar o lote.</li>
-                <li>Bloqueio de validade em branco + registro rápido de descarte.</li>
+                <li>Cadastro de lotes → ordenação automática por vencimento (PVPS).</li>
+                <li>Correção de validade → reordenação imediata sem duplicar registro.</li>
+                <li>Bloqueio de uso em lote vencido + registro de descarte visível ao dono.</li>
+                <li><strong>22/22 testes automatizados aprovados</strong> + CI verde.</li>
               </ul>
             </div>
-            <div class="card blue">
-              <h3>Abrir o MVP agora</h3>
-              <p>Roda 100% no navegador com salvamento local e relógio de teste para validação.</p>
-              <a class="cta-link" href="../htmls/E3-mvp-validade.html" target="_blank">Abrir MVP (E3-mvp-validade.html) ↗</a>
+            <div class="card">
+              <h3>Plus de viabilidade — já no ar</h3>
+              <p>Além do MVP offline da E3, o Time SYNC publicou a versão web completa com banco em nuvem, abertura/fracionamento e controle de equipe (<code>/equipe/</code>).</p>
+              <div class="cta-row">
+                <a class="cta-link" href="https://sync-solucoes.vercel.app" target="_blank" rel="noopener">Abrir VisionChef online ↗</a>
+                <a class="cta-link sec" href="../htmls/E3-mvp-validade.html" target="_blank">MVP E3 offline ↗</a>
+              </div>
             </div>
           </div>
         `
@@ -433,20 +574,20 @@
           <span class="slide-tag">Ato 3 • Viabilidade e Impacto</span>
           <h2 class="slide-title">Por que funciona no restaurante pequeno</h2>
           <div class="grid-2">
-            <div class="card green">
+            <div class="card destaque">
               <h3>Viabilidade e Impacto</h3>
               <ul>
-                <li><strong>Custo quase zero:</strong> roda no celular que a cozinha já tem.</li>
+                <li><strong>Sem barreira de entrada:</strong> roda no celular que a cozinha já tem, sem hardware caro.</li>
                 <li><strong>Menos desperdício:</strong> lote prestes a vencer vira prato do dia antes de estragar.</li>
-                <li><strong>Controle real:</strong> o dono vê perdas na semana, não só no fim do mês.</li>
+                <li><strong>Decisão semanal para o dono:</strong> compras mais assertivas e perdas visíveis antes do fim do mês.</li>
               </ul>
             </div>
             <div class="card">
-              <h3>Próximos passos</h3>
+              <h3>Próximos passos de validação</h3>
               <ul>
-                <li>Medir o tempo de consulta e cadastro em teste com outro grupo/restaurante real.</li>
-                <li>Validar alertas diários antes do turno de preparo.</li>
-                <li>Avaliar relatório mensal simples de perdas por categoria.</li>
+                <li>Medir tempo de consulta (&lt; 30s) e coletar feedback em rodada com cozinhas pequenas reais.</li>
+                <li>Avaliar alertas diários antes do preparo do almoço.</li>
+                <li>Validar modelo freemium acessível após o piloto.</li>
               </ul>
             </div>
           </div>
@@ -454,12 +595,25 @@
       },
       {
         html: `
-          <span class="slide-tag">Fechamento</span>
-          <h1 class="slide-title">Nenhum insumo vencendo escondido no fundo da geladeira.</h1>
-          <p class="slide-lead">Visibilidade diária na cozinha. Menos desperdício. Mais lucro no fim do mês.</p>
-          <div class="card green">
-            <h3>Obrigado!</h3>
-            <p>Insumo vencendo na cozinha · Perguntas da banca</p>
+          <span class="slide-tag">Fechamento • Time SYNC</span>
+          <div class="closing-grid">
+            <div>
+              <h1 class="slide-title">Nenhum insumo vencendo escondido no fundo da geladeira.</h1>
+              <p class="slide-lead" style="margin-top: 14px;">Visibilidade diária na cozinha. Menos desperdício. Mais controle para o dono.</p>
+              <div class="card destaque" style="margin-top: 18px;">
+                <h3>Obrigado! · Time SYNC — VisionChef</h3>
+                <p>Teste agora no celular: <strong>https://sync-solucoes.vercel.app</strong></p>
+              </div>
+            </div>
+            <div class="qr-box">
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&color=0F4C5C&bgcolor=FFFFFF&data=https%3A%2F%2Fsync-solucoes.vercel.app"
+                alt="QR Code para abrir o VisionChef em https://sync-solucoes.vercel.app"
+                onerror="this.style.display='none'"
+              />
+              <strong>Teste no celular</strong>
+              <span>sync-solucoes.vercel.app</span>
+            </div>
           </div>
         `
       }
@@ -476,18 +630,18 @@
 
     function buildPrintDeck() {
       document.getElementById('printDeck').innerHTML = slides
-        .map(s => `<section class="print-slide">${s.html}</section>`)
+        .map((s) => `<section class="print-slide">${s.html}</section>`)
         .join('');
     }
 
-    function next() { if (index < slides.length - 1) { index++; render(); } }
-    function prev() { if (index > 0) { index--; render(); } }
+    function next() { if (index < slides.length - 1) { index += 1; render(); } }
+    function prev() { if (index > 0) { index -= 1; render(); } }
 
     function toggleTheme() {
       const html = document.documentElement;
       const nextTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', nextTheme);
-      document.getElementById('themeBtn').textContent = nextTheme === 'dark' ? '☀️' : '🌙';
+      document.getElementById('themeBtn').textContent = nextTheme === 'dark' ? '☀️ Claro' : '🌙 Escuro';
     }
 
     function toggleFullscreen() {
@@ -498,7 +652,7 @@
 
     document.getElementById('prevBtn').addEventListener('click', prev);
     document.getElementById('nextBtn').addEventListener('click', next);
-    document.addEventListener('keydown', e => {
+    document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
       if (e.key === 'ArrowLeft') prev();
       if (e.key.toLowerCase() === 'f') toggleFullscreen();

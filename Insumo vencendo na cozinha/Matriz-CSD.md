@@ -1,6 +1,7 @@
 # Matriz CSD — Insumo vencendo na cozinha
 
-**Status:** versão de referência da E1 para o treino.
+**Time:** SYNC  
+**Status:** versão inicial (E1) + revisão consolidada após entrevistas simuladas (E2)
 
 ## C — Certezas
 
@@ -61,3 +62,19 @@ Use uma ideia por nota. Adicione o item à seção correspondente e depois copie
 | — | **S7** Hipótese a verificar. | — |
 | — | — | **D7** Pergunta para a entrevista? |
 ```
+
+## Evolução pós-E2 (revisão a partir dos relatos simulados)
+
+Resumo das movimentações registradas em [E2 — Validação do problema](desafios/E2.md). Os relatos são identificados como simulados para treino; em campo real, repetir a conferência com donos e cozinheiros.
+
+| Código | Estado na E1 | Estado após E2 | Evidência principal |
+| --- | --- | --- | --- |
+| **S1** | Suposição | **Confirmada (no relato)** | `P01`: caderno fica fora da cozinha; no almoço não dá tempo de sair do fogão para folhear páginas. |
+| **S2** | Suposição | **Confirmada (no relato)** | `P01`: na pressa de guardar compras, anotam produto/quantidade, mas pulam a validade de cada lote. |
+| **S3** | Suposição | **Confirmada (no relato)** | `P01`: compras novas empurram lotes antigos para o fundo da geladeira; cozinheiro pega o que está à frente. |
+| **S4** | Suposição | **Confirmada (no relato)** | `P01`: conferência é adiada para a limpeza semanal da geladeira. |
+| **S5** | Suposição | **Confirmada (no relato)** | `P01` e `P02`: descartes não são anotados na hora; dono só sente no fechamento do mês. |
+| **S6** | Suposição | **Hipótese testada na E3** | `P01` e `P02`: celular está sempre à mão; lista PVPS simples é a aposta central do MVP. |
+| **D1** | Dúvida prioritária | **Respondida (no relato)** | Escolhem o lote mais acessível na frente; vencidos só aparecem na limpeza de sábado. |
+| **D5** | Dúvida | **Respondida (no relato)** | Dono estima perdas apenas cruzando notas de compra com faturamento no fim do mês. |
+| **D6** | Dúvida | **Respondida (no relato)** | Caneta apaga com umidade, lousa não é atualizada e ERP de PC foi abandonado por custo e trabalho. |

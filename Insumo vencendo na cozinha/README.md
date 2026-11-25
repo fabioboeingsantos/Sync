@@ -22,33 +22,33 @@ Segundo simulado da UC6. Um restaurante pequeno controla o estoque em um caderno
 
 Para apresentar, abra os [slides do pitch](pitch/E4-pitch-slides.html) no navegador (`F` para tela cheia, `T` para Claro/Escuro e `Ctrl + P` para exportar o PDF).
 
-**Status geral:** E1 concluída, E2 concluída para treino (simulada), MVP da E3 implementado (aguardando execução do teste com outro grupo), slides e roteiro da E4 prontos (aguardando ensaio cronometrado e exportação do PDF para E5).
+**Status geral (Time SYNC):** E1 concluída, E2 concluída para treino (simulada, com telas exploratórias registradas), E3 com Lean Canvas, MoSCoW, MVP e 22/22 testes técnicos aprovados (aguardando apenas registro de feedback presencial com outro grupo), slides e roteiro da E4 atualizados no padrão SYNC · VisionChef (Aço Inox + QR Code) e E5 pronta para exportação do PDF. Piloto web publicado como plus em `https://sync-solucoes.vercel.app`.
 
 ## Revisão dos 19 itens de lançamento
 
-Revisão de 24/11/2026 para a página inicial e as duas telas de estoque do VisionChef. A versão revisada é gratuita, funciona sem conta e guarda os registros no navegador. A [página de informações](../informacoes.html) descreve o funcionamento atual.
+Revisão atualizada em 25/11/2026 cobrindo as **demonstrações gratuitas** (`localStorage`, sem conta) e o **piloto online** (`https://sync-solucoes.vercel.app`, com contas individuais, Vercel Functions e Supabase). A [página de informações](../informacoes.html) descreve o funcionamento vigente.
 
 | # | Item | Situação no VisionChef |
 | --- | --- | --- |
-| 1 | Política de privacidade | Página de privacidade acessível no rodapé e nos formulários. Antes de publicar para uso real, identificar o responsável pelo tratamento, seu canal e as informações aplicáveis sobre direitos. |
-| 2 | Termos de uso | Página acessível no rodapé. Informa as funções disponíveis, a gratuidade e a necessidade de conferir a embalagem e a conservação do insumo. |
-| 3 | Política de cookies | Documenta o armazenamento local, a ausência de expiração programada e como apagar os registros. As chaves são `insumo-e3-lotes-v1`, `insumo-e3-descartes-v1`, `insumo-e3-lotes-v2` e `insumo-e3-descartes-v2`. |
-| 4 | Aviso de cookies | O aplicativo não grava cookies nem usa rastreadores opcionais. Há informação sobre armazenamento local, sem banner de aceitação. Reavaliar a decisão após verificar a hospedagem e se forem adicionadas tecnologias opcionais. |
-| 5 | Reembolso e cancelamento | Sem transações na versão atual. Se houver cobrança futura, definir regras, prazos e canal antes de ativá-la. |
-| 6 | Consentimento nos formulários | Os formulários explicam o armazenamento. O ditado é opcional, informa o possível uso de serviço de voz e só inicia por ação do usuário. A permissão do navegador não substitui a definição de uma base legal se houver tratamento de dados pessoais. |
-| 7 | Dados necessários | Nome e validade são obrigatórios. Quantidade, local e código de lote, quando disponível, são opcionais. Os campos livres são destinados a informações do estoque. |
-| 8 | Analytics | A revisão do código não encontrou scripts ou eventos de medição de audiência. Verificar novamente no domínio publicado. |
-| 9 | Embeds de terceiros | As páginas carregam imagens e estilos locais e não usam incorporações remotas. O ditado pode envolver o serviço de reconhecimento do navegador após a ação do usuário. |
-| 10 | Acessibilidade | A abertura tem navegação por teclado, atalho para o conteúdo, hierarquia de títulos e movimento reduzido. As telas de estoque têm rótulos, foco e mensagens de erro. Falta uma avaliação completa com leitor de tela e zoom. |
-| 11 | Texto alternativo | O emblema da SYNC é descrito na abertura. Nas telas de estoque, o link com a imagem do VisionChef tem nome acessível e leva à página inicial do produto. |
-| 12 | Contraste | Limites dos controles da abertura atingem 3,97:1 sobre o fundo azul mais claro revisado. O texto branco no azul secundário atinge 4,64:1 e o grafite no destaque claro, 10,11:1. Essas medições cobrem as combinações indicadas. |
-| 13 | Formulário por teclado | Campos obrigatórios recebem indicação de erro e foco quando o envio falha. O cancelamento da edição devolve o foco ao campo de insumo. |
-| 14 | Botões claros | A abertura nomeia os dois caminhos de cadastro. O assistente usa “Preencher cadastro” e “Ditar mensagem”. Os filtros expõem o estado selecionado. |
-| 15 | Avaliações e depoimentos | A página não usa avaliações, depoimentos ou resultados de clientes. Os lotes da abertura estão identificados como exemplo. |
-| 16 | Dados da empresa | A página identifica a SYNC como desenvolvedora e o VisionChef como produto. Responsável e canal oficial ainda precisam ser definidos para publicação operacional. Não há cadastro empresarial verificado para exibir. |
-| 17 | Direitos das imagens | O emblema da SYNC foi editado a partir da imagem fornecida pelo usuário. A marca VisionChef usa o arquivo existente no projeto. Registrar autoria, condições e autorização de uso antes da publicação externa. |
-| 18 | Leis locais e setoriais | A análise considera o contexto brasileiro. Revisar LGPD, acessibilidade, direitos autorais e requisitos de consumo e alimentos conforme o uso efetivo. |
-| 19 | Outros riscos operacionais | O armazenamento é local, sem backup ou sincronização entre dispositivos. Antes de operar com dados reais, avaliar hospedagem, serviço de voz, retenção, recuperação de registros e processo para incidentes. |
+| 1 | Política de privacidade | Página acessível no rodapé e nos formulários ([informacoes.html](../informacoes.html#privacidade)). Política de retenção e exclusão LGPD documentada em [brief.md](../docs/product/brief.md). |
+| 2 | Termos de uso | Página acessível no rodapé ([informacoes.html](../informacoes.html#termos)). Informa gratuidade, escopo das funções e necessidade de conferir a embalagem e a conservação do insumo. |
+| 3 | Política de cookies | Documenta o cookie estritamente necessário de sessão no piloto (`HttpOnly`, `SameSite=Strict`, `Secure`, 7 dias por inatividade com renovação até 30 dias e opção *Sair de todos os dispositivos*) e o `localStorage` separado nas demonstrações (`insumo-e3-lotes-v1/v2`, `insumo-e3-descartes-v1/v2`). |
+| 4 | Aviso de cookies | O site não usa cookies de publicidade, rastreadores opcionais nem analytics de terceiros; usa apenas cookie técnico de autenticação no piloto e informa claramente em [informacoes.html](../informacoes.html#armazenamento). |
+| 5 | Reembolso e cancelamento | Sem vendas, pagamentos ou cobranças nesta versão. Se houver cobrança futura, definir regras, prazos e canal antes de ativá-la. |
+| 6 | Consentimento nos formulários | Os formulários explicam o armazenamento. O ditado é opcional, informa o possível uso de serviço de voz do navegador e só inicia por ação do usuário. |
+| 7 | Dados necessários | No cadastro de lote, insumo e validade são obrigatórios; código, local e demais campos são opcionais. Na conta do piloto, apenas usuário único e e-mail (sem dados sensíveis). |
+| 8 | Analytics | Sem scripts ou eventos de medição de audiência de terceiros no bundle publicado (`dist/`). |
+| 9 | Embeds de terceiros | O site publicado carrega apenas recursos locais/próprios. O ditado pode usar o serviço de voz do navegador após ação explícita da pessoa. |
+| 10 | Acessibilidade | Navegação por teclado, atalho para conteúdo, hierarquia de títulos, `aria-expanded`, `prefers-reduced-motion`, rótulos claros e estados transmitidos por texto e cor. |
+| 11 | Texto alternativo | O emblema da SYNC é descrito na abertura; links com logo nas telas de estoque e equipe têm nome acessível (`aria-label`). |
+| 12 | Contraste | Paleta oficial **Aço Inox** (`style-guide.md`): branco sobre `#0F4C5C` (9,51:1), `#2A7F8E` sobre branco (4,64:1), grafite `#182327` sobre `#A8D5DD` (10,11:1) e alerta `#B3261E` (6,03:1). |
+| 13 | Formulário por teclado | Campos inválidos recebem indicação textual, `aria-invalid` e foco automático; cancelamento devolve o foco ao controle de origem. |
+| 14 | Botões claros | Padrão global **GlassSurface + Aço Inox** (`css/botoes.css`) com rótulos de verbo claro (*Salvar lote*, *Registrar abertura*, *Liberar acesso*, *Remover acesso*). |
+| 15 | Avaliações e depoimentos | Sem avaliações ou depoimentos inventados. Lotes da abertura e relatos da E2 são explicitamente identificados como exemplo/simulação. |
+| 16 | Dados da empresa | Identifica a **SYNC** como equipe desenvolvedora e o **VisionChef** como solução; sem CNPJ ou cadastro empresarial fictício. |
+| 17 | Direitos das imagens | Emblema da SYNC e marca VisionChef são ativos próprios do projeto, registrados em [imagens/README.md](imagens/README.md). |
+| 18 | Leis locais e setoriais | Análise considera LGPD, WCAG 2.2, LBI, CDC e boas práticas sanitárias (Anvisa RDC 216/2004, item 4.8.6) para validade pós-abertura. |
+| 19 | Riscos operacionais | Piloto online com banco PostgreSQL (RLS), 22/22 testes automatizados, CI no GitHub Actions, `/api/health` e [runbook.md](../docs/operations/runbook.md); ambiente Preview separado e ensaio de backup/restore planejados antes de operação comercial. |
 
 Verificação local no Chrome em perfil limpo: navegação por teclado, filtros, links de privacidade, erros e cancelamento de edição nos dois cadastros, persistência após recarregar e ausência de rolagem horizontal na abertura a 320, 390 e 1280 px. O fluxo verificado não carregou cookies nem fez requisições HTTP externas com o ditado inativo. O funcionamento do ditado e as configurações de hospedagem ficam para a validação da versão publicada.
 
