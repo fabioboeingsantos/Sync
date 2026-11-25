@@ -127,13 +127,13 @@ test('regra global de botões aplica GlassSurface com paleta Aço Inox e compone
   const botoesCss = await readFile(new URL('../css/botoes.css', import.meta.url), 'utf8');
   const agents = await readFile(new URL('../AGENTS.md', import.meta.url), 'utf8');
   const glassJsx = await readFile(new URL('../frontend/components/GlassSurface.jsx', import.meta.url), 'utf8');
-  const asciiJsx = await readFile(new URL('../frontend/components/AsciiStream.jsx', import.meta.url), 'utf8');
+  const horizonJsx = await readFile(new URL('../frontend/components/HorizonBloom.jsx', import.meta.url), 'utf8');
   const landing = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(botoesCss, /backdrop-filter:\s*blur/);
   assert.match(botoesCss, /\.glass-surface/);
   assert.match(botoesCss, /#0F4C5C/i);
   assert.match(agents, /GlassSurface/);
   assert.match(glassJsx, /feDisplacementMap/);
-  assert.match(asciiJsx, /prefers-reduced-motion/);
-  assert.match(landing, /id="hero-ascii-stream"/);
+  assert.match(horizonJsx, /prefers-reduced-motion/);
+  assert.match(landing, /id="hero-horizon-bloom"/);
 });

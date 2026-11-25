@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { api } from './api.js';
-import AsciiStream from './components/AsciiStream.jsx';
 import GlassSurface from './components/GlassSurface.jsx';
+import HorizonBloom from './components/HorizonBloom.jsx';
 
 // Encapsula botões React em GlassSurface preservando a semântica nativa de <button>, submit e aria-busy.
 function BotaoGlass({ className = '', children, ...props }) {
@@ -400,10 +400,10 @@ function AcessoVisionChef({ destino }) {
   );
 }
 
-// O build monta o React no espaço de acesso e no fundo decorativo da abertura da landing.
+// O build monta o React no espaço de acesso e no fundo decorativo Horizon Bloom da abertura.
 const elemento = document.getElementById('acesso-visionchef');
 const destino = elemento?.querySelector('#acesso-estoque')?.href ?? new URL('estoque/', window.location.href).href;
 if (elemento) createRoot(elemento).render(<AcessoVisionChef destino={destino} />);
 
-const fundoAscii = document.getElementById('hero-ascii-stream');
-if (fundoAscii) createRoot(fundoAscii).render(<AsciiStream />);
+const fundoHorizonte = document.getElementById('hero-horizon-bloom');
+if (fundoHorizonte) createRoot(fundoHorizonte).render(<HorizonBloom />);
