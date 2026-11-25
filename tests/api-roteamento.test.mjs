@@ -116,6 +116,22 @@ test('email_cadastrado verifica existência no banco local e bloqueia acesso dir
   );
 });
 
+test('verificação opcional funciona mesmo para conta criada direto em auth.users sem nomes_usuario', async (t) => {
+  const banco = await abrirBancoLocal();
+  t.after(() => banco.close());
+  const novoId = '20000000-0000-4000-8000-000000000099';
+  const hash = 'a'.repeat(64);
+  await banco.query("insert into auth.users (id, email) values ($1, 'semperfil@piloto.test')", [novoId]);
+  const { rows: [{ estado }] } = await banco.query('select public.estado_verificacao_email($1) as estado', [novoId]);
+  assert.deepEqual(estado, { verificado: false, verificado_em: null });
+  const { rows: [{ emitido }] } = await banco.query('select public.emitir_verificacao_email($1, $2) as emitido', [novoId, hash]);
+  assert.equal(emitido, true);
+  const { rows: [{ consumido }] } = await banco.query('select public.consumir_verificacao_email($1) as consumido', [hash]);
+  assert.equal(consumido, true);
+  const { rows: [{ depois }] } = await banco.query('select public.estado_verificacao_email($1) as depois', [novoId]);
+  assert.equal(depois.verificado, true);
+});
+
 test('tela de estoque inclui diálogo Minha conta e opção de confirmação de e-mail', async () => {
   const html = await readFile(new URL('../piloto/index.html', import.meta.url), 'utf8');
   assert.match(html, /id="conta-topo"/);

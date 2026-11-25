@@ -462,8 +462,8 @@ export async function tratarApi(requisicao) {
   } catch (erro) {
     if (erro.status === 413) return resposta({ erro: 'Dados enviados excedem o limite permitido.' }, 413);
     if (erro instanceof SyntaxError) return resposta({ erro: 'Envie dados em formato JSON válido.' }, 400);
-    // Registra apenas rota e status técnico interno para diagnóstico, sem expor dados do usuário ou segredos.
-    console.error('Erro interno na API:', { caminho, status: erro?.status ?? 503 });
+    // Registra apenas rota, etapa e status técnico interno para diagnóstico, sem expor dados do usuário ou segredos.
+    console.error('Erro interno na API:', { caminho, status: erro?.status ?? 503, etapa: erro?.message ?? null });
     return resposta({ erro: 'O servidor não conseguiu concluir a solicitação.' }, 503);
   }
 }

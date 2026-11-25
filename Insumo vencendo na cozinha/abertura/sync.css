@@ -697,7 +697,7 @@ body:has(#inicio.hero) section[id] {
 .glass-botao-wrap .botao { width: 100%; height: 100%; min-height: 42px; border-radius: inherit; }
 .dialogo-acesso-sync .botao.botao-primario,
 .dialogo-acesso-sync .botao.botao-secundario { width: 100%; border-radius: 12px; }
-.mensagem-acesso { margin: 0; padding: .8rem .95rem; color: #182327; background: #e6f3f6; border: 1px solid #2a7f8e; border-radius: 12px; font-size: .92rem; text-align: center; }
+.dialogo-acesso-sync .mensagem-acesso { margin: 0; padding: .8rem .95rem; color: #182327; font-weight: 600; background: #e6f3f6; border: 1px solid #2a7f8e; border-radius: 12px; font-size: .92rem; text-align: center; }
 .acoes-acesso { display: grid; gap: .75rem; }
 .acoes-acesso-dupla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 /* Botões auxiliares subordinados ao Entrar: 42px de altura e sempre em uma única linha. */
