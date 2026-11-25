@@ -32,5 +32,5 @@
 ## Endereços do piloto
 
 - `/#prototipos` para entrar pela landing page.
-- `/estoque/` para consultar lotes. Cadastro manual ou assistido, correção, abertura e saídas partem da própria tela. O dono consulta os descartes recentes.
-- O endereço `/equipe` está previsto para o dono administrar acessos. O fluxo de conclusão do convite será definido nessa etapa.
+- `/estoque/` para consultar lotes. Cadastro manual ou assistido, correção, abertura e saídas partem da própria tela. O dono consulta os descartes recentes e acessa a gestão da equipe pelo botão **Equipe**.
+- `/equipe/` (com redirecionamento de `/equipe` para `/equipe/`) para o dono ativo liberar acesso por usuário ou e-mail, reativar vínculos e remover acessos com efeito imediato mesmo com sessão aberta.

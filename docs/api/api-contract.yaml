@@ -1,0 +1,400 @@
+openapi: 3.1.0
+info:
+  title: VisionChef API (Sync)
+  version: 0.2.0
+  description: >
+    API same-origin servida pela Vercel Node Function (`api/index.js` -> `api/handler.js`)
+    por meio de rewrite `/api/:rota*`. Mantém a sessão em cookie HttpOnly/SameSite=Strict/Secure
+    e encaminha o JWT individual do usuário ao Supabase preservando RLS.
+servers:
+  - url: https://sync-solucoes.vercel.app
+    description: Produção (piloto controlado)
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: JWT HS256 assinado pelo servidor contendo os tokens Supabase do usuário (HttpOnly, SameSite=Strict, Secure).
+  schemas:
+    ErroPadrao:
+      type: object
+      required: [erro]
+      properties:
+        erro:
+          type: string
+        codigo:
+          type: string
+          nullable: true
+    Restaurante:
+      type: object
+      required: [id, nome]
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+    LoteEstoque:
+      type: object
+      properties:
+        lote_id: { type: string, format: uuid }
+        parte_id: { type: string, format: uuid }
+        insumo: { type: string }
+        codigo_fabricante: { type: string, nullable: true }
+        validade_aplicavel: { type: string, format: date }
+        medida: { type: string, enum: [un, kg, L] }
+        saldo: { type: string }
+        situacao: { type: string, enum: [em_dia, breve, hoje, vencido] }
+        revisao_validade: { type: integer }
+        data_abertura: { type: string, format: date, nullable: true }
+        validade_abertura: { type: string, format: date, nullable: true }
+        validade_embalagem: { type: string, format: date }
+        local_armazenamento: { type: string, nullable: true }
+    MembroEquipe:
+      type: object
+      required: [usuario_id, papel, ativo]
+      properties:
+        usuario_id: { type: string, format: uuid }
+        nome_usuario: { type: string, nullable: true }
+        email: { type: string, format: email }
+        papel: { type: string, enum: [dono, funcionario] }
+        ativo: { type: boolean }
+
+paths:
+  /api/health:
+    get:
+      summary: Liveness da função Node
+      description: Confirma que a função serverless está ativa sem depender de rede externa ou expor configuração.
+      responses:
+        "200":
+          description: Serviço ativo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [ok] }
+                  servico: { type: string, example: visionchef-api }
+                  runtime: { type: string, example: node }
+                  timestamp: { type: string, format: date-time }
+
+  /api/health/ready:
+    get:
+      summary: Readiness da API e do Supabase Auth
+      description: Valida configuração privada e disponibilidade do `/auth/v1/health` sem expor URLs ou segredos.
+      responses:
+        "200":
+          description: Dependências prontas
+        "503":
+          description: Configuração ausente/inválida ou Supabase Auth indisponível
+
+  /api/auth/login:
+    post:
+      summary: Autenticar com usuário ou e-mail e senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identificador, senha]
+              properties:
+                identificador: { type: string }
+                senha: { type: string }
+      responses:
+        "200":
+          description: Sessão criada em cookie HttpOnly
+        "401":
+          description: Credenciais inválidas (mensagem genérica)
+        "403":
+          description: Origem não autorizada
+        "429":
+          description: Limite de tentativas excedido
+
+  /api/auth/signup:
+    post:
+      summary: Criar conta individual (sem vínculo automático ao restaurante)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nomeUsuario, email, senha]
+              properties:
+                nomeUsuario: { type: string, pattern: "^[a-z0-9][a-z0-9._-]{2,31}$" }
+                email: { type: string, format: email }
+                senha: { type: string, minLength: 15, maxLength: 128 }
+      responses:
+        "201":
+          description: Conta criada
+        "400":
+          description: Dados ou política de senha inválidos
+        "429":
+          description: Muitos cadastros em sequência
+
+  /api/auth/recover:
+    post:
+      summary: Solicitar link de recuperação de senha
+      description: Protegido por rate limit compartilhado. Por exceção formal (ADR-002), retorna 404 quando não existe conta para o e-mail informado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200":
+          description: Link de recuperação solicitado via Supabase Auth
+        "400":
+          description: E-mail inválido
+        "404":
+          description: Nenhuma conta encontrada para o e-mail informado
+        "429":
+          description: Limite de solicitações excedido
+
+  /api/auth/update-password:
+    post:
+      summary: Concluir redefinição de senha usando token de recuperação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [access_token, senha]
+              properties:
+                access_token: { type: string }
+                senha: { type: string, minLength: 15, maxLength: 128 }
+      responses:
+        "200":
+          description: Senha atualizada e cookie de sessão limpo
+        "400":
+          description: Senha inválida ou token expirado
+        "401":
+          description: Token de recuperação inválido
+
+  /api/auth/session:
+    get:
+      summary: Consultar sessão atual, restaurantes vinculados e estado de confirmação opcional
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Estado da sessão (`user: null` quando não autenticado)
+
+  /api/auth/logout:
+    post:
+      summary: Encerrar sessão atual e remover cookie
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Sessão encerrada
+
+  /api/auth/request-email-verification:
+    post:
+      summary: Solicitar e-mail de confirmação opcional dentro da área autenticada
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: E-mail aceito pelo servidor SMTP ou endereço já confirmado
+        "401":
+          description: Sessão necessária
+        "429":
+          description: Muitos pedidos de confirmação
+        "503":
+          description: SMTP ou serviço auxiliar indisponível
+
+  /api/auth/verify-email:
+    post:
+      summary: Consumir token de uso único da confirmação opcional de e-mail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string, pattern: "^[A-Za-z0-9_-]{43}$" }
+      responses:
+        "200":
+          description: E-mail confirmado
+        "400":
+          description: Token inválido, expirado ou já utilizado
+        "429":
+          description: Limite excedido
+
+  /api/restaurantes:
+    get:
+      summary: Listar restaurantes com vínculo ativo do usuário
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Lista de restaurantes autorizados
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Restaurante" }
+        "401":
+          description: Sessão necessária
+
+  /api/estoque:
+    get:
+      summary: Listar partes ativas do estoque ordenadas por validade aplicável
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: restaurante
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Lista de lotes/partes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LoteEstoque" }
+        "400":
+          description: Restaurante inválido
+        "401":
+          description: Sessão necessária
+
+  /api/estoque/cadastrar:
+    post:
+      summary: Cadastrar lote atomicamente (idempotente por p_operacao_id)
+      security:
+        - sessionCookie: []
+      responses:
+        "200": { description: UUID do lote cadastrado }
+        "403": { description: Sem vínculo ativo com o restaurante }
+        "409": { description: Chave de operação reutilizada com dados diferentes }
+
+  /api/estoque/corrigir-validade:
+    post:
+      summary: Corrigir validade original do lote com trava otimista (p_revisao)
+      security:
+        - sessionCookie: []
+      responses:
+        "200": { description: UUID do lote atualizado }
+        "403": { description: Sem acesso ao restaurante }
+        "409": { description: Conflito de revisão (PT409) }
+
+  /api/estoque/registrar-abertura:
+    post:
+      summary: Separar parte aberta/fracionada preservando o lote de origem
+      security:
+        - sessionCookie: []
+      responses:
+        "200": { description: UUID da nova parte aberta }
+        "403": { description: Sem acesso ao restaurante }
+        "409": { description: Saldo insuficiente ou lote vencido (PT409) }
+
+  /api/estoque/registrar-saida:
+    post:
+      summary: Registrar baixa parcial ou total por uso ou descarte
+      security:
+        - sessionCookie: []
+      responses:
+        "200": { description: UUID da saída registrada }
+        "403": { description: Sem acesso ao restaurante }
+        "409": { description: Uso em lote vencido ou saldo insuficiente (PT409) }
+
+  /api/descartes:
+    get:
+      summary: Consultar últimos 50 descartes (exclusivo para dono; retorna null para funcionário)
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: restaurante
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Lista de descartes ou null quando o perfil não é dono }
+
+  /api/equipe:
+    get:
+      summary: Listar membros da equipe do restaurante (exclusivo para dono ativo)
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: restaurante
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Membros ativos e inativos do restaurante
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MembroEquipe" }
+        "400": { description: Restaurante inválido }
+        "401": { description: Sessão necessária }
+        "403": { description: Acesso restrito ao dono ativo do restaurante }
+
+  /api/equipe/vincular:
+    post:
+      summary: Liberar ou reativar acesso de conta cadastrada ao restaurante (exclusivo para dono)
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [p_restaurante_id, p_identificador]
+              properties:
+                p_restaurante_id: { type: string, format: uuid }
+                p_identificador: { type: string, minLength: 3, maxLength: 254 }
+                p_papel: { type: string, enum: [funcionario, dono], default: funcionario }
+      responses:
+        "200":
+          description: Vínculo criado ou reativado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MembroEquipe" }
+        "400": { description: Dados inválidos }
+        "403": { description: Acesso restrito ao dono ativo }
+        "404": { description: Conta não encontrada para o usuário ou e-mail informado (PT404) }
+        "409": { description: Tentativa de rebaixar o único dono ativo (PT409) }
+
+  /api/equipe/remover:
+    post:
+      summary: Revogar imediatamente o acesso de um membro ao restaurante (exclusivo para dono)
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [p_restaurante_id, p_usuario_id]
+              properties:
+                p_restaurante_id: { type: string, format: uuid }
+                p_usuario_id: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Resultado da revogação (`ativo = false` com bloqueio imediato via RLS)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  removido: { type: boolean }
+        "400": { description: Identificadores inválidos }
+        "403": { description: Acesso restrito ao dono ativo }
+        "404": { description: Membro não encontrado neste restaurante (PT404) }
+        "409": { description: Tentativa de remover o único dono ativo (PT409) }

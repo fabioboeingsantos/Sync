@@ -1,0 +1,61 @@
+# Pipeline de CI do VisionChef (conforme Seção 6.1 da especificação normativa).
+# Roda em PRs e pushes na branch main sem expor segredos de produção.
+name: CI VisionChef
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  qualidade:
+    name: Testes, build e checagens de segurança
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Instalar dependências travadas (lockfile)
+        run: npm ci
+
+      - name: Executar suíte de testes automatizados
+        run: npm test
+
+      - name: Validar build integrado (dist/)
+        run: npm run build
+
+      - name: Verificar ausência de segredos versionados e no bundle público
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            const path = require("node:path");
+            const proibidos = ["JWT_SECRET_KEY", "SMTP_PASSWORD", "sb_secret_", "SUPABASE_SERVICE_ROLE_KEY"];
+            const percorrer = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((item) => {
+              const caminho = path.join(dir, item.name);
+              return item.isDirectory() ? percorrer(caminho) : [caminho];
+            });
+            for (const arquivo of percorrer("dist")) {
+              if (!/\.(js|html|css|json|txt)$/i.test(arquivo)) continue;
+              const conteudo = fs.readFileSync(arquivo, "utf8");
+              for (const termo of proibidos) {
+                if (conteudo.includes(termo)) {
+                  console.error(`Termo sensível encontrado no bundle público: ${arquivo} (${termo})`);
+                  process.exit(1);
+                }
+              }
+            }
+            console.log("Bundle público dist/ verificado sem segredos.");
+          '
+
+      - name: Auditoria de dependências (nível alto/crítico)
+        run: npm audit --audit-level=high

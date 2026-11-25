@@ -171,13 +171,17 @@ async function enviarConfirmacao(cfg, destinatario, token, origem) {
     socketTimeout: 15000,
   });
   const link = `${origem}/#confirmar-email=${token}`;
-  // Envia versão em texto e HTML com identidade VisionChef em português claro e acolhedor.
+  // Garante nome de exibição institucional mesmo quando SMTP_FROM guarda apenas o endereço puro.
+  const remetente = cfg.smtpRemetente.includes('<')
+    ? cfg.smtpRemetente
+    : { name: 'VisionChef · Sync', address: cfg.smtpRemetente };
+  // Envia versão em texto e HTML com identidade Aço Inox, preheader limpo e tom profissional cordial.
   const resultado = await transporter.sendMail({
-    from: cfg.smtpRemetente,
+    from: remetente,
     to: destinatario,
     subject: 'Confirme seu e-mail no VisionChef',
-    text: `Olá!\n\nRecebemos seu pedido para confirmar este e-mail na sua conta do VisionChef.\n\nAcesse o link abaixo para concluir:\n${link}\n\nEsse link vale por 24 horas e pode ser usado uma única vez. Se não foi você quem pediu, pode ignorar esta mensagem com tranquilidade.\n\nEquipe VisionChef · Sync`,
-    html: `<!doctype html><html lang="pt-BR"><body style="margin:0;padding:24px;background:#f4f6f7;font-family:Arial,sans-serif;color:#182327;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #2a7f8e;border-radius:14px;overflow:hidden;"><tr><td style="background:#0f4c5c;padding:20px 24px;color:#ffffff;"><p style="margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a8d5dd;font-weight:700;">Sync · VisionChef</p><h1 style="margin:6px 0 0;font-size:20px;line-height:1.25;">Confirme seu e-mail</h1></td></tr><tr><td style="padding:24px;"><p style="margin:0 0 14px;font-size:15px;line-height:1.55;">Olá! Tudo bem?</p><p style="margin:0 0 20px;font-size:15px;line-height:1.55;">Recebemos o seu pedido para confirmar este endereço na sua conta do <strong>VisionChef</strong>. É só clicar no botão abaixo:</p><p style="margin:0 0 22px;"><a href="${link}" style="display:inline-block;padding:13px 22px;background:#0f4c5c;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">Confirmar meu e-mail</a></p><p style="margin:0 0 12px;font-size:13px;line-height:1.5;color:#2a7f8e;">Esse link vale por 24 horas e pode ser usado uma única vez. Se você não fez esse pedido, pode ignorar esta mensagem sem problemas.</p><p style="margin:0;font-size:12px;line-height:1.5;color:#2a7f8e;word-break:break-all;">Se o botão não abrir, copie este endereço no navegador:<br>${link}</p></td></tr></table></body></html>`,
+    text: `Olá,\n\nRecebemos sua solicitação para confirmar este endereço na sua conta do VisionChef.\n\nAcesse o link abaixo para concluir a verificação:\n${link}\n\nEste link é válido por 24 horas e pode ser utilizado uma única vez. Caso você não tenha feito esta solicitação, basta ignorar esta mensagem.\n\nAtenciosamente,\nEquipe VisionChef · Sync`,
+    html: `<!doctype html><html lang="pt-BR"><body style="margin:0;padding:24px;background:#f4f6f7;font-family:Arial,sans-serif;color:#182327;"><span style="display:none;max-height:0;overflow:hidden;opacity:0;">Conclua a confirmação do seu endereço na conta VisionChef (link válido por 24 horas).</span><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #2a7f8e;border-radius:14px;overflow:hidden;"><tr><td style="background:#0f4c5c;padding:20px 24px;color:#ffffff;"><p style="margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a8d5dd;font-weight:700;">Sync · VisionChef</p><h1 style="margin:6px 0 0;font-size:20px;line-height:1.25;">Confirme seu e-mail</h1></td></tr><tr><td style="padding:24px;"><p style="margin:0 0 14px;font-size:15px;line-height:1.55;">Olá,</p><p style="margin:0 0 20px;font-size:15px;line-height:1.55;">Recebemos sua solicitação para confirmar este endereço na sua conta do <strong>VisionChef</strong>. Clique no botão abaixo para concluir:</p><p style="margin:0 0 22px;"><a href="${link}" style="display:inline-block;padding:13px 22px;background:#0f4c5c;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">Confirmar e-mail</a></p><p style="margin:0 0 12px;font-size:13px;line-height:1.5;color:#2a7f8e;">Este link é válido por 24 horas e pode ser utilizado uma única vez. Caso não tenha feito esta solicitação, basta ignorar esta mensagem.</p><p style="margin:0;font-size:12px;line-height:1.5;color:#2a7f8e;word-break:break-all;">Se o botão não abrir, copie este endereço no navegador:<br>${link}</p></td></tr></table></body></html>`,
   });
   const aceitos = Array.isArray(resultado?.accepted) ? resultado.accepted.length : 0;
   const rejeitados = Array.isArray(resultado?.rejected) ? resultado.rejected.length : 0;
@@ -212,21 +216,23 @@ async function obterSessao(requisicao, cfg) {
 // Transforma erros conhecidos do PostgREST em mensagens úteis sem expor detalhes internos.
 function erroBanco(remoto) {
   const codigo = remoto.dados?.code;
-  const mensagem = codigo === '42501' ? 'Sua conta não tem acesso a esse estoque.'
+  const mensagem = codigo === '42501' ? 'Sua conta não tem acesso a esse estoque ou operação.'
     : codigo === '23505' ? 'Este registro já foi enviado com outros dados.'
-      : remoto.status === 401 ? 'Entre novamente para continuar.'
-        : 'Não foi possível concluir a operação. Confira os dados e tente novamente.';
-  return resposta({ erro: mensagem, codigo }, remoto.status || 503);
+      : codigo === 'PT404' ? (remoto.dados?.message || 'Registro não encontrado.')
+        : codigo === 'PT409' ? (remoto.dados?.message || 'Não foi possível concluir por conflito de estado.')
+          : codigo === '22023' ? (remoto.dados?.message || 'Confira os dados informados e tente novamente.')
+            : remoto.status === 401 ? 'Entre novamente para continuar.'
+              : 'Não foi possível concluir a operação. Confira os dados e tente novamente.';
+  const status = codigo === '42501' ? 403
+    : codigo === 'PT404' ? 404
+      : codigo === 'PT409' || codigo === '23505' ? 409
+        : codigo === '22023' ? 400
+          : remoto.status || 503;
+  return resposta({ erro: mensagem, codigo }, status);
 }
 
 // Atende login, cadastro, sessão e dados do estoque sem entregar tokens Supabase ao navegador.
 export async function tratarApi(requisicao) {
-  let cfg;
-  try { cfg = configuracao(); } catch (erro) {
-    // Registra apenas o motivo técnico da validação, sem valores de variáveis ou segredos.
-    console.error('Configuração inválida da API:', erro?.message ?? 'desconhecida');
-    return resposta({ erro: 'Backend não configurado.' }, 503);
-  }
   const url = new URL(requisicao.url);
   // Aceita a rota direta (com ou sem barra final) e o rewrite da Vercel para /api/index?__rota=...
   const rotaDireta = url.pathname.replace(/^\/api\/?/, '').replace(/\/+$/, '');
@@ -234,6 +240,38 @@ export async function tratarApi(requisicao) {
   const caminho = (!rotaDireta || rotaDireta === 'index' || rotaDireta === 'index.js') && rotaRewrite
     ? rotaRewrite
     : rotaDireta;
+
+  // Liveness: confirma que a função Node está ativa sem expor variáveis nem depender de rede externa.
+  if (caminho === 'health' && requisicao.method === 'GET') {
+    return resposta({ status: 'ok', servico: 'visionchef-api', runtime: 'node', timestamp: new Date().toISOString() }, 200);
+  }
+
+  let cfg;
+  try { cfg = configuracao(); } catch (erro) {
+    // Registra apenas o motivo técnico da validação, sem valores de variáveis ou segredos.
+    console.error('Configuração inválida da API:', erro?.message ?? 'desconhecida');
+    if (caminho === 'health/ready' && requisicao.method === 'GET') {
+      return resposta({ status: 'degraded', dependencias: { configuracao: 'erro', auth: 'nao_verificado' } }, 503);
+    }
+    return resposta({ erro: 'Backend não configurado.' }, 503);
+  }
+
+  // Readiness: valida configuração privada e disponibilidade do Supabase Auth sem expor URL ou chaves.
+  if (caminho === 'health/ready' && requisicao.method === 'GET') {
+    try {
+      const remoto = await fetch(new URL('/auth/v1/health', `${cfg.url}/`), {
+        headers: { apikey: cfg.chavePublica },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!remoto.ok) {
+        return resposta({ status: 'degraded', dependencias: { configuracao: 'ok', auth: 'indisponivel' } }, 503);
+      }
+      return resposta({ status: 'ready', dependencias: { configuracao: 'ok', auth: 'ok' } }, 200);
+    } catch {
+      return resposta({ status: 'degraded', dependencias: { configuracao: 'ok', auth: 'indisponivel' } }, 503);
+    }
+  }
+
   const origem = requisicao.headers.get('origin');
   if (requisicao.method !== 'GET' && requisicao.method !== 'HEAD' && origem !== url.origin) {
     return resposta({ erro: 'Origem não autorizada.' }, 403);
@@ -443,6 +481,46 @@ export async function tratarApi(requisicao) {
       const consulta = new URLSearchParams({ select: 'insumo,codigo_fabricante,medida,quantidade,motivo,registrado_em', restaurante_id: `eq.${restaurante}`, tipo: 'eq.descarte', order: 'registrado_em.desc,id.desc', limit: '50' });
       const remoto = await supabase(cfg, `/rest/v1/saidas_estoque?${consulta}`, { token });
       return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    if (caminho === 'equipe' && requisicao.method === 'GET') {
+      const restaurante = url.searchParams.get('restaurante') ?? '';
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante)) return resposta({ erro: 'Restaurante inválido.' }, 400, cookieAtualizado);
+      const remoto = await supabase(cfg, '/rest/v1/rpc/listar_equipe_restaurante', {
+        metodo: 'POST', corpo: { p_restaurante_id: restaurante }, token,
+      });
+      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    if (caminho === 'equipe/vincular' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 4096);
+      const restaurante = typeof dados.p_restaurante_id === 'string' ? dados.p_restaurante_id : '';
+      const identificador = typeof dados.p_identificador === 'string' ? dados.p_identificador.trim() : '';
+      const papel = typeof dados.p_papel === 'string' ? dados.p_papel.trim().toLowerCase() : 'funcionario';
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante) || identificador.length < 3 || identificador.length > 254 || !['funcionario', 'dono'].includes(papel)) {
+        return resposta({ erro: 'Confira o usuário ou e-mail e o perfil escolhido.' }, 400, cookieAtualizado);
+      }
+      const remoto = await supabase(cfg, '/rest/v1/rpc/vincular_membro_restaurante', {
+        metodo: 'POST',
+        corpo: { p_restaurante_id: restaurante, p_identificador: identificador, p_papel: papel },
+        token,
+      });
+      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
+    if (caminho === 'equipe/remover' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 4096);
+      const restaurante = typeof dados.p_restaurante_id === 'string' ? dados.p_restaurante_id : '';
+      const usuarioId = typeof dados.p_usuario_id === 'string' ? dados.p_usuario_id : '';
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante) || !/^[0-9a-f-]{36}$/i.test(usuarioId)) {
+        return resposta({ erro: 'Confira os dados da pessoa selecionada.' }, 400, cookieAtualizado);
+      }
+      const remoto = await supabase(cfg, '/rest/v1/rpc/remover_membro_restaurante', {
+        metodo: 'POST',
+        corpo: { p_restaurante_id: restaurante, p_usuario_id: usuarioId },
+        token,
+      });
+      return remoto.ok ? resposta({ removido: Boolean(remoto.dados) }, 200, cookieAtualizado) : erroBanco(remoto);
     }
 
     const rotasRpc = {

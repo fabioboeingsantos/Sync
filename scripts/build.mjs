@@ -27,9 +27,10 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
   // Segredos e URL do Supabase são lidos pelas funções Node em runtime, nunca pelo build do navegador.
   // Apaga sobras do build anterior, que ainda continha o cliente Supabase no navegador.
   if (!local) await Promise.all(['config.js', 'supabase.js'].map((arquivo) => rm(resolve(destino, arquivo), { force: true })));
-  const [landing, estoque] = await Promise.all([
+  const [landing, estoque, equipe] = await Promise.all([
     readFile(resolve(raiz, 'index.html'), 'utf8'),
     readFile(resolve(raiz, 'piloto/index.html'), 'utf8'),
+    readFile(resolve(raiz, 'piloto/equipe.html'), 'utf8'),
   ]);
   const blocoContas = /\s*<!-- contas-ficticias-inicio -->([\s\S]*?)<!-- contas-ficticias-fim -->/;
   const contasLocais = local ? (estoque.match(blocoContas)?.[1] ?? '').replace('id="contas-locais" hidden', 'id="contas-locais"') : '';
@@ -39,10 +40,14 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
     .replace('<!-- login-piloto-contas -->', contasLocais)
     .replace('href="http://127.0.0.1:8080/#prototipos">Abrir login local', 'href="estoque/">Abrir tela de login');
   const paginaEstoque = local ? estoque : estoque.replace(blocoContas, '');
-  await mkdir(resolve(destino, 'estoque'), { recursive: true });
+  await Promise.all([
+    mkdir(resolve(destino, 'estoque'), { recursive: true }),
+    mkdir(resolve(destino, 'equipe'), { recursive: true }),
+  ]);
   await Promise.all([
     writeFile(resolve(destino, 'index.html'), paginaInicial),
     writeFile(resolve(destino, 'estoque/index.html'), paginaEstoque),
+    writeFile(resolve(destino, 'equipe/index.html'), equipe),
     compilarReact({
       root: raiz,
       configFile: false,
@@ -58,6 +63,7 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
       },
     }),
     cp(resolve(raiz, 'piloto/estoque.js'), resolve(destino, 'estoque.js')),
+    cp(resolve(raiz, 'piloto/equipe.js'), resolve(destino, 'equipe.js')),
     cp(resolve(raiz, 'piloto/interpretar-lote.js'), resolve(destino, 'interpretar-lote.js')),
     cp(resolve(raiz, local ? 'scripts/api-local.js' : 'piloto/api.js'), resolve(destino, 'api.js')),
     cp(resolve(raiz, 'piloto/estoque.css'), resolve(destino, 'css/estoque.css')),

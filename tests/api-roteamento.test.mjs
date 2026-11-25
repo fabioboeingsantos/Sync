@@ -36,13 +36,14 @@ async function comAmbienteApi(overrides, fn) {
   }
 }
 
-test('vercel.json reescreve /api/* para /api/index e redireciona apenas /estoque', async () => {
-  // Evita trailingSlash global, que gera 308 em POST /api/*, mantendo /estoque/ consistente.
+test('vercel.json reescreve /api/* para /api/index e redireciona /estoque e /equipe', async () => {
+  // Evita trailingSlash global, que gera 308 em POST /api/*, mantendo /estoque/ e /equipe/ consistentes.
   const bruto = await readFile(new URL('../vercel.json', import.meta.url), 'utf8');
   const config = JSON.parse(bruto);
   assert.equal(config.trailingSlash, undefined);
   assert.deepEqual(config.redirects, [
     { source: '/estoque', destination: '/estoque/', permanent: true },
+    { source: '/equipe', destination: '/equipe/', permanent: true },
   ]);
   assert.deepEqual(config.rewrites, [
     { source: '/api/:rota*', destination: '/api/index?__rota=:rota*' },
@@ -157,4 +158,33 @@ test('regra global de botões aplica GlassSurface com paleta Aço Inox e compone
   assert.match(landing, /class="footer-brand"/);
   assert.match(landing, /aria-expanded="false"/);
   assert.match(estoqueHtml, /href="\.\.\/"/);
+});
+
+test('endpoints /api/health e /api/health/ready e pipeline CI atendem aos controles de operação', async () => {
+  // Liveness precisa responder 200 mesmo sem variáveis privadas carregadas.
+  const liveness = await tratarApi(new Request('https://sync.test/api/index?__rota=health', { method: 'GET' }));
+  assert.equal(liveness.status, 200);
+  const dadosLiveness = await liveness.json();
+  assert.equal(dadosLiveness.status, 'ok');
+  assert.equal(dadosLiveness.servico, 'visionchef-api');
+
+  // Readiness sem variáveis obrigatórias deve responder 503 sem expor segredos.
+  const antigoUrl = process.env.VISIONCHEF_SUPABASE_URL;
+  delete process.env.VISIONCHEF_SUPABASE_URL;
+  try {
+    const readiness = await tratarApi(new Request('https://sync.test/api/index?__rota=health/ready', { method: 'GET' }));
+    assert.equal(readiness.status, 503);
+    const corpo = await readiness.json();
+    assert.equal(corpo.status, 'degraded');
+    assert.equal(corpo.dependencias.configuracao, 'erro');
+  } finally {
+    if (antigoUrl !== undefined) process.env.VISIONCHEF_SUPABASE_URL = antigoUrl;
+  }
+
+  // Confirma que a CI versionada executa npm ci, testes, build e auditoria.
+  const ci = await readFile(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
+  assert.match(ci, /npm ci/);
+  assert.match(ci, /npm test/);
+  assert.match(ci, /npm run build/);
+  assert.match(ci, /npm audit/);
 });

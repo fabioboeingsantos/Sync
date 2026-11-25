@@ -46,4 +46,7 @@ export const api = {
   registrarAbertura: (abertura) => solicitar('estoque/registrar-abertura', { metodo: 'POST', corpo: abertura }),
   registrarSaida: (saida) => solicitar('estoque/registrar-saida', { metodo: 'POST', corpo: saida }),
   descartes: (restaurante) => solicitar(`descartes?restaurante=${encodeURIComponent(restaurante)}`),
+  equipe: (restaurante) => solicitar(`equipe?restaurante=${encodeURIComponent(restaurante)}`),
+  vincularMembro: (dados) => solicitar('equipe/vincular', { metodo: 'POST', corpo: dados }),
+  removerMembro: (dados) => solicitar('equipe/remover', { metodo: 'POST', corpo: dados }),
 };

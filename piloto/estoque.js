@@ -18,6 +18,7 @@ const salvarAbertura = formAbertura.querySelector('[type="submit"]');
 const cancelarAbertura = porId('cancelar-abertura');
 const erroAbertura = porId('erro-abertura');
 const sair = porId('sair');
+const linkEquipe = porId('link-equipe');
 const minhaConta = porId('minha-conta');
 const contaTopo = porId('conta-topo');
 const abrirContaSemRestaurante = porId('abrir-conta-sem-restaurante');
@@ -113,6 +114,7 @@ async function mostrarSessao(focar = false) {
   if (!restaurante) {
     versaoConsulta += 1;
     porId('lotes').replaceChildren();
+    if (linkEquipe) linkEquipe.hidden = true;
     painelDescartes.hidden = true;
     historicoDescartes.replaceChildren();
     porId('tabela-estoque').hidden = true;
@@ -262,7 +264,10 @@ async function atualizarDescartes(id, consulta) {
   try {
     const descartes = await api.descartes(id);
     if (consulta !== versaoConsulta) return;
-    painelDescartes.hidden = descartes === null;
+    // O acesso à lista de descartes e à tela /equipe/ é exclusivo do dono ativo do restaurante.
+    const ehDono = descartes !== null;
+    if (linkEquipe) linkEquipe.hidden = !ehDono;
+    painelDescartes.hidden = !ehDono;
     historicoDescartes.replaceChildren(...(descartes ?? []).map((saida) => {
       const item = document.createElement('li');
       const codigo = saida.codigo_fabricante ? ' · Lote ' + saida.codigo_fabricante : '';

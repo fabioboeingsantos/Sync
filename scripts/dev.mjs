@@ -5,8 +5,9 @@ import { extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { arquivosPublicos, montarPiloto, raiz } from './build.mjs';
 import {
-  abrirBancoLocal, cadastrarLote, comoUsuario, corrigirValidade, encontrarContaLocal, listarEstoque, listarRestaurantes,
-  listarDescartes, registrarAbertura, registrarSaida, senhaLocal,
+  abrirBancoLocal, autenticarContaLocal, cadastrarLote, comoUsuario, corrigirValidade, criarContaLocal,
+  listarEquipe, listarEstoque, listarRestaurantes, listarDescartes, redefinirSenhaLocal,
+  registrarAbertura, registrarSaida, removerMembro, vincularMembro,
 } from './banco-local.mjs';
 
 // O servidor de desenvolvimento atende apenas os arquivos públicos listados aqui e as rotas de teste.
@@ -20,7 +21,10 @@ const arquivos = new Map([
   ['/', 'index.html'],
   ['/estoque/', 'estoque/index.html'],
   ['/estoque/index.html', 'estoque/index.html'],
+  ['/equipe/', 'equipe/index.html'],
+  ['/equipe/index.html', 'equipe/index.html'],
   ['/estoque.js', 'estoque.js'],
+  ['/equipe.js', 'equipe.js'],
   ['/interpretar-lote.js', 'interpretar-lote.js'],
   ['/entrada.js', 'entrada.js'],
   ['/api.js', 'api.js'],
@@ -58,9 +62,9 @@ export function criarServidorLocal(banco, pastaPublica) {
     const url = new URL(req.url, origem);
     const arquivo = arquivos.get(url.pathname);
     try {
-      // O endereço da pasta mantém os links relativos da tela de estoque consistentes.
-      if (req.method === 'GET' && url.pathname === '/estoque') {
-        res.writeHead(308, { Location: `/estoque/${url.search}` });
+      // O endereço da pasta mantém os links relativos das telas de estoque e equipe consistentes.
+      if (req.method === 'GET' && (url.pathname === '/estoque' || url.pathname === '/equipe')) {
+        res.writeHead(308, { Location: `${url.pathname}/${url.search}` });
         res.end();
         return;
       }
@@ -76,9 +80,8 @@ export function criarServidorLocal(banco, pastaPublica) {
 
       if (req.method === 'POST' && url.pathname === '/demo/entrar') {
         const { identificador, senha } = (await lerJson(req)) ?? {};
-        // Os dois tipos de identificação abrem a mesma conta e a mesma sessão local.
-        const identidade = typeof identificador === 'string' && senha === senhaLocal
-          ? await encontrarContaLocal(banco, identificador) : null;
+        // Valida credenciais somente contra o hash armazenado no banco local (com lazy rehash automático).
+        const identidade = await autenticarContaLocal(banco, identificador, senha);
         if (!identidade) {
           json(res, 401, { erro: 'Confira o usuário ou e-mail e a senha de teste.' });
           return;
@@ -88,6 +91,18 @@ export function criarServidorLocal(banco, pastaPublica) {
         sessoes.set(token, { id: identidade.id, expira: Date.now() + 3_600_000 });
         res.setHeader('Set-Cookie', `visionchef_demo=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=3600`);
         json(res, 200, { autenticado: true });
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/demo/cadastrar') {
+        const { nomeUsuario, email, senha } = (await lerJson(req)) ?? {};
+        try {
+          const criada = await criarContaLocal(banco, { nomeUsuario, email, senha });
+          json(res, 201, { criada: true, usuario: criada.nome });
+        } catch (erroCadastro) {
+          const status = erroCadastro.status ?? (erroCadastro.code === '23505' ? 409 : 400);
+          json(res, status, { erro: status === 409 ? 'Usuário ou e-mail já cadastrado.' : 'Confira o usuário, o e-mail e a senha.' });
+        }
         return;
       }
 
@@ -101,6 +116,29 @@ export function criarServidorLocal(banco, pastaPublica) {
       if (!conta || conta.expira <= Date.now()) {
         sessoes.delete(sessao);
         json(res, 401, { erro: 'Entre novamente para acessar o estoque.' });
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/demo/redefinir-senha') {
+        const { senhaAtual, novaSenha } = (await lerJson(req)) ?? {};
+        const { rows: [usuario] } = await banco.query('select email from auth.users where id = $1', [conta.id]);
+        const validado = usuario ? await autenticarContaLocal(banco, usuario.email, senhaAtual) : null;
+        if (!validado) {
+          json(res, 401, { erro: 'Confira a senha atual.' });
+          return;
+        }
+        try {
+          await redefinirSenhaLocal(banco, conta.id, novaSenha);
+        } catch {
+          json(res, 400, { erro: 'A nova senha deve ter entre 15 e 128 caracteres.' });
+          return;
+        }
+        // Revoga todas as sessões ativas da conta após a troca de senha.
+        for (const [chaveSessao, dadosSessao] of sessoes.entries()) {
+          if (dadosSessao.id === conta.id) sessoes.delete(chaveSessao);
+        }
+        res.setHeader('Set-Cookie', 'visionchef_demo=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0');
+        json(res, 200, { atualizada: true });
         return;
       }
 
@@ -124,6 +162,15 @@ export function criarServidorLocal(banco, pastaPublica) {
       } else if (req.method === 'GET' && url.pathname === '/demo/descartes') {
         const restaurante = url.searchParams.get('restaurante');
         json(res, 200, await comoUsuario(banco, conta.id, (tx) => listarDescartes(tx, restaurante)));
+      } else if (req.method === 'GET' && url.pathname === '/demo/equipe') {
+        const restaurante = url.searchParams.get('restaurante');
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => listarEquipe(tx, restaurante)));
+      } else if (req.method === 'POST' && url.pathname === '/demo/equipe/vincular') {
+        const dados = await lerJson(req);
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => vincularMembro(tx, dados)));
+      } else if (req.method === 'POST' && url.pathname === '/demo/equipe/remover') {
+        const dados = await lerJson(req);
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => removerMembro(tx, dados)));
       } else {
         json(res, 404, { erro: 'Endereço indisponível.' });
       }

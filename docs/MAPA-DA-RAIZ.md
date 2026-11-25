@@ -6,15 +6,18 @@ Inventário de 24/11/2026 do repositório `Sync`. A árvore lista os itens obser
 Sync/
 ├── .dados-local/                banco, arquivos servidos e cache do ambiente local
 ├── .git/                       metadados do Git
-├── api/                        funções Vercel Node para autenticação, sessão e estoque
+├── .github/workflows/ci.yml    pipeline de CI (testes, build, checagem de segredos e audit)
+├── api/                        funções Vercel Node para autenticação, sessão, health, estoque e equipe
 ├── css/                        estilo de botões compartilhado pelo piloto e pelo simulado
 ├── dist/                       saída gerada da versão integrada
 ├── docs/
-│   ├── architecture/            desenho técnico e decisões de arquitetura
-│   ├── futuras-implantacoes/    evolução do piloto e divulgação do portfólio da Sync
-│   ├── implementation/          rastreabilidade de fases, requisitos e evidências (status.yaml)
-│   ├── product/                 escopo, requisitos e fluxos do piloto
-│   └── MAPA-DA-RAIZ.md          inventário e dependências de caminhos
+│   ├── api/                    contrato OpenAPI 3.1 da API Node (api-contract.yaml)
+│   ├── architecture/           desenho técnico, contexto, modelo de dados, ameaças e ADRs
+│   ├── futuras-implantacoes/   evolução do piloto e divulgação do portfólio da Sync
+│   ├── implementation/         rastreabilidade de fases, requisitos e evidências (status.yaml)
+│   ├── operations/             runbook operacional (deploy, rollback, rotação e restore)
+│   ├── product/                escopo, requisitos funcionais/não funcionais e fluxos do piloto
+│   └── MAPA-DA-RAIZ.md         inventário e dependências de caminhos
 ├── frontend/                   componente React de acesso e superfícies GlassSurface (components/)
 ├── Insumo vencendo na cozinha/
 │   ├── abertura/               estilos, tema e mídias da abertura da SYNC
@@ -48,8 +51,8 @@ Sync/
 
 ## Dependências de caminhos
 
-- **Piloto e build.** O [script de build](../scripts/build.mjs) monta a landing a partir de `index.html`, compila em Vite o [acesso em React](../frontend/entrada.jsx), monta `/estoque/` a partir de `piloto/` e publica as funções Node de `api/`. O backend consulta o Supabase e mantém a sessão em cookie HttpOnly. A versão integrada fica em `dist/`; a configuração privada é lida pelas funções em runtime. Os comandos estão no [manifesto npm](../package.json).
-- **Ambiente local.** O [servidor](../scripts/dev.mjs) monta a página local e guarda os dados em `.dados-local/`. O [banco local](../scripts/banco-local.mjs) lê as migrações de `supabase/migrations/`, também usadas nos [testes de estoque](../tests/estoque.test.mjs).
+- **Piloto e build.** O [script de build](../scripts/build.mjs) monta a landing a partir de `index.html`, compila em Vite o [acesso em React](../frontend/entrada.jsx), monta `/estoque/` e `/equipe/` a partir de `piloto/` e publica as funções Node de `api/`. O backend consulta o Supabase e mantém a sessão em cookie HttpOnly. A versão integrada fica em `dist/`; a configuração privada é lida pelas funções em runtime. Os comandos estão no [manifesto npm](../package.json).
+- **Ambiente local.** O [servidor](../scripts/dev.mjs) monta a página local e guarda os dados em `.dados-local/`. O [banco local](../scripts/banco-local.mjs) lê as migrações de `supabase/migrations/`, também usadas nos [testes de estoque](../tests/estoque.test.mjs) e nos [testes de equipe](../tests/equipe.test.mjs).
 - **Simulado.** A [página inicial](../index.html) e a [página de informações](../informacoes.html) continuam na raiz como pontos de entrada. Os estilos da SYNC, o alternador de tema e as mídias da abertura ficam em [abertura/](<../Insumo vencendo na cozinha/abertura/>). As entregas, os guias e os protótipos estão organizados no [índice do simulado](<../Insumo vencendo na cozinha/README.md>).
 - **Itens locais e gerados.** `.dados-local/`, `dist/`, `node_modules/`, `.env.local`, `.vercel/` e `supabase/.temp/`, quando existirem, estão cobertos pelo [.gitignore](../.gitignore). `.env.example` é o modelo compartilhado.
 

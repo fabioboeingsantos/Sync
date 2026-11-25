@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Equipe | VisionChef</title>
+  <!-- A tela de equipe fica em /equipe/ e reutiliza a paleta Aço Inox e o padrão GlassSurface de botões. -->
+  <link rel="stylesheet" href="../css/estoque.css">
+  <link rel="stylesheet" href="../css/botoes.css">
+  <script type="module" src="../equipe.js"></script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Ir para o conteúdo</a>
+  <header class="topo">
+    <div class="largura topo-conteudo">
+      <a class="marca marca-link" href="../" aria-label="Sync VisionChef, voltar ao início">
+        <img class="marca-icone" src="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/coruja-sync-icone.png" width="38" height="38" alt="">
+        <span>VisionChef <small>· Sync</small></span>
+      </a>
+      <div class="acoes-topo">
+        <a class="link-topo" href="../estoque/">Estoque</a>
+        <a class="link-topo" href="../">Início Sync</a>
+        <span class="conta-topo" id="conta-topo" hidden></span>
+        <button class="botao botao-secundario" id="sair" type="button" hidden>Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="largura" id="conteudo" tabindex="-1">
+    <p class="aviso-local" id="ambiente-local" hidden>Ambiente local com contas e dados fictícios</p>
+    <p id="situacao-sessao" role="status" class="mensagem">Verificando acesso…</p>
+
+    <section id="precisa-entrar" class="painel" aria-labelledby="titulo-entrar" hidden>
+      <h1 id="titulo-entrar" tabindex="-1">Entre para gerenciar a equipe</h1>
+      <p>O gerenciamento de acessos da equipe exige uma conta de dono autenticada.</p>
+      <div class="acoes" style="margin-top: 1rem;">
+        <a class="botao botao-primario" href="../estoque/">Ir para a tela de login</a>
+      </div>
+    </section>
+
+    <section id="sem-permissao" class="painel" aria-labelledby="titulo-sem-permissao" hidden>
+      <h1 id="titulo-sem-permissao" tabindex="-1">Acesso restrito ao dono</h1>
+      <p id="mensagem-sem-permissao">Somente o dono ativo do restaurante pode liberar ou remover acessos da equipe.</p>
+      <div class="acoes" style="margin-top: 1rem;">
+        <a class="botao botao-secundario" href="../estoque/">Voltar para o estoque</a>
+      </div>
+    </section>
+
+    <section id="aplicacao-equipe" aria-labelledby="titulo-equipe" hidden>
+      <div class="cabecalho-estoque">
+        <div>
+          <p class="restaurante" id="restaurante"></p>
+          <h1 id="titulo-equipe" tabindex="-1">Acessos da equipe</h1>
+        </div>
+        <a class="botao botao-secundario" href="../estoque/">Voltar ao estoque</a>
+      </div>
+
+      <p class="mensagem" id="feedback" role="status"></p>
+
+      <section class="painel painel-cadastro" aria-labelledby="titulo-vincular">
+        <h2 id="titulo-vincular">Liberar acesso ao restaurante</h2>
+        <p style="margin-top: .5rem; color: #2a7f8e;">Informe o usuário ou e-mail de uma conta já criada na página inicial. O acesso ao estoque é liberado na hora.</p>
+        <form id="form-vincular" class="formulario">
+          <div class="grade-formulario">
+            <label>Usuário ou e-mail
+              <input name="identificador" type="text" maxlength="254" placeholder="ex.: cozinha.maria ou maria@exemplo.com" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+            </label>
+            <label>Perfil de acesso
+              <select name="papel">
+                <option value="funcionario">Funcionário (consulta e movimenta estoque)</option>
+                <option value="dono">Dono (estoque, descartes e gestão da equipe)</option>
+              </select>
+            </label>
+          </div>
+          <p id="erro-vincular" class="mensagem erro" role="alert"></p>
+          <div class="acoes">
+            <button type="submit" class="botao botao-primario">Liberar acesso</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="painel painel-lista" aria-labelledby="titulo-membros">
+        <h2 id="titulo-membros" tabindex="-1">Pessoas com vínculo no restaurante</h2>
+        <p id="mensagem-lista" class="mensagem" role="status"></p>
+        <button type="button" class="botao botao-secundario" id="recarregar" hidden>Tentar novamente</button>
+        <div id="tabela-equipe" hidden>
+          <table role="table" aria-labelledby="titulo-membros">
+            <thead role="rowgroup">
+              <tr role="row">
+                <th role="columnheader" scope="col">Pessoa</th>
+                <th role="columnheader" scope="col">Perfil</th>
+                <th role="columnheader" scope="col">Situação</th>
+                <th role="columnheader" scope="col">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="membros" role="rowgroup"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Diálogo de confirmação para remoção imediata de acesso, inclusive com sessão aberta. -->
+      <dialog id="dialogo-remover" class="painel dialogo-validade" aria-labelledby="titulo-remover">
+        <h2 id="titulo-remover">Remover acesso ao estoque</h2>
+        <p id="membro-em-remocao" style="margin-top: .75rem;"></p>
+        <p style="margin-top: .5rem; color: #2a7f8e;">A revogação vale imediatamente: mesmo que esta pessoa esteja com o sistema aberto, ela deixará de ler e movimentar o estoque deste restaurante.</p>
+        <p id="erro-remover" class="mensagem erro" role="alert"></p>
+        <div class="acoes" style="margin-top: 1rem;">
+          <button type="button" class="botao botao-secundario danger" id="confirmar-remover">Confirmar remoção</button>
+          <button type="button" class="botao botao-secundario" id="cancelar-remover">Cancelar</button>
+        </div>
+      </dialog>
+    </section>
+  </main>
+</body>
+</html>

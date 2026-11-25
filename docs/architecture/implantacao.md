@@ -49,9 +49,9 @@ A função de login por nome recebe somente chamadas com HMAC do backend; a fun�
 
 ## 3. Build e deploy
 
-O projeto Vercel usa a raiz do repositório, framework `Other`, comando `npm run build` e saída `dist/`. O `vercel.json` redireciona `/estoque` para `/estoque/` e reescreve todas as rotas `/api/:rota*` para a função Node única em `api/index.js` (com query `__rota`), evitando `404` e redirecionamentos `308` em chamadas `POST`. O build gera arquivos estáticos e não precisa das variáveis privadas; as funções exigem variáveis definidas no runtime da Vercel.
+O projeto Vercel usa a raiz do repositório, framework `Other`, comando `npm run build` e saída `dist/`. O `vercel.json` redireciona `/estoque` → `/estoque/` e `/equipe` → `/equipe/`, e reescreve todas as rotas `/api/:rota*` para a função Node única em `api/index.js` (com query `__rota`), evitando `404` e redirecionamentos `308` em chamadas `POST`. Os endpoints `GET /api/health` e `GET /api/health/ready` servem para checagem de saúde pós-deploy. O procedimento completo de release, rollback e rotação de segredos está em [runbook.md](../operations/runbook.md).
 
-Depois de configurar os valores e confirmar migrações/funções, publique usando o fluxo de deploy escolhido para o projeto. Para conferir localmente apenas a compilação, execute `npm.cmd run build`; isso não publica código nem modifica o Supabase.
+Depois de configurar os valores e confirmar migrações/funções, publique usando o fluxo de deploy escolhido para o projeto (`npx vercel --prod --yes`). Para conferir localmente apenas a compilação, execute `npm.cmd run build`; isso não publica código nem modifica o Supabase.
 
 ## 4. Auth, e-mail e validação
 
@@ -61,9 +61,8 @@ O cadastro cria uma conta Auth e nome único, mas não concede vínculo com rest
 
 Após a implantação, valide: login por nome e e-mail; tela de login com somente credenciais e recuperação; cookie `HttpOnly`, `SameSite=Strict` e `Secure`; expiração/renovação e saída; cadastro que abre a área da conta; solicitação de confirmação dentro da conta e consumo único do link; recuperação; bloqueio depois do limite; isolamento por restaurante; e recusa das funções Edge quando a assinatura interna é inválida. Confirme que o estoque continua inacessível sem vínculo ativo.
 
-## 5. O que permanece pendente
+## 5. Situação atual e próximos passos
 
-- Aplicar migração `20261124000900` e publicar a função Edge `verificacao-email` no projeto correto.
-- Configurar SMTP privado na Vercel e no Supabase; desligar a confirmação nativa somente após publicar o novo fluxo.
-- Valores privados cadastrados em Production e Preview na Vercel e segredo HMAC configurado no Supabase.
-- Deploy posterior e validação integrada no domínio de produção.
+- **Já publicado e validado em produção (`visionchef` / `sync-solucoes.vercel.app`):** migrações `001`–`012`, Edge Functions (`login-usuario`, `limitar-autenticacao`, `verificacao-email` com `acao: 'existe'`), recuperação de senha via Supabase Auth SMTP, verificação de e-mail inexistente (`404`), e confirmação opcional ponta a ponta via Vercel/Nodemailer.
+- **Pronto para o próximo release:** migração `20261124001300_gestao_equipe.sql`, tela `/equipe/`, endpoints `/api/health`, `/api/health/ready` e `/api/equipe/*`, pipeline CI `.github/workflows/ci.yml`, Argon2id local (`scripts/senhas.mjs`) e refinamento do remetente de confirmação.
+- **Antes do lançamento comercial (Bloco 5):** separar projeto Supabase para Preview, ensaiar backup/restore conforme [runbook.md](../operations/runbook.md), e avaliar planos comerciais + SMTP transacional dedicado.

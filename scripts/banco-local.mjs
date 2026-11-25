@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
+import { gerarHashSenha, precisaAtualizarHash, verificarSenha, verificarSenhaFicticia } from './senhas.mjs';
 
 // O restaurante adicional permite verificar que o estoque fica isolado por vínculo da equipe.
 export const restaurantePiloto = '10000000-0000-4000-8000-000000000001';
@@ -64,7 +66,20 @@ export async function abrirBancoLocal(diretorio) {
     await aplicarMigracoes(banco);
 
     // Prepara os dados fictícios preservando os registros já existentes ao reiniciar o servidor.
+    // As senhas de demonstração são gravadas exclusivamente como hash Argon2id (nunca em texto puro).
+    const hashesPadrao = new Map();
+    for (const [email] of contas) {
+      hashesPadrao.set(email, await gerarHashSenha(senhaLocal));
+    }
     await banco.transaction(async (tx) => {
+      await tx.exec(`
+        create table if not exists visionchef_local.credenciais (
+          usuario_id uuid primary key references auth.users(id) on delete cascade,
+          senha_hash text not null,
+          atualizado_em timestamptz not null default now()
+        );
+        revoke all on visionchef_local.credenciais from public, anon, authenticated;
+      `);
       await tx.query(`
         insert into public.restaurantes (id, nome, fuso_horario)
         values ($1, 'Restaurante piloto', 'America/Sao_Paulo'), ($2, 'Outro restaurante', 'America/Sao_Paulo')
@@ -84,6 +99,10 @@ export async function abrirBancoLocal(diretorio) {
           insert into public.membros_restaurante (usuario_id, restaurante_id, papel)
           values ($1, $2, $3) on conflict do nothing
         `, [id, restaurante, papel]);
+        await tx.query(`
+          insert into visionchef_local.credenciais (usuario_id, senha_hash)
+          values ($1, $2) on conflict (usuario_id) do nothing
+        `, [id, hashesPadrao.get(email)]);
       }
     });
     return banco;
@@ -95,10 +114,84 @@ export async function abrirBancoLocal(diretorio) {
 
 export async function encontrarContaLocal(banco, identificador) {
   const nome = identificador.trim().toLowerCase();
-  if (nome.includes('@')) return contas.get(nome);
-  // O servidor local também resolve o nome pela função privada do banco.
-  const { rows: [{ email }] } = await banco.query('select public.email_para_nome_usuario($1) as email', [nome]);
-  return contas.get(email);
+  if (!nome) return null;
+  let email = nome;
+  if (!nome.includes('@')) {
+    // O servidor local também resolve o nome pela função privada do banco.
+    const { rows: [registro] } = await banco.query('select public.email_para_nome_usuario($1) as email', [nome]);
+    email = registro?.email ?? null;
+  }
+  if (!email) return null;
+  const { rows: [usuario] } = await banco.query(`
+    select u.id, u.email, n.nome_usuario as nome
+    from auth.users as u
+    left join public.nomes_usuario as n on n.usuario_id = u.id
+    where lower(u.email) = lower($1)
+    limit 1
+  `, [email]);
+  return usuario ?? null;
+}
+
+// Autentica usuário local comparando apenas contra o hash armazenado e aplica migração transparente (lazy rehash).
+export async function autenticarContaLocal(banco, identificador, senha) {
+  if (typeof identificador !== 'string' || typeof senha !== 'string' || !senha) {
+    await verificarSenhaFicticia(senha);
+    return null;
+  }
+  const conta = await encontrarContaLocal(banco, identificador);
+  if (!conta) {
+    await verificarSenhaFicticia(senha);
+    return null;
+  }
+  const { rows: [credencial] } = await banco.query(
+    'select senha_hash from visionchef_local.credenciais where usuario_id = $1',
+    [conta.id],
+  );
+  if (!credencial || !(await verificarSenha(credencial.senha_hash, senha))) {
+    return null;
+  }
+  if (precisaAtualizarHash(credencial.senha_hash)) {
+    const novoHash = await gerarHashSenha(senha);
+    await banco.query(
+      'update visionchef_local.credenciais set senha_hash = $2, atualizado_em = now() where usuario_id = $1',
+      [conta.id, novoHash],
+    );
+  }
+  return conta;
+}
+
+// Cria conta local gravando somente o hash Argon2id da senha, sem conceder vínculo com restaurante.
+export async function criarContaLocal(banco, { nomeUsuario, email, senha }) {
+  const nome = typeof nomeUsuario === 'string' ? nomeUsuario.trim().toLowerCase() : '';
+  const endereco = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(endereco) || typeof senha !== 'string' || senha.length < 15 || senha.length > 128) {
+    throw Object.assign(new Error('Confira o usuário, o e-mail e a senha.'), { status: 400 });
+  }
+  const senhaHash = await gerarHashSenha(senha);
+  const id = randomUUID();
+  await banco.transaction(async (tx) => {
+    const { rows: [existente] } = await tx.query('select 1 from auth.users where lower(email) = $1', [endereco]);
+    if (existente) throw Object.assign(new Error('E-mail já cadastrado.'), { status: 409, code: '23505' });
+    await tx.query('insert into auth.users (id, email) values ($1, $2)', [id, endereco]);
+    await tx.query('insert into public.nomes_usuario (usuario_id, nome_usuario) values ($1, $2)', [id, nome]);
+    await tx.query('insert into visionchef_local.credenciais (usuario_id, senha_hash) values ($1, $2)', [id, senhaHash]);
+  });
+  return { id, email: endereco, nome };
+}
+
+// Substitui o hash armazenado por um novo hash Argon2id com novo sal aleatório.
+export async function redefinirSenhaLocal(banco, usuarioId, novaSenha) {
+  if (typeof novaSenha !== 'string' || novaSenha.length < 15 || novaSenha.length > 128) {
+    throw Object.assign(new Error('A senha deve ter entre 15 e 128 caracteres.'), { status: 400 });
+  }
+  const novoHash = await gerarHashSenha(novaSenha);
+  const { rows } = await banco.query(`
+    insert into visionchef_local.credenciais (usuario_id, senha_hash, atualizado_em)
+    values ($1, $2, now())
+    on conflict (usuario_id) do update set senha_hash = excluded.senha_hash, atualizado_em = now()
+    returning usuario_id
+  `, [usuarioId, novoHash]);
+  return rows.length > 0;
 }
 
 // As consultas locais executam como authenticated, sem os privilégios do inicializador.
@@ -170,5 +263,29 @@ export async function listarDescartes(tx, restaurante) {
     [restaurante],
   );
   return rows;
+}
+
+// Consulta os membros do restaurante usando a mesma RPC restrita ao dono da versão online.
+export async function listarEquipe(tx, restaurante) {
+  const { rows } = await tx.query('select * from public.listar_equipe_restaurante($1)', [restaurante]);
+  return rows;
+}
+
+// Vincula ou reativa um membro no restaurante pelo nome de usuário ou e-mail.
+export async function vincularMembro(tx, dados) {
+  const { rows: [registro] } = await tx.query(
+    'select public.vincular_membro_restaurante($1, $2, $3) as membro',
+    [dados.p_restaurante_id, dados.p_identificador, dados.p_papel ?? 'funcionario'],
+  );
+  return registro.membro;
+}
+
+// Revoga imediatamente o vínculo de acesso de um membro ao restaurante.
+export async function removerMembro(tx, dados) {
+  const { rows: [registro] } = await tx.query(
+    'select public.remover_membro_restaurante($1, $2) as removido',
+    [dados.p_restaurante_id, dados.p_usuario_id],
+  );
+  return { removido: Boolean(registro.removido) };
 }
 

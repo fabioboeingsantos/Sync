@@ -28,4 +28,7 @@ export const api = {
   registrarAbertura: (abertura) => solicitar('lotes/abertura', abertura),
   registrarSaida: (saida) => solicitar('lotes/saida', saida),
   descartes: (restaurante) => solicitar('descartes?restaurante=' + encodeURIComponent(restaurante)),
+  equipe: (restaurante) => solicitar('equipe?restaurante=' + encodeURIComponent(restaurante)),
+  vincularMembro: (dados) => solicitar('equipe/vincular', dados),
+  removerMembro: (dados) => solicitar('equipe/remover', dados),
 };

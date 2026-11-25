@@ -1,10 +1,26 @@
 # VisionChef — primeira versão profissional
 
-**Status** — Escopo inicial do piloto documentado. Telas em revisão.
+**Status** — Escopo do piloto controlado consolidado e alinhado às decisões da [ADR-002](../architecture/decisions/ADR-002-autenticacao-e-emails.md).
 
 ## Problema e público
 
 Donos e funcionários de restaurantes pequenos precisam identificar os lotes que vencem primeiro sem interromper o preparo para procurar datas no caderno. O problema veio do enunciado do simulado. As entrevistas registradas até aqui foram simuladas. Veja a [definição do desafio](<../../Insumo vencendo na cozinha/desafios/E1.md>) e a [proposta do protótipo](<../../Insumo vencendo na cozinha/desafios/E3.md>).
+
+## Governança, metas e privacidade do piloto
+
+- **Responsável (Owner de produto e operação):** Equipe Sync Soluções (repositório `fabioboeingsantos/Sync`, projeto Vercel `cesta-do-vale/sync`, projeto Supabase `visionchef`).
+- **Métrica principal de sucesso do piloto:** 100% dos lotes críticos do restaurante piloto cadastrados e consultados em ordem de validade em menos de 30 segundos por operação no celular, com redução mensurável de descartes por vencimento após 30 dias de uso contínuo.
+- **Metas operacionais (piloto controlado):**
+  - Disponibilidade alvo (SLO): 99,0% mensal para `/api/health` e consultas de estoque (evoluir para 99,5% antes de operação comercial paga).
+  - Latência alvo: p95 ≤ 600 ms nas rotas `/api/estoque`, `/api/equipe` e `/api/auth/session` em região compatível.
+  - Recuperação de desastre: RPO ≤ 24 horas (backup diário do banco) e RTO ≤ 4 horas (redeploy Vercel + restauração de backup no Supabase).
+- **Privacidade, retenção e exclusão (LGPD):**
+  - Dados pessoais mínimos coletados: nome de usuário único, e-mail da conta e vínculo de papel com o restaurante.
+  - Nenhum dado sensível (CPF, cartão, biometria) é coletado.
+  - Retenção: registros de movimentação de estoque mantidos enquanto o restaurante estiver ativo no piloto; tokens de verificação expiram em 24 horas e registros de limite de tentativas expiram automaticamente por janela.
+  - Exclusão: a revogação de acesso em `/equipe/` bloqueia o acesso imediatamente; a exclusão definitiva de conta de usuário (`auth.users`) remove em cascata tokens temporários e é atendida sob solicitação ao responsável em até 15 dias úteis.
+- **Inteligência Artificial no piloto:** `llm_required: false`. O preenchimento assistido em `piloto/interpretar-lote.js` é determinístico local, sem envio de dados para provedores externos de IA.
+- **Gate comercial:** antes de abrir a clientes pagantes externos, provisionar projeto Supabase dedicado de Preview, validar ensaio de backup/restore e contratar planos comerciais da Vercel e do Supabase.
 
 ## Decisões do piloto
 
