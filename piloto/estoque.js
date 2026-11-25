@@ -28,6 +28,7 @@ const contaAcesso = porId('conta-acesso');
 const contaConfirmacao = porId('conta-confirmacao');
 const feedbackConta = porId('feedback-conta');
 const botaoConfirmarEmail = porId('solicitar-confirmacao-email');
+const sairTodosDispositivos = porId('sair-todos-dispositivos');
 const fecharConta = porId('fechar-conta');
 const abrirCadastro = porId('abrir-cadastro');
 const recarregar = porId('recarregar');
@@ -523,6 +524,17 @@ formEntrada.addEventListener('submit', async (evento) => {
   const { identificador, senha } = Object.fromEntries(new FormData(formEntrada));
   try {
     await api.entrar(identificador, senha);
+    // Oferece ao cofre nativo do navegador a escolha Salvar/Nunca sem gravar a senha na página.
+    try {
+      if (typeof window.PasswordCredential === 'function' && navigator.credentials?.store) {
+        await navigator.credentials.store(new window.PasswordCredential({
+          id: String(identificador ?? '').trim(),
+          password: String(senha ?? ''),
+        }));
+      }
+    } catch {
+      // Segue normalmente se o navegador não suportar ou recusar a API de credenciais.
+    }
     formEntrada.reset();
     await mostrarSessao(true);
   } catch (erro) {
@@ -583,11 +595,12 @@ botaoConfirmarEmail.addEventListener('click', async () => {
   }
 });
 
-sair.addEventListener('click', async () => {
-  if (sair.disabled) return;
-  ocupado(sair, true);
+async function encerrarSessao(botaoAcionado, escopo = 'local') {
+  if (botaoAcionado.disabled) return;
+  ocupado(botaoAcionado, true);
   try {
-    await api.sair();
+    await api.sair(escopo);
+    if (dialogoConta.open) dialogoConta.close();
     formLote.reset();
     limparErros();
     envioPendente = null;
@@ -601,12 +614,19 @@ sair.addEventListener('click', async () => {
     porId('painel-cadastro').hidden = true;
     abrirCadastro.setAttribute('aria-expanded', 'false');
     await mostrarSessao(true);
+    if (escopo === 'global') {
+      mensagemSessao.classList.remove('erro');
+      mensagemSessao.textContent = 'Você saiu de todos os dispositivos.';
+    }
   } catch (erro) {
     mensagemSessao.textContent = mensagem(erro, 'Não foi possível sair. Tente novamente.');
   } finally {
-    ocupado(sair, false);
+    ocupado(botaoAcionado, false);
   }
-});
+}
+
+sair.addEventListener('click', () => encerrarSessao(sair, 'local'));
+sairTodosDispositivos?.addEventListener('click', () => encerrarSessao(sairTodosDispositivos, 'global'));
 
 abrirCadastro.addEventListener('click', () => {
   feedback.textContent = '';

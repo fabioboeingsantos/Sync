@@ -88,8 +88,8 @@ export function criarServidorLocal(banco, pastaPublica) {
         }
         sessoes.delete(sessao);
         const token = randomBytes(32).toString('hex');
-        sessoes.set(token, { id: identidade.id, expira: Date.now() + 3_600_000 });
-        res.setHeader('Set-Cookie', `visionchef_demo=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=3600`);
+        sessoes.set(token, { id: identidade.id, expira: Date.now() + 7 * 86_400_000 });
+        res.setHeader('Set-Cookie', `visionchef_demo=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`);
         json(res, 200, { autenticado: true });
         return;
       }
@@ -107,9 +107,18 @@ export function criarServidorLocal(banco, pastaPublica) {
       }
 
       if (req.method === 'POST' && url.pathname === '/demo/sair') {
-        sessoes.delete(sessao);
+        const dados = await lerJson(req).catch(() => ({}));
+        const escopo = dados?.escopo === 'global' ? 'global' : 'local';
+        if (escopo === 'global' && conta?.id) {
+          // Encerra todas as sessões ativas da conta em outros navegadores/dispositivos.
+          for (const [chaveSessao, dadosSessao] of sessoes.entries()) {
+            if (dadosSessao.id === conta.id) sessoes.delete(chaveSessao);
+          }
+        } else {
+          sessoes.delete(sessao);
+        }
         res.setHeader('Set-Cookie', 'visionchef_demo=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0');
-        json(res, 200, { autenticado: false });
+        json(res, 200, { autenticado: false, escopo });
         return;
       }
 

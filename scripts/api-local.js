@@ -12,7 +12,7 @@ async function solicitar(caminho, corpo) {
 export const api = {
   modoLocal: true,
   entrar: (identificador, senha) => solicitar('entrar', { identificador, senha }),
-  sair: () => solicitar('sair', {}),
+  sair: (escopo = 'local') => solicitar('sair', { escopo }),
   restaurantes: async () => {
     try {
       return await solicitar('restaurantes');

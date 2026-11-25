@@ -12,7 +12,9 @@ No projeto `sync-solucoes` da Vercel, abra **Settings → Environment Variables*
 | `VISIONCHEF_SUPABASE_PUBLISHABLE_KEY` | Chave `sb_publishable_` desse mesmo projeto |
 | `JWT_SECRET_KEY` | Segredo aleatório local com ao menos 32 caracteres; use o mesmo valor no Supabase Edge Function Secrets |
 | `JWT_ALGORITHM` | `HS256` |
-| `JWT_EXPIRATION_MINUTES` | `1440` |
+| `JWT_EXPIRATION_MINUTES` | `10080` (ou `1440`; o backend aplica no mínimo `JWT_SESSION_DAYS` = 7 dias por inatividade) |
+| `JWT_SESSION_DAYS` | Opcional, padrão `7` (1 a 30 dias de permanência automática por inatividade) |
+| `JWT_MAX_SESSION_DAYS` | Opcional, padrão `30` (teto absoluto de renovação deslizante sem novo login) |
 | `JWT_COOKIE_NAME` | `access_token` |
 | `JWT_COOKIE_SECURE` | `true` em todos os ambientes Vercel com HTTPS |
 | `AUTH_LOGIN_LIMIT` | `5` |

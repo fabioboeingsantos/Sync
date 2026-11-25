@@ -46,7 +46,7 @@
         <h1 id="titulo-entrada" tabindex="-1">Entre na sua conta</h1>
         <p class="entrada-subtitulo">Acesse com seu usuário ou e-mail e sua senha.</p>
       </div>
-      <form id="form-entrada" class="formulario">
+      <form id="form-entrada" class="formulario" method="post" autocomplete="on">
         <label>Usuário ou e-mail <input name="identificador" type="text" placeholder="Digite seu usuário ou e-mail" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
         <label>Senha
           <span class="campo-senha-estoque">
@@ -98,6 +98,7 @@
       <p id="feedback-conta" class="mensagem" role="status"></p>
       <div class="acoes">
         <button class="botao botao-primario" id="solicitar-confirmacao-email" type="button" hidden>Solicitar confirmação de e-mail</button>
+        <button class="botao botao-secundario danger" id="sair-todos-dispositivos" type="button">Sair de todos os dispositivos</button>
         <button class="botao botao-secundario" id="fechar-conta" type="button">Fechar</button>
       </div>
     </dialog>

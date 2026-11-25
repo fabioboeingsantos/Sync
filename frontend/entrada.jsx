@@ -58,6 +58,20 @@ function CampoSenha({ rotulo, visivel, aoAlternar, ...props }) {
   );
 }
 
+// Oferece ao gerenciador nativo do navegador a opção Salvar/Nunca sem jamais gravar senha no site.
+async function oferecerSalvarSenhaNavegador(identificador, senha) {
+  try {
+    if (typeof window.PasswordCredential !== 'function' || !navigator.credentials?.store) return;
+    const credencial = new window.PasswordCredential({
+      id: String(identificador ?? '').trim(),
+      password: String(senha ?? ''),
+    });
+    await navigator.credentials.store(credencial);
+  } catch {
+    // Alguns navegadores ignoram a API ou bloqueiam por política; o fluxo de login segue normalmente.
+  }
+}
+
 // Este módulo conecta a landing da Sync aos fluxos de sessão, cadastro e recuperação do VisionChef.
 function AcessoVisionChef({ destino }) {
   const hashBruto = window.location.hash;
@@ -110,18 +124,23 @@ function AcessoVisionChef({ destino }) {
   }, [tokenConfirmacao]);
 
   useEffect(() => {
-    // Reaproveita os links da página e abre o mesmo diálogo a partir de qualquer CTA de acesso.
+    // Reaproveita os links da página: com sessão ativa no restaurante, leva direto ao estoque sem pedir login de novo.
     const links = document.querySelectorAll('a[href="#prototipos"]');
     const abrir = (evento) => {
       evento.preventDefault();
+      const querCadastro = evento.currentTarget.dataset.modoAcesso === 'cadastro';
+      if (temAcesso && !querCadastro) {
+        window.location.assign(destino);
+        return;
+      }
       definirMensagem('');
       // Cada CTA pode abrir o mesmo diálogo diretamente no fluxo de entrada ou cadastro.
-      definirModo(evento.currentTarget.dataset.modoAcesso === 'cadastro' ? 'cadastro' : 'entrar');
+      definirModo(querCadastro ? 'cadastro' : conta ? 'conta' : 'entrar');
       definirDialogoAberto(true);
     };
     links.forEach((link) => link.addEventListener('click', abrir));
     return () => links.forEach((link) => link.removeEventListener('click', abrir));
-  }, []);
+  }, [temAcesso, conta, destino]);
 
   useEffect(() => {
     // Permite abrir cadastro, recuperação ou conta via hash (#cadastro, #recuperar, #minha-conta) sem recarregar.
@@ -155,6 +174,7 @@ function AcessoVisionChef({ destino }) {
     definirMensagem('');
     try {
       await api.entrar(identificador, senha);
+      await oferecerSalvarSenhaNavegador(identificador, senha);
       const sessao = api.sessao ? await api.sessao() : null;
       const restaurantes = sessao?.restaurantes ?? await api.restaurantes();
       if (!restaurantes?.length) {
@@ -265,13 +285,13 @@ function AcessoVisionChef({ destino }) {
     }
   }
 
-  // Encerra a sessão sem alterar o vínculo do usuário com o restaurante.
-  async function sairDaConta() {
+  // Encerra a sessão atual ou todas as sessões abertas em outros dispositivos sem alterar vínculos.
+  async function sairDaConta(escopo = 'local') {
     try {
-      await api.sair();
+      await api.sair(escopo);
       definirConta(null);
       definirAcesso(false);
-      definirMensagem('Você saiu da sua conta.');
+      definirMensagem(escopo === 'global' ? 'Você saiu de todos os dispositivos.' : 'Você saiu da sua conta.');
       definirModo('resultado');
     } catch {
       definirMensagem('Não foi possível sair agora. Tente novamente.');
@@ -364,7 +384,7 @@ function AcessoVisionChef({ destino }) {
             <h2 id="titulo-acesso">{modo === 'entrar' ? 'Entre na sua conta' : modo === 'cadastro' ? 'Crie sua conta' : modo === 'recuperar' ? 'Recupere sua senha' : modo === 'redefinir' ? 'Escolha uma nova senha' : modo === 'conta' ? 'Minha conta' : modo === 'confirmar' ? 'Confirme seu e-mail' : 'Acesso ao VisionChef'}</h2>
             <p className="subtitulo-acesso">{modo === 'entrar' ? 'Acesse com seu usuário ou e-mail e sua senha.' : modo === 'cadastro' ? 'A confirmação do e-mail é opcional. O acesso ao estoque depende do vínculo do dono do restaurante.' : modo === 'recuperar' ? 'Informe o e-mail da sua conta para receber o link de redefinição.' : modo === 'conta' ? 'Gerencie a confirmação facultativa do seu endereço. Isso não concede acesso ao estoque.' : modo === 'confirmar' ? 'Abra esta página a partir do link enviado e confirme abaixo para concluir.' : 'A demonstração pública continua disponível na página.'}</p>
           </header>
-          {modo === 'entrar' && <form className="formulario-acesso" ref={formulario} onSubmit={entrar}>
+          {modo === 'entrar' && <form className="formulario-acesso" method="post" autoComplete="on" ref={formulario} onSubmit={entrar}>
             <label>Usuário ou e-mail<input name="identificador" type="text" placeholder="Digite seu usuário ou e-mail" autoComplete="username" autoCapitalize="none" spellCheck={false} required /></label>
             <CampoSenha rotulo="Senha" name="senha" placeholder="Digite sua senha" autoComplete="current-password" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Validando…' : 'Entrar'}</BotaoGlass>
@@ -391,7 +411,8 @@ function AcessoVisionChef({ destino }) {
             <p><strong>Confirmação:</strong> {conta?.email_verificado_app ? 'Confirmado' : 'Opcional · ainda não solicitado'}</p>
             {!conta?.email_verificado_app && <BotaoGlass className="botao-primario" type="button" disabled={enviando} aria-busy={enviando || undefined} onClick={solicitarConfirmacaoEmail}>{enviando ? 'Enviando…' : 'Solicitar confirmação de e-mail'}</BotaoGlass>}
             {!conta?.restaurantes?.length && <p>Sua conta está ativa, mas o estoque ficará indisponível até o dono vincular você ao restaurante.</p>}
-            <BotaoGlass className="botao-secundario" type="button" onClick={sairDaConta}>Sair da conta</BotaoGlass>
+            <BotaoGlass className="botao-secundario" type="button" onClick={() => sairDaConta('local')}>Sair da conta</BotaoGlass>
+            <BotaoGlass className="botao-secundario danger" type="button" onClick={() => sairDaConta('global')}>Sair de todos os dispositivos</BotaoGlass>
           </section>}
           {modo === 'confirmar' && <form className="formulario-acesso" onSubmit={confirmarEmail}>
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Confirmando…' : 'Confirmar e-mail'}</BotaoGlass>

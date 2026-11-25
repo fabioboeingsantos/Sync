@@ -187,12 +187,20 @@ paths:
 
   /api/auth/logout:
     post:
-      summary: Encerrar sessão atual e remover cookie
+      summary: Encerrar sessão atual (`local`) ou todas as sessões em outros dispositivos (`global`)
       security:
         - sessionCookie: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                escopo: { type: string, enum: [local, global], default: local }
       responses:
         "200":
-          description: Sessão encerrada
+          description: Sessão encerrada e cookie removido
 
   /api/auth/request-email-verification:
     post:

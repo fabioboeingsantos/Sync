@@ -38,7 +38,7 @@ export const api = {
     const hash = new URLSearchParams(window.location.hash.slice(1));
     return solicitar('auth/update-password', { metodo: 'POST', corpo: { senha, access_token: hash.get('access_token') } });
   },
-  sair: () => solicitar('auth/logout', { metodo: 'POST', corpo: {} }),
+  sair: (escopo = 'local') => solicitar('auth/logout', { metodo: 'POST', corpo: { escopo } }),
   restaurantes,
   estoque: (restaurante) => solicitar(`estoque?restaurante=${encodeURIComponent(restaurante)}`),
   cadastrar: (lote) => solicitar('estoque/cadastrar', { metodo: 'POST', corpo: lote }),

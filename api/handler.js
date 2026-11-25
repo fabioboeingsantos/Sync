@@ -19,9 +19,15 @@ function configuracao() {
   }
   const algoritmo = ambiente.JWT_ALGORITHM?.trim() || 'HS256';
   if (algoritmo !== 'HS256') throw new Error('O backend aceita somente JWT HS256.');
+  const expiraMinutos = numero('JWT_EXPIRATION_MINUTES', 10080, 15, 43200);
+  // Mantém a sessão salva automaticamente por 7 dias de inatividade (ou valor maior configurado), com teto absoluto de 30 dias.
+  const sessaoDias = numero('JWT_SESSION_DAYS', 7, 1, 30);
+  const maxSessaoDias = numero('JWT_MAX_SESSION_DAYS', 30, sessaoDias, 90);
   return {
     url: url.replace(/\/$/, ''), chavePublica, jwtSecret,
-    expiraMinutos: numero('JWT_EXPIRATION_MINUTES', 1440, 15, 10080),
+    expiraMinutos,
+    duracaoSessaoSegundos: Math.max(expiraMinutos * 60, sessaoDias * 86400),
+    maxSessaoSegundos: Math.max(expiraMinutos * 60, maxSessaoDias * 86400),
     nomeCookie: ambiente.JWT_COOKIE_NAME?.trim() || 'access_token',
     cookieSeguro: ambiente.JWT_COOKIE_SECURE?.trim().toLowerCase() === 'true',
     limiteLogin: numero('AUTH_LOGIN_LIMIT', 5, 1, 100),
@@ -47,12 +53,20 @@ function resposta(dados, status = 200, cabecalhos = {}) {
 }
 
 // Assina o JWT da aplicação com HS256 e inclui a sessão Supabase para chamadas protegidas por RLS.
-function assinarSessao(sessao, cfg, iat = Math.floor(Date.now() / 1000), exp = iat + cfg.expiraMinutos * 60) {
+function assinarSessao(
+  sessao,
+  cfg,
+  iat = Math.floor(Date.now() / 1000),
+  exp = iat + cfg.duracaoSessaoSegundos,
+  maxExp = iat + cfg.maxSessaoSegundos,
+) {
   const cabecalho = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const expLimitado = Math.min(exp, maxExp);
   const corpo = Buffer.from(JSON.stringify({
     iss: 'sync-visionchef', sub: sessao.user.id, email: sessao.user.email,
     access_token: sessao.access_token, refresh_token: sessao.refresh_token,
-    auth_exp: sessao.expires_at ?? Math.floor(Date.now() / 1000) + (sessao.expires_in ?? 3600), iat, exp,
+    auth_exp: sessao.expires_at ?? Math.floor(Date.now() / 1000) + (sessao.expires_in ?? 3600),
+    iat, exp: expLimitado, max_exp: maxExp,
   })).toString('base64url');
   const mensagem = `${cabecalho}.${corpo}`;
   const assinatura = createHmac('sha256', cfg.jwtSecret).update(mensagem).digest('base64url');
@@ -69,7 +83,14 @@ function verificarSessao(token, cfg) {
     if (valorEsperado.length !== valorRecebido.length || !timingSafeEqual(valorEsperado, valorRecebido)) return null;
     const dadosCabecalho = JSON.parse(Buffer.from(cabecalho, 'base64url').toString());
     const dados = JSON.parse(Buffer.from(corpo, 'base64url').toString());
-    if (dadosCabecalho.alg !== 'HS256' || dados.iss !== 'sync-visionchef' || !dados.sub || dados.exp <= Date.now() / 1000) return null;
+    const agora = Date.now() / 1000;
+    if (
+      dadosCabecalho.alg !== 'HS256'
+      || dados.iss !== 'sync-visionchef'
+      || !dados.sub
+      || dados.exp <= agora
+      || (dados.max_exp && dados.max_exp <= agora)
+    ) return null;
     return dados;
   } catch {
     return null;
@@ -77,9 +98,10 @@ function verificarSessao(token, cfg) {
 }
 
 // O cookie só trafega por HTTPS no domínio publicado e nunca fica disponível ao JavaScript da página.
-function cookieSessao(token, cfg, requisicao) {
+function cookieSessao(token, cfg, requisicao, maxAgeSegundos = cfg.duracaoSessaoSegundos) {
   const segura = cfg.cookieSeguro || new URL(requisicao.url).protocol === 'https:';
-  return `${cfg.nomeCookie}=${token}; Path=/api; HttpOnly; SameSite=Strict; Max-Age=${cfg.expiraMinutos * 60}${segura ? '; Secure' : ''}`;
+  const maxAge = Math.max(60, Math.floor(maxAgeSegundos));
+  return `${cfg.nomeCookie}=${token}; Path=/api; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${segura ? '; Secure' : ''}`;
 }
 
 // Apaga a sessão no mesmo escopo em que o cookie foi criado.
@@ -192,13 +214,31 @@ async function enviarConfirmacao(cfg, destinatario, token, origem) {
   return { aceitos, rejeitados };
 }
 
-// Extrai a sessão do cookie e atualiza tokens Supabase perto do vencimento.
+// Extrai a sessão do cookie, renova tokens Supabase perto do vencimento e estende a janela deslizante de uso.
 async function obterSessao(requisicao, cfg) {
   const cookies = requisicao.headers.get('cookie') ?? '';
   const valor = cookies.split(';').map((parte) => parte.trim()).find((parte) => parte.startsWith(`${cfg.nomeCookie}=`))?.slice(cfg.nomeCookie.length + 1);
   const sessao = valor ? verificarSessao(decodeURIComponent(valor), cfg) : null;
   if (!sessao) return { sessao: null, limpar: Boolean(valor) };
-  if (sessao.auth_exp > Date.now() / 1000 + 60) return { sessao, limpar: false };
+
+  const agora = Math.floor(Date.now() / 1000);
+  const maxExp = sessao.max_exp ?? (sessao.iat + cfg.maxSessaoSegundos);
+  const novoExp = Math.min(agora + cfg.duracaoSessaoSegundos, maxExp);
+  // Estende automaticamente a sessão deslizante quando o uso passa de 1 dia desde a última renovação.
+  const precisaEstenderCookie = novoExp - sessao.exp >= 86400;
+  const precisaRenovarAuth = sessao.auth_exp <= agora + 60;
+
+  if (!precisaRenovarAuth) {
+    if (!precisaEstenderCookie) return { sessao, limpar: false };
+    const tokenRenovado = assinarSessao(
+      { user: { id: sessao.sub, email: sessao.email }, access_token: sessao.access_token, refresh_token: sessao.refresh_token, expires_at: sessao.auth_exp },
+      cfg,
+      sessao.iat,
+      novoExp,
+      maxExp,
+    );
+    return { sessao: { ...sessao, exp: novoExp, max_exp: maxExp }, limpar: false, renovarCookie: tokenRenovado, maxAgeCookie: novoExp - agora };
+  }
 
   const renovada = await supabase(cfg, '/auth/v1/token?grant_type=refresh_token', {
     metodo: 'POST', corpo: { refresh_token: sessao.refresh_token },
@@ -208,9 +248,18 @@ async function obterSessao(requisicao, cfg) {
     ...sessao,
     access_token: renovada.dados.access_token,
     refresh_token: renovada.dados.refresh_token,
-    auth_exp: renovada.dados.expires_at ?? Math.floor(Date.now() / 1000) + (renovada.dados.expires_in ?? 3600),
+    auth_exp: renovada.dados.expires_at ?? agora + (renovada.dados.expires_in ?? 3600),
+    exp: novoExp,
+    max_exp: maxExp,
   };
-  return { sessao: atualizada, limpar: false, renovarCookie: assinarSessao(atualizada, cfg, sessao.iat, sessao.exp) };
+  const tokenRenovado = assinarSessao(
+    { user: { id: atualizada.sub, email: atualizada.email }, access_token: atualizada.access_token, refresh_token: atualizada.refresh_token, expires_at: atualizada.auth_exp },
+    cfg,
+    sessao.iat,
+    novoExp,
+    maxExp,
+  );
+  return { sessao: atualizada, limpar: false, renovarCookie: tokenRenovado, maxAgeCookie: novoExp - agora };
 }
 
 // Transforma erros conhecidos do PostgREST em mensagens úteis sem expor detalhes internos.
@@ -395,9 +444,13 @@ export async function tratarApi(requisicao) {
     }
 
     if (caminho === 'auth/logout' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 2048).catch(() => ({}));
+      const escopo = dados?.escopo === 'global' ? 'global' : 'local';
       const estado = await obterSessao(requisicao, cfg);
-      if (estado.sessao) await supabase(cfg, '/auth/v1/logout?scope=local', { metodo: 'POST', token: estado.sessao.access_token }).catch(() => null);
-      return resposta({ autenticado: false }, 200, { 'Set-Cookie': cookieRemovido(cfg, requisicao) });
+      if (estado.sessao) {
+        await supabase(cfg, `/auth/v1/logout?scope=${escopo}`, { metodo: 'POST', token: estado.sessao.access_token }).catch(() => null);
+      }
+      return resposta({ autenticado: false, escopo }, 200, { 'Set-Cookie': cookieRemovido(cfg, requisicao) });
     }
 
     const estado = await obterSessao(requisicao, cfg);
@@ -406,7 +459,9 @@ export async function tratarApi(requisicao) {
       if (caminho === 'auth/session' && requisicao.method === 'GET') return resposta({ user: null, restaurantes: null }, 200, cabecalhos);
       return resposta({ erro: 'Entre novamente para continuar.' }, 401, cabecalhos);
     }
-    const cookieAtualizado = estado.renovarCookie ? { 'Set-Cookie': cookieSessao(estado.renovarCookie, cfg, requisicao) } : {};
+    const cookieAtualizado = estado.renovarCookie
+      ? { 'Set-Cookie': cookieSessao(estado.renovarCookie, cfg, requisicao, estado.maxAgeCookie) }
+      : {};
     const token = estado.sessao.access_token;
 
     if (caminho === 'auth/session' && requisicao.method === 'GET') {
