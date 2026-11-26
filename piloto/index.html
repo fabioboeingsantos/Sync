@@ -130,6 +130,8 @@
         </div>
         <nav class="nav-modulos" id="nav-modulos" aria-label="Administração do restaurante">
           <button type="button" class="botao botao-secundario" id="aba-estoque" data-modulo="estoque" aria-pressed="true">Estoque</button>
+          <!-- O dono acessa o relatório na navegação superior, junto ao módulo Estoque. -->
+          <a class="botao botao-secundario" id="abrir-relatorio-desperdicio" href="#titulo-relatorio-desperdicio" hidden>Ver relatório de desperdício</a>
           <button type="button" class="botao botao-secundario" id="aba-equipe" data-modulo="equipe" aria-pressed="false" hidden>Equipe</button>
           <button type="button" class="botao botao-secundario" id="aba-fornecedores" data-modulo="fornecedores" aria-pressed="false">Fornecedores</button>
         </nav>
@@ -145,7 +147,6 @@
             <p class="subtitulo-modulo" id="ajuda-cadastro-vision">O Vision é o assistente de IA: descreva ou dite o lote, revise os campos preenchidos e salve quando estiverem corretos.</p>
           </div>
           <div class="acoes">
-            <a class="botao botao-secundario" id="abrir-relatorio-desperdicio" href="#titulo-relatorio-desperdicio" hidden>Ver relatório de desperdício</a>
             <button class="botao botao-primario" id="abrir-vision" type="button" aria-expanded="false" aria-controls="painel-cadastro" aria-describedby="ajuda-cadastro-vision">Cadastrar com Vision · Assistente IA</button>
             <button class="botao botao-secundario" id="abrir-cadastro" type="button" aria-expanded="false" aria-controls="painel-cadastro">Cadastrar manual</button>
           </div>
