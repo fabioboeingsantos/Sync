@@ -311,7 +311,7 @@
       <div class="cronometro-box" aria-live="polite">
         <div>
           <div class="meta-tempo">Cronômetro (meta 02:50)</div>
-          <div class="meta-tempo" id="tempoSlide">Slide 1 · alvo 14s</div>
+          <div class="meta-tempo" id="tempoSlide">Slide 1 · alvo 4s</div>
         </div>
         <div class="tempo-total" id="relogio">00:00</div>
       </div>
@@ -319,7 +319,7 @@
 
     <section class="controles" aria-label="Controles de reprodução e ensaio">
       <div class="botoes-linha">
-        <button type="button" class="botao botao-primario" id="btnOuvir">▶ Ouvir referência (Voz + Slides)</button>
+        <button type="button" class="botao botao-primario" id="btnOuvir">▶ Ouvir roteiro (voz de referência)</button>
         <button type="button" class="botao botao-secundario" id="btnEnsaiar">⏱️ Modo Teleprompter (Minha voz)</button>
         <button type="button" class="botao botao-secundario" id="btnPausar" disabled>⏸ Pausar</button>
         <button type="button" class="botao botao-secundario danger" id="btnParar" disabled>⏹ Parar / Zerar</button>
@@ -372,137 +372,186 @@
   </div>
 
   <script>
-    /*
-      ESTÚDIO DE ENSAIO E VOZ — TIME SYNC · VISIONCHEF
-      - Modo 1 ("Ouvir referência"): narra os 8 slides usando Web Speech API (vozes neurais PT-BR do Edge)
-        com pausas intencionais de 1 segundo e avanço automático dos slides.
-      - Modo 2 ("Teleprompter"): roda apenas o cronômetro (meta 02:50 / limite 03:00) e avança cada slide
-        conforme a duração planejada, para o apresentador treinar com a própria voz.
-    */
+    // A sequência e os tempos seguem o roteiro dos dez slides.
     const etapas = [
       {
-        tag: 'Slide 1 · Âncora: Geladeira + Time SYNC',
-        titulo: 'Insumo vencendo na cozinha (VisionChef · Time SYNC)',
-        faixa: '00:00 – 00:16 · Alvo: 16 segundos',
-        segundos: 16,
-        pontos: [
-          'Cena concreta do creme de leite esquecido na geladeira.',
-          'Apresentação breve sua, do Time SYNC (soluções simples para o dia a dia das equipes) e dos integrantes.',
-          'Apresenta o sistema VisionChef.'
+        "tag": "Slide 1",
+        "titulo": "Abertura animada",
+        "faixa": "00:00 – 00:04 · Alvo: 4s",
+        "segundos": 4,
+        "pontos": [
+          "Mostre a vinheta da SYNC."
         ],
-        postura: '<strong>Palco e voz:</strong> Respiração 4–2–6 antes de começar. Microfone firme a 3 dedos da boca. Faça 1 segundo real de silêncio depois de “correria do almoço”.',
-        blocosFala: [
-          { texto: 'Imagina abrir um creme de leite novo na correria do almoço...', pausaDepoisMs: 900 },
-          { texto: 'e, no sábado, descobrir dois potes vencidos escondidos no fundo da geladeira. Olá, banca! Eu sou {NOME}, representante do Time SYNC{EQUIPE}. Nós desenvolvemos soluções simples para o dia a dia das equipes, e hoje apresentamos o VisionChef.', pausaDepoisMs: 600 }
+        "postura": "Cumprimente a banca com calma.",
+        "blocosFala": [
+          {
+            "texto": "Olá! Somos o Time SYNC.",
+            "pausaDepoisMs": 250
+          }
         ]
       },
       {
-        tag: 'Slide 2 · Ato 1 · A Dor (E1)',
-        titulo: 'O prejuízo invisível do caderno',
-        faixa: '00:14 – 00:36 · Alvo: 22 segundos',
-        segundos: 22,
-        pontos: [
-          'Dono e cozinheiro de restaurante pequeno controlam no caderno.',
-          'Compra nova empurra lote antigo para o fundo da geladeira.',
-          'Desperdício só aparece nas contas no fim do mês.'
+        "tag": "Slide 2",
+        "titulo": "Insumo vencendo na cozinha",
+        "faixa": "00:04 – 00:20 · Alvo: 16s",
+        "segundos": 16,
+        "pontos": [
+          "Conte a cena do creme de leite e apresente o VisionChef."
         ],
-        postura: '<strong>Postura e voz:</strong> Ritmo firme, 10% mais calmo do que a vontade inicial. Dê ênfase em “fundo da geladeira” e “fim do mês”.',
-        blocosFala: [
-          { texto: 'Em restaurantes pequenos, o dono e o cozinheiro controlam o estoque no caderno. Quando chega compra nova, os lotes antigos são empurrados para o fundo da geladeira. Os ingredientes vencem sem ninguém perceber, e o prejuízo só aparece no fechamento do mês. Nossa pergunta foi direta: como ajudar essa equipe a ver o que vence primeiro sem precisar parar o preparo para folhear um caderno?', pausaDepoisMs: 600 }
+        "postura": "Faça uma pausa breve depois de “almoço”.",
+        "blocosFala": [
+          {
+            "texto": "Imagine abrir um creme de leite novo na correria do almoço…",
+            "pausaDepoisMs": 800
+          },
+          {
+            "texto": "e encontrar dois potes vencidos no fundo da geladeira no sábado. Eu sou {NOME}{EQUIPE} e hoje apresento o VisionChef.",
+            "pausaDepoisMs": 250
+          }
         ]
       },
       {
-        tag: 'Slide 3 · Ato 2 · Matriz CSD (E1)',
-        titulo: 'O que investigamos antes de codar',
-        faixa: '00:36 – 00:54 · Alvo: 18 segundos',
-        segundos: 18,
-        pontos: [
-          'Certezas (C1–C4), Suposições (S1–S6) e Dúvidas (D1–D6).',
-          'Dúvida prioritária D1: como escolhem qual lote usar primeiro?'
+        "tag": "Slide 3",
+        "titulo": "O prejuízo invisível do caderno",
+        "faixa": "00:20 – 00:35 · Alvo: 15s",
+        "segundos": 15,
+        "pontos": [
+          "Explique por que a validade passa despercebida."
         ],
-        postura: '<strong>Postura e voz:</strong> Mostre método e clareza. Essa parte convence a banca de que a solução não foi chutada.',
-        blocosFala: [
-          { texto: 'Antes de pensar em tela ou código, montamos nossa Matriz CSD separando certezas, suposições e dúvidas. E escolhemos uma dúvida prioritária, a D1: na prática, como a equipe escolhe qual lote usar primeiro e em que momento descobre que um insumo venceu?', pausaDepoisMs: 600 }
+        "postura": "Termine com a pergunta que conduz à investigação.",
+        "blocosFala": [
+          {
+            "texto": "Em restaurantes pequenos, o estoque costuma ficar no caderno. Na correria, a compra nova empurra os lotes antigos para o fundo. Como saber o que vence primeiro sem interromper o preparo?",
+            "pausaDepoisMs": 250
+          }
         ]
       },
       {
-        tag: 'Slide 4 · Ato 2 · Validação do Problema (E2)',
-        titulo: 'O que os relatos revelaram sobre a rotina',
-        faixa: '00:54 – 01:14 · Alvo: 20 segundos',
-        segundos: 20,
-        pontos: [
-          'Caderno fica fora da cozinha; caneta apaga na geladeira; lousa não é atualizada.',
-          'ERP de computador foi abandonado por ser caro e trabalhoso.',
-          'Única ferramenta sempre à mão na cozinha: o celular.'
+        "tag": "Slide 4",
+        "titulo": "O que investigamos antes de desenhar a solução",
+        "faixa": "00:35 – 00:47 · Alvo: 12s",
+        "segundos": 12,
+        "pontos": [
+          "Destaque a dúvida prioritária D1 da Matriz CSD."
         ],
-        postura: '<strong>Postura e voz:</strong> Destaque com a mão a palavra “celular” — ela faz a ponte perfeita para a solução no próximo slide.',
-        blocosFala: [
-          { texto: 'Na validação do problema, os relatos do cozinheiro e do dono deixaram o gargalo evidente: o caderno fica fora da cozinha, caneta apaga com a umidade da geladeira, lousa ninguém atualiza, e um sistema ERP no computador foi abandonado por ser caro e trabalhoso. Na cozinha pequena, a única ferramenta sempre à mão é o celular.', pausaDepoisMs: 600 }
+        "postura": "Leia apenas a pergunta que orientou o projeto.",
+        "blocosFala": [
+          {
+            "texto": "Na Matriz CSD, priorizamos uma pergunta: como a equipe escolhe qual lote usar primeiro e quando percebe que um ingrediente venceu?",
+            "pausaDepoisMs": 250
+          }
         ]
       },
       {
-        tag: 'Slide 5 · Ato 3 · A Solução (E3)',
-        titulo: 'VisionChef: simples como o caderno, ágil como PVPS',
-        faixa: '01:14 – 01:30 · Alvo: 16 segundos',
-        segundos: 16,
-        pontos: [
-          '1. Registrar em segundos (manual, voz no microfone ou XML da NF-e).',
-          '2. Ordenação automática PVPS com 4 cores de alerta (Vence hoje pulsando) nos temas claro e escuro.',
-          '3. Baixa de uso ou descarte com 1 toque, visível ao dono.'
+        "tag": "Slide 5",
+        "titulo": "O que os cenários simulados revelaram",
+        "faixa": "00:47 – 01:02 · Alvo: 15s",
+        "segundos": 15,
+        "pontos": [
+          "Identifique P01 e P02 como perfis simulados."
         ],
-        postura: '<strong>Postura e voz:</strong> Conte nos dedos “primeiro, segundo, terceiro” na altura do peito. Lembrete: PVPS = Primeiro que Vence, Primeiro que Sai (FEFO).',
-        blocosFala: [
-          { texto: 'É aí que entra o VisionChef: simples como o caderno, inteligente como o PVPS, Primeiro que Vence, Primeiro que Sai. Em três passos no celular: primeiro, registra o lote em segundos, digitando, falando no microfone ou importando o XML da nota fiscal; segundo, ordena pelo vencimento com alertas visuais claros; e terceiro, dá baixa de uso ou descarte com um toque.', pausaDepoisMs: 600 }
+        "postura": "Dê ênfase a “celular” para fazer a transição.",
+        "blocosFala": [
+          {
+            "texto": "Nos cenários simulados, o cozinheiro pega o lote mais à frente porque o caderno está longe. O dono só percebe o descarte no fechamento. O celular já está à mão.",
+            "pausaDepoisMs": 250
+          }
         ]
       },
       {
-        tag: 'Slide 6 · Âncora: Demo + 31 testes',
-        titulo: 'MVP funcionando na prática e validado',
-        faixa: '01:30 – 02:18 · Alvo: 48 segundos (vídeo rodando no slide)',
-        segundos: 48,
-        pontos: [
-          'Faça 1s de pausa ao entrar no Slide 6 para a banca olhar o vídeo no telão.',
-          'Destaque: alerta Vence hoje pulsando → trava contra lote repetido e data ambígua → bloqueio de vencido + descarte para o dono.',
-          'Feche citando o Vision (voz, XML NF-e e OCR local), piloto online e 31 testes passando.'
+        "tag": "Slide 6",
+        "titulo": "VisionChef: simples como o caderno, ágil como PVPS",
+        "faixa": "01:02 – 01:17 · Alvo: 15s",
+        "segundos": 15,
+        "pontos": [
+          "Apresente o fluxo de cadastro, prioridade e baixa."
         ],
-        postura: '<strong>Palco e voz:</strong> Peito voltado para a banca; não vire de costas para o telão. Acompanhe o vídeo com calma e sorria ao citar os 31 testes e o site no ar.',
-        blocosFala: [
-          { texto: '', pausaDepoisMs: 950 },
-          { texto: 'Olha funcionando na prática aqui na tela. O cozinheiro bate o olho e vê no topo o que vence hoje pulsando em alerta.', pausaDepoisMs: 650 },
-          { texto: 'Se tentar cadastrar um item repetido ou uma data ambígua, o sistema avisa na hora.', pausaDepoisMs: 650 },
-          { texto: 'Se já venceu, bloqueia o uso por segurança sanitária e libera o descarte em um clique, visível imediatamente para o dono.', pausaDepoisMs: 650 },
-          { texto: 'E como plus de viabilidade, o Time SYNC já publicou o piloto no ar com o Vision por voz, XML da nota fiscal, OCR local, controle de equipe e 31 testes passando.', pausaDepoisMs: 600 }
+        "postura": "Fale o significado da sigla com clareza.",
+        "blocosFala": [
+          {
+            "texto": "No celular, a equipe cadastra o lote, vê o que vence primeiro e registra uso ou descarte. Essa ordem é o PVPS: Primeiro que Vence, Primeiro que Sai.",
+            "pausaDepoisMs": 250
+          }
         ]
       },
       {
-        tag: 'Slide 7 · Ato 3 · Viabilidade e Roadmap Fiscal (Fases 1–3)',
-        titulo: 'Viabilidade hoje e roadmap fiscal em 3 fases',
-        faixa: '02:18 – 02:38 · Alvo: 20 segundos',
-        segundos: 20,
-        pontos: [
-          'Zero hardware caro — roda no celular que a cozinha já tem.',
-          'Realidade do Brasil: XML de alimentos quase nunca traz validade (<rastro>).',
-          'Roadmap: Fase 1 ativa (XML + voz no Vision) → Fase 3 ativa no estoque (OCR local no aparelho) → Fase 2 opcional SEFAZ DF-e (A1) + QR Code.'
+        "tag": "Slide 7",
+        "titulo": "VisionChef funcionando na prática",
+        "faixa": "01:17 – 02:16 · Alvo: 59s",
+        "segundos": 59,
+        "pontos": [
+          "Acompanhe o vídeo com estoque visual, filtros, bloqueio de vencidos, cadastro com Vision e relatório."
         ],
-        postura: '<strong>Postura e voz:</strong> Tom seguro de negócio: conte nos dedos “Fase 1, Fase 3 e Fase 2” mostrando visão de produto real.',
-        blocosFala: [
-          { texto: 'Por que isso funciona na realidade do Brasil? Roda no celular que a cozinha já tem, sem hardware caro. E nas notas fiscais de alimentos, o XML quase nunca traz a validade. Por isso desenhamos três frentes: Fase 1 já ativa lendo o XML e completando validades por voz no Vision; Fase 3 já ativa no estoque lendo lote e validade por foto direto no aparelho com OCR local; e Fase 2 opcional pela SEFAZ com Certificado A1 e QR Code.', pausaDepoisMs: 600 }
+        "postura": "Deixe o vídeo respirar entre as falas. Avance ao fim da primeira reprodução.",
+        "blocosFala": [
+          {
+            "texto": "No estoque, a equipe vê a foto e o saldo de cada produto e pode alternar entre lista e grade.",
+            "pausaDepoisMs": 1800
+          },
+          {
+            "texto": "Os filtros mostram o que exige atenção. O alerta de vencimento no dia ajuda a decidir o que usar primeiro.",
+            "pausaDepoisMs": 1800
+          },
+          {
+            "texto": "Se o lote venceu, o sistema bloqueia o registro de uso. A equipe pode registrar o descarte ou corrigir uma data que foi digitada errada.",
+            "pausaDepoisMs": 1800
+          },
+          {
+            "texto": "No cadastro, o Vision aceita texto, voz, foto do rótulo ou o arquivo da nota fiscal. A equipe confere os dados sugeridos antes de salvar.",
+            "pausaDepoisMs": 1800
+          },
+          {
+            "texto": "O dono acompanha os descartes no relatório mensal e consegue ver o que foi perdido sem esperar o fechamento.",
+            "pausaDepoisMs": 250
+          }
         ]
       },
       {
-        tag: 'Slide 8 · Fechamento + QR Code',
-        titulo: 'Nenhum insumo vencendo escondido no fundo da geladeira',
-        faixa: '02:38 – 02:50 · Alvo: 12 segundos',
-        segundos: 12,
-        pontos: [
-          'Retoma a frase-gancho inicial.',
-          'Convida a banca a escanear o QR Code (simulações, microfone e XML NF-e no celular).',
-          'Agradece firme pelo Time SYNC.'
+        "tag": "Slide 8",
+        "titulo": "Viabilidade e próximos passos fiscais",
+        "faixa": "02:16 – 02:31 · Alvo: 15s",
+        "segundos": 15,
+        "pontos": [
+          "Separe XML e leitura de rótulos, já disponíveis, da captura automática planejada."
         ],
-        postura: '<strong>Postura e voz:</strong> Desacelere levemente, olhe firme na câmera, faça 1 segundo de pausa antes de agradecer e mantenha um sorriso tranquilo ao terminar.',
-        blocosFala: [
-          { texto: 'VisionChef, do Time SYNC: para nenhum insumo vencer escondido no fundo da geladeira.', pausaDepoisMs: 900 },
-          { texto: 'O QR Code está na tela para vocês testarem agora as simulações, o microfone e a nota fiscal no celular. Muito obrigado!', pausaDepoisMs: 400 }
+        "postura": "Diga o que a equipe já consegue fazer no celular.",
+        "blocosFala": [
+          {
+            "texto": "A Fase 1 importa o XML e completa dados por voz; a Fase 3 lê o rótulo com OCR local. A Fase 2, opcional, prevê integração futura com a SEFAZ.",
+            "pausaDepoisMs": 250
+          }
+        ]
+      },
+      {
+        "tag": "Slide 9",
+        "titulo": "VisionChef pronto para ser testado",
+        "faixa": "02:31 – 02:44 · Alvo: 13s",
+        "segundos": 13,
+        "pontos": [
+          "Cite o piloto online e os 31 testes automatizados."
+        ],
+        "postura": "Retome a cena da geladeira antes de avançar.",
+        "blocosFala": [
+          {
+            "texto": "O piloto está no ar e passou em 31 testes automatizados. A ideia é simples: a equipe vê o que vence primeiro antes que o lote fique esquecido na geladeira.",
+            "pausaDepoisMs": 250
+          }
+        ]
+      },
+      {
+        "tag": "Slide 10",
+        "titulo": "Muito obrigado!",
+        "faixa": "02:44 – 02:50 · Alvo: 6s",
+        "segundos": 6,
+        "pontos": [
+          "Deixe o QR Code visível para a banca."
+        ],
+        "postura": "Agradeça e mantenha a tela aberta para a leitura.",
+        "blocosFala": [
+          {
+            "texto": "Testem o VisionChef pelo QR Code. Muito obrigado!",
+            "pausaDepoisMs": 250
+          }
         ]
       }
     ];

@@ -1,74 +1,79 @@
 # Roteiro de ensaio — VisionChef · Time SYNC
 
-[Voltar à E4](../desafios/E4.md) · [Slides E4](E4-pitch-slides.html) · [Estúdio de Voz](ensaio-voz.html) · [E1](../desafios/E1.md) · [E2](../desafios/E2.md) · [E3](../desafios/E3.md) · [MVP (E3)](../htmls/E3-mvp-validade.html) · [Assistente IA](../htmls/agente-ia-cadastro.html) · [E5](../desafios/E5.md)
+[Slides E4](E4-pitch-slides.html) · [Estúdio de voz](ensaio-voz.html) · [Entrega E4](../desafios/E4.md)
 
-**Time:** SYNC *(os nomes dos integrantes são falados ao vivo na abertura)*  
-**Tema:** Gastronomia — Insumo vencendo na cozinha  
-**Foco da fala:** 100% na dor da persona (dono e cozinheiro de restaurante pequeno). O site publicado (`https://sync-solucoes.vercel.app`) entra como **plus de viabilidade** na demonstração.  
-**Duração máxima oficial:** 3 minutos (meta de ensaio: **2min50s**, deixando 10s de margem)
+**10 slides · meta de 2min50s · limite de 3min.** A programação reserva 10 segundos para pausas e trocas de tela. No Slide 7, deixe o vídeo chegar ao fim da primeira reprodução, mesmo que termine a fala antes.
 
-> **Cola rápida de 5 segundos (8 palavras-âncora para o palco):**  
-> `1. Geladeira + Time SYNC` → `2. Caderno` → `3. Dúvida D1` → `4. Celular` → `5. 3 passos PVPS` → `6. Demo + 31 testes` → `7. Roadmap fiscal` → `8. QR Code`
+| Slide | Tempo | Tela | Guia de fala |
+| --- | --- | --- | --- |
+| 1 | 00:00 – 00:04 | Abertura animada | Mostre a vinheta da SYNC. |
+| 2 | 00:04 – 00:20 | Insumo vencendo na cozinha | Conte a cena do creme de leite e apresente o VisionChef. |
+| 3 | 00:20 – 00:35 | O prejuízo invisível do caderno | Explique por que a validade passa despercebida. |
+| 4 | 00:35 – 00:47 | O que investigamos antes de desenhar a solução | Destaque a dúvida prioritária D1 da Matriz CSD. |
+| 5 | 00:47 – 01:02 | O que os cenários simulados revelaram | Identifique P01 e P02 como perfis simulados. |
+| 6 | 01:02 – 01:17 | VisionChef: simples como o caderno, ágil como PVPS | Apresente o fluxo de cadastro, prioridade e baixa. |
+| 7 | 01:17 – 02:16 | VisionChef funcionando na prática | Acompanhe o vídeo com estoque visual, filtros, bloqueio de vencidos, cadastro com Vision e relatório. |
+| 8 | 02:16 – 02:31 | Viabilidade e próximos passos fiscais | Separe XML e leitura de rótulos, já disponíveis, da captura automática planejada. |
+| 9 | 02:31 – 02:44 | VisionChef pronto para ser testado | Cite o piloto online e os 31 testes automatizados. |
+| 10 | 02:44 – 02:50 | Muito obrigado! | Deixe o QR Code visível para a banca. |
 
----
+## Fala por slide
 
-## Passo a passo com divisão de tempo
+### Slide 1 · Abertura animada (00:00 – 00:04)
 
-| Etapa / Slide | Tempo | Duração | Pergunta da banca que responde | O que mostrar na tela | O que falar (guia rápido) |
-| --- | --- | --- | --- | --- | --- |
-| **1. Capa e Gancho** | `0:00–0:14` | 14s | Qual é o problema e quem apresenta? | Emblema **SYNC · VisionChef** + cena do creme de leite esquecido | Abra na cena real (*"você abre um creme de leite novo no almoço e no sábado descobre dois potes vencidos no fundo da geladeira"*). Apresente o **Time SYNC**, cite os integrantes rapidamente e apresente o **VisionChef**. |
-| **2. A Dor (E1)** | `0:14–0:36` | 22s | Quem sofre e por que dói? | Dono e cozinheiro + caderno fora da cozinha + prejuízo no fim do mês | Explique que em restaurantes pequenos o estoque fica no caderno, compras novas empurram lotes antigos para o fundo e o desperdício só estoura nas contas no fechamento do mês. |
-| **3. Matriz CSD (E1)** | `0:36–0:54` | 18s | O que precisavam investigar? | Certezas, Suposições e Dúvida Prioritária (`D1`) | Mostre que antes de pensar em tela, o time mapeou a CSD e priorizou **D1**: *"como a equipe escolhe qual lote usar primeiro e quando percebe um insumo vencido?"*. |
-| **4. Validação do Problema (E2)** | `0:54–1:14` | 20s | **Critério 1:** validaram a dor? | Relatos do cozinheiro (`P01`) e do dono (`P02`) | Conte o que a rotina revelou: caderno longe do fogão, caneta que apaga na geladeira, ERP de PC abandonado por ser caro/trabalhoso — e que só o celular está sempre à mão na cozinha. *(Seja transparente se citar relatos do treino simulado ou inclua relatos reais se coletados.)* |
-| **5. A Solução — VisionChef (E3)** | `1:14–1:30` | 16s | Como a solução ataca a dor? | 3 passos: Registrar (manual, voz ou XML) → PVPS (4 cores) → Agir/Descartar | Resuma o VisionChef em 1 frase: fluxo rápido no celular (manual, voz no microfone ou XML da NF-e) que ordena o estoque por **PVPS** com 4 cores (com *Vence hoje* pulsando) e mostra cada descarte ao dono na hora. |
-| **6. Demo do MVP + Plus Online (E3)** | `1:30–2:18` | 48s | **Critérios 2 e 3:** funciona e foi testado? | Demo do MVP + 4 alertas + trava de duplicidade + Vision (voz/XML/OCR) + 31 testes (`sync-solucoes.vercel.app`) | Mostre a ordenação PVPS com alertas visuais, correção sem duplicar, trava contra lote repetido, bloqueio de uso em vencido, o **Vision** (voz, XML e OCR local) e destaque o piloto online com 31 testes passando. |
-| **7. Viabilidade e Roadmap Fiscal (Fases 1–3)** | `2:18–2:38` | 20s | **Critérios 3 e 4:** é viável e escala na realidade do Brasil? | Custo quase zero + realidade do `<rastro>` + Roadmap Fases 1, 2 e 3 | Mostre por que funciona hoje sem hardware caro e apresente o roadmap de notas fiscais: **Fase 1** já ativa (XML NF-e + voz no Vision), **Fase 3** (OCR local na embalagem já rodando no estoque) e **Fase 2** opcional automática via SEFAZ DF-e (A1) e QR Code NFC-e. |
-| **8. Fechamento + QR Code** | `2:38–2:50` | 12s | **Critério 5:** clareza e memorabilidade | Frase final + QR Code (`sync-solucoes.vercel.app`) | Retome a cena inicial (*"para nenhum insumo vencer escondido no fundo da geladeira"*), convide a banca a escanear o QR Code para testar as simulações, voz e NF-e no celular, e encerre agradecendo pelo **Time SYNC**. |
-| **Margem de segurança** | `2:50–3:00` | 10s | — | — | Folga para trocas de tela, respiração e não estourar os 3 minutos do cronômetro. |
+> Olá! Somos o Time SYNC.
 
----
+### Slide 2 · Insumo vencendo na cozinha (00:04 – 00:20)
 
-## Checklist rápido antes de apresentar ou gravar (E4)
-- [ ] Gravar o vídeo de tela real de **45s** em `https://sync-solucoes.vercel.app/estoque/` (lista PVPS → corrigir validade → bloqueio de uso + descarte no histórico do dono → `/equipe/`) e salvar como `Insumo vencendo na cozinha/pitch/demo-visionchef.mp4`.
-- [ ] Abrir [E4-pitch-slides.html](E4-pitch-slides.html), ir ao Slide 6 e confirmar que o vídeo inicia automaticamente do `00:00` (mudo e em loop).
-- [ ] Conferir a leitura do **QR Code** do Slide 8 no celular antes de exportar o PDF.
-- [ ] Exportar PDF via botão **Exportar PDF** (`Ctrl + P`, paisagem, gráficos de fundo ativados) — na impressão o Slide 6 troca automaticamente o vídeo pelo cartão com o link.
-- [ ] Ensaiar falando e avançando os slides com cronômetro (meta: fechar em **2min45s–2min50s**).
-- [ ] Se houver rodada presencial de feedback antes da gravação, citar 1 frase real de quem testou no Slide 6!
+> Imagine abrir um creme de leite novo na correria do almoço…
+>
+> e encontrar dois potes vencidos no fundo da geladeira no sábado. Eu sou [seu nome] [e, se quiser, os nomes da equipe] e hoje apresento o VisionChef.
 
----
+### Slide 3 · O prejuízo invisível do caderno (00:20 – 00:35)
 
-## Fala calibrada palavra por palavra (~385 palavras · meta 2min45s–2min50s)
+> Em restaurantes pequenos, o estoque costuma ficar no caderno. Na correria, a compra nova empurra os lotes antigos para o fundo. Como saber o que vence primeiro sem interromper o preparo?
 
-1. **Slide 1 (`0:00–0:16`):** *"Imagina abrir um creme de leite novo na correria do almoço… [pausa 1s] …e, no sábado, descobrir dois potes vencidos escondidos no fundo da geladeira. Olá, banca! Eu sou [seu nome], representante do Time SYNC — com [nomes dos integrantes] — nós desenvolvemos soluções simples para o dia a dia das equipes, e hoje apresentamos o VisionChef."*
-2. **Slide 2 (`0:16–0:36`):** *"Em restaurantes pequenos, o dono e o cozinheiro controlam o estoque no caderno. Quando chega compra nova, os lotes antigos são empurrados para o fundo da geladeira. Os ingredientes vencem sem ninguém perceber, e o prejuízo só aparece no fechamento do mês. Nossa pergunta foi direta: como ajudar essa equipe a ver o que vence primeiro sem parar o preparo para folhear um caderno?"*
-3. **Slide 3 (`0:36–0:54`):** *"Antes de pensar em tela ou código, montamos nossa Matriz CSD separando certezas, suposições e dúvidas. E escolhemos uma dúvida prioritária, a D1: na prática, como a equipe escolhe qual lote usar primeiro — e em que momento descobre que um insumo venceu?"*
-4. **Slide 4 (`0:54–1:14`):** *"Na validação do problema, os relatos do cozinheiro e do dono deixaram o gargalo evidente: o caderno fica fora da cozinha, caneta apaga com a umidade da geladeira, lousa ninguém atualiza, e um sistema ERP no computador foi abandonado por ser caro e trabalhoso. Na cozinha pequena, a única ferramenta sempre à mão é o celular."*
-5. **Slide 5 (`1:14–1:30`):** *"É aí que entra o VisionChef: simples como o caderno, inteligente como o PVPS — Primeiro que Vence, Primeiro que Sai. Em três passos no celular: primeiro, registra o lote em segundos — digitando, falando no microfone ou importando o XML da nota fiscal; segundo, ordena pelo vencimento com alertas visuais claros; e terceiro, dá baixa de uso ou descarte com um toque."*
-   - **Cola rápida para não esquecer (Slide 5):** **PVPS** significa **Primeiro que Vence, Primeiro que Sai** *(em inglês, FEFO — First Expired, First Out)*. As 4 cores semânticas funcionam nos temas claro e escuro: **Vence hoje** (vermelho pulsando), **Em breve** (laranja), **No prazo** (azul) e **Vencido** (roxo/vinho).
-6. **Slide 6 (`1:30–2:18` · vídeo `demo-visionchef.mp4` rodando automaticamente no slide):** *"[Pausa 1s para a banca olhar o vídeo no telão] Olha funcionando na prática aqui na tela. O cozinheiro bate o olho e vê no topo o que vence hoje pulsando em alerta. Se tentar cadastrar um item repetido ou uma data ambígua, o sistema avisa na hora. Se já venceu, bloqueia o uso por segurança sanitária e libera o descarte em um clique, visível imediatamente para o dono. E como plus de viabilidade, o Time SYNC já publicou o piloto no ar com o Vision por voz, XML da NF-e, OCR local, controle de equipe e 31 testes passando."*
-7. **Slide 7 (`2:18–2:38`):** *"Por que isso funciona na realidade do Brasil? Roda no celular que a cozinha já tem, sem hardware caro. E nas notas fiscais de alimentos, o XML quase nunca traz a validade — por isso desenhamos três frentes: Fase 1 já ativa lendo o XML e completando validades por voz no Vision; Fase 3 já ativa no estoque lendo lote e validade por foto direto no aparelho (OCR local); e Fase 2 opcional pela SEFAZ com Certificado A1 e QR Code."*
-8. **Slide 8 (`2:38–2:50`):** *"VisionChef, do Time SYNC: para nenhum insumo vencer escondido no fundo da geladeira. [pausa 1s] O QR Code está na tela para vocês testarem agora as simulações, o microfone e a nota fiscal no celular. Muito obrigado!"*
+### Slide 4 · O que investigamos antes de desenhar a solução (00:35 – 00:47)
 
----
+> Na Matriz CSD, priorizamos uma pergunta: como a equipe escolhe qual lote usar primeiro e quando percebe que um ingrediente venceu?
 
-## Guia de postura, palco, microfone e oratória
+### Slide 5 · O que os cenários simulados revelaram (00:47 – 01:02)
 
-- **30 segundos antes de subir (Respiração 4–2–6):** inspire 4s, segure 2s, solte devagar 6s (2 ciclos) para baixar o batimento cardíaco.
-- **Base e entrada:** suba firme, plante os dois pés no chão (largura dos ombros), olhe a banca, sorria brevemente e espere 1 segundo antes da primeira palavra.
-- **Microfone em auditório (20 fileiras):** segure o microfone a **3–4 dedos da boca** em uma mão (nunca abaixe a mão do microfone ao gesticular!) e gesticule livremente com a outra mão na altura do peito.
-- **Comece 10% mais devagar:** a adrenalina acelera os primeiros 15 segundos; ritmo firme e articulado (120–140 ppm / `0.90x`–`0.95x` no estúdio) garante nitidez até a última fileira.
-- **3 pausas estratégicas de 1 segundo:** após o gancho (Slide 1), na entrada do vídeo (Slide 6) e antes do *"Muito obrigado!"* (Slide 8).
-- **Truque dos 3 rostos:** escolha 3 rostos simpáticos (esquerda, banca ao centro, direita) e alterne o olhar entre eles como uma conversa real; nunca vire as costas para ler o telão.
-- **Saída profissional:** termine firme no *"Muito obrigado!"* e aguarde 2 segundos sorrindo — **nunca** diga *"então é isso"*, *"era só isso pessoal"* ou peça desculpas.
+> Nos cenários simulados, o cozinheiro pega o lote mais à frente porque o caderno está longe. O dono só percebe o descarte no fechamento. O celular já está à mão.
 
-## Como reagir a imprevistos
+### Slide 6 · VisionChef: simples como o caderno, ágil como PVPS (01:02 – 01:17)
 
-| Situação | Reação recomendada |
-| --- | --- |
-| **Branco rápido (2s)** | Não peça desculpa; olhe para o título do slide atual (sua âncora) e retome com suas palavras. |
-| **Vídeo ou aba falhou** | Troque imediatamente para `E3-mvp-validade.html?demo=ux` (Aba reserva) dizendo: *"Para respeitar nossos 3 minutos, vou mostrar nossa versão local."* |
-| **Cronômetro chegou em 2:35 no Slide 6** | Encerre a demonstração, entregue 1 frase do Slide 7 e garanta o fechamento firme no Slide 8 (nunca deixe o cronômetro cortar o final). |
+> No celular, a equipe cadastra o lote, vê o que vence primeiro e registra uso ou descarte. Essa ordem é o PVPS: Primeiro que Vence, Primeiro que Sai.
+
+### Slide 7 · VisionChef funcionando na prática (01:17 – 02:16)
+
+> No estoque, a equipe vê a foto e o saldo de cada produto e pode alternar entre lista e grade.
+>
+> Os filtros mostram o que exige atenção. O alerta de vencimento no dia ajuda a decidir o que usar primeiro.
+>
+> Se o lote venceu, o sistema bloqueia o registro de uso. A equipe pode registrar o descarte ou corrigir uma data que foi digitada errada.
+>
+> No cadastro, o Vision aceita texto, voz, foto do rótulo ou o arquivo da nota fiscal. A equipe confere os dados sugeridos antes de salvar.
+>
+> O dono acompanha os descartes no relatório mensal e consegue ver o que foi perdido sem esperar o fechamento.
+
+### Slide 8 · Viabilidade e próximos passos fiscais (02:16 – 02:31)
+
+> A Fase 1 importa o XML e completa dados por voz; a Fase 3 lê o rótulo com OCR local. A Fase 2, opcional, prevê integração futura com a SEFAZ.
+
+### Slide 9 · VisionChef pronto para ser testado (02:31 – 02:44)
+
+> O piloto está no ar e passou em 31 testes automatizados. A ideia é simples: a equipe vê o que vence primeiro antes que o lote fique esquecido na geladeira.
+
+### Slide 10 · Muito obrigado! (02:44 – 02:50)
+
+> Testem o VisionChef pelo QR Code. Muito obrigado!
+
+## Preparação
+
+- Inicie o vídeo do Slide 7 no começo, sem som. Se o vídeo falhar, use a [demonstração local de reserva](../htmls/E3-mvp-validade.html?demo=ux) e resuma estoque, vencimento e descarte.
+- Confira o QR Code do Slide 10 no celular antes de apresentar e deixe a tela aberta após agradecer.
+- Ensaie com os nomes da equipe e o cronômetro. Se precisar recuperar tempo, encurte a explicação fiscal do Slide 8 e preserve o fechamento.
 
 ## Respostas rápidas para a banca (Método P.R.E. — máx. 30s)
 
@@ -80,16 +85,6 @@
    - ***"Vocês testaram com restaurantes reais?"***  
      *"Nesta etapa de treino, nossas entrevistas foram simuladas com foco na rotina real de cozinhas pequenas e validamos o sistema com 31 testes automatizados (concorrência, duplicidade, bloqueio de vencidos, NF-e XML, fornecedores e acesso de equipe). Nosso próximo passo imediato é rodar o teste de 20 minutos em cozinhas reais — o sistema já está no ar no QR Code pronto para isso."*
    - ***"Como vocês lidam com as notas fiscais (NF-e / NFC-e) na chegada das compras?"***  
-     *"Mapeamos a realidade do Brasil: na NF-e existe o bloco `<rastro>` com lote e validade, mas em alimentos quase nenhum fornecedor preenche. Por isso estruturamos em 3 fases: na Fase 1 (já ativa), importamos o XML no navegador, aproveitamos `<rastro>` quando vem e o Vision completa a validade por voz; na Fase 3 (já rodando localmente no estoque), lemos lote e validade da embalagem por OCR direto no aparelho sem API paga; e na Fase 2 (opcional pós-piloto) conectamos na SEFAZ (DF-e com Certificado A1) e QR Code da NFC-e."*
+     *"Mapeamos a realidade do Brasil: na NF-e existe o bloco `<rastro>` com lote e validade, mas o campo pode vir vazio. Por isso estruturamos em 3 fases: na Fase 1 (já ativa), importamos o XML no navegador, aproveitamos `<rastro>` quando vem e o Vision completa a validade por voz; na Fase 3 (já rodando localmente no estoque), lemos lote e validade da embalagem por OCR direto no aparelho sem API paga; e na Fase 2 (opcional pós-piloto) planejamos conectar à SEFAZ (DF-e com Certificado A1) e QR Code da NFC-e."*
    - ***"Como isso se sustenta / gera receita?"***  
      *"No piloto rodamos em camadas gratuitas na nuvem (Vercel e Supabase), com custo quase zero. A hipótese pós-piloto é um modelo freemium: gratuito para 1 restaurante testar e assinatura mensal enxuta para múltiplos usuários, alertas diários e histórico estendido."*
-
-## Treino express (15 minutos — 3 rodadas)
-
-1. **Rodada 1 (só voz + cronômetro):** ler em voz alta adaptando qualquer palavra ao seu jeito natural.
-2. **Rodada 2 (slides + vídeo do Slide 6 + cronômetro):** fechar entre **2min40s e 2min50s**.
-3. **Rodada 3 (gravação no celular):** assistir 1 vez conferindo volume, ritmo e olhar para a câmera.
-
-
-
-

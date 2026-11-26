@@ -1244,3 +1244,83 @@ body:has(#inicio.hero) section[id] {
 .dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-conta{grid-column:1/-1;max-width:13rem;min-height:44px}
 @media(max-height:48rem){.dialogo-acesso-sync.acesso-primeiro-uso .marca-acesso,.dialogo-acesso-sync.acesso-primeiro-uso .divisor-acesso{display:none}.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcao p{display:none}}
 @media(max-width:440px){.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcoes{grid-template-columns:repeat(2,minmax(0,1fr))}.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-conta{grid-column:1/-1}}
+
+/* Controles compactos da página inicial em celulares. */
+@media (max-width: 43rem) {
+  /* O acesso e o tema ficam juntos, alinhados à marca e ao link do VisionChef. */
+  .site-header.cabecalho-landing.frame {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-height: 0;
+    gap: .25rem .5rem;
+    padding: .45rem .75rem;
+  }
+
+  .cabecalho-landing .brand { gap: .3rem; min-height: 2.25rem; padding-block: 0; }
+  .cabecalho-landing .brand-logo { height: 1.8rem; }
+  .cabecalho-landing .brand-name { font-size: 1rem; }
+  .cabecalho-landing .site-nav { width: auto; justify-self: center; }
+  .cabecalho-landing .site-nav .header-link { min-height: 2.25rem; font-size: .72rem; }
+  .cabecalho-landing .header-actions { grid-column: 3; flex-wrap: nowrap; gap: .375rem; }
+
+  .cabecalho-landing .header-actions .botao {
+    min-height: 2.25rem;
+    padding: .3rem .5rem;
+    border-radius: .55rem;
+    font-size: .8rem;
+  }
+
+  /* Redimensiona a trilha e o deslocamento dos ícones junto com o alternador. */
+  .cabecalho-landing .theme-toggle { width: 2.875rem; height: 2.25rem; min-height: 2.25rem; }
+  .cabecalho-landing .celestial-thumb {
+    left: .1875rem;
+    width: 1.45rem;
+    height: 1.45rem;
+  }
+  html[data-theme="dark"] .cabecalho-landing .celestial-thumb {
+    transform: translate(1.1rem, -50%);
+  }
+
+  /* O tamanho compacto é local à página e conserva o acabamento dos botões. */
+  #inicio .actions .botao,
+  #solucoes .section-intro .actions .botao,
+  #estoque .filters .botao,
+  #assistente .section-split .botao {
+    min-height: 2.125rem;
+    padding: .375rem .625rem;
+    border-radius: .55rem;
+    font-size: .8125rem;
+    line-height: 1.2;
+  }
+
+  /* Os dois links podem quebrar o texto quando a tela for muito estreita. */
+  #solucoes .section-intro .actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+    margin-top: .5rem;
+  }
+
+  #solucoes .section-intro .actions .botao {
+    flex: none;
+    max-width: 100%;
+    margin-top: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Os filtros quebram entre botões, preservando os rótulos e as cores de urgência. */
+  #estoque .filters-bar { gap: .5rem; }
+  #estoque .filters:not([hidden]) { width: 100%; gap: .4rem; }
+  #estoque .filters .botao { gap: .375rem; white-space: nowrap; }
+  #estoque .filters .botao[data-filter]:not([data-filter="todos"])::before {
+    width: .4rem;
+    height: .4rem;
+  }
+}
+
+/* Nos celulares mais estreitos, só a marca e o link ficam na primeira linha. */
+@media (max-width: 23.25rem) {
+  .site-header.cabecalho-landing.frame { grid-template-columns: 1fr auto; }
+  .cabecalho-landing .site-nav { justify-self: end; }
+  .cabecalho-landing .header-actions { grid-column: 1 / -1; }
+}
