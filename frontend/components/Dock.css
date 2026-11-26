@@ -511,3 +511,6 @@
     transition: none;
   }
 }
+
+/* Ícone coração da Causa que Alimenta mantém a escala e a cor dos demais atalhos do Dock. */
+.icone-causa-dock{display:inline-grid;place-items:center;font:400 34px/1 Arial,sans-serif;color:currentColor}

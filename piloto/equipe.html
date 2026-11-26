@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Equipe | VisionChef</title>
+  <!-- Mantém somente o ícone da coruja Sync nas páginas internas do VisionChef. -->
+  <link rel="icon" type="image/png" href="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/coruja-sync-icone.png">
   <!-- A tela de equipe fica em /equipe/ e reutiliza a paleta Aço Inox e o padrão GlassSurface de botões. -->
   <link rel="stylesheet" href="../css/estoque.css">
   <link rel="stylesheet" href="../css/botoes.css">
@@ -46,15 +48,15 @@
 
     <section id="precisa-entrar" class="painel" aria-labelledby="titulo-entrar" hidden>
       <h1 id="titulo-entrar" tabindex="-1">Entre para gerenciar a equipe</h1>
-      <p>O gerenciamento de acessos da equipe exige uma conta de dono autenticada.</p>
+      <p>O gerenciamento de acessos exige uma conta de dono ou gerente autenticada.</p>
       <div class="acoes" style="margin-top: 1rem;">
         <a class="botao botao-primario" href="../estoque/">Ir para a tela de login</a>
       </div>
     </section>
 
     <section id="sem-permissao" class="painel" aria-labelledby="titulo-sem-permissao" hidden>
-      <h1 id="titulo-sem-permissao" tabindex="-1">Acesso restrito ao dono</h1>
-      <p id="mensagem-sem-permissao">Somente o dono ativo do restaurante pode liberar ou remover acessos da equipe.</p>
+      <h1 id="titulo-sem-permissao" tabindex="-1">Acesso restrito</h1>
+      <p id="mensagem-sem-permissao">Somente o dono ou gerente ativo do restaurante pode gerenciar a equipe.</p>
       <div class="acoes" style="margin-top: 1rem;">
         <a class="botao botao-secundario" href="../estoque/">Voltar para o estoque</a>
       </div>
@@ -81,8 +83,9 @@
             </label>
             <label>Perfil de acesso
               <select name="papel">
-                <option value="funcionario">Funcionário (consulta e movimenta estoque)</option>
-                <option value="dono">Dono (estoque, descartes e gestão da equipe)</option>
+                <option value="funcionario">Funcionário (estoque e consulta de fornecedores)</option>
+                <option value="gerente">Gerente (estoque, relatório, fornecedores e equipe)</option>
+                <option value="dono">Dono (propriedade e controle total do restaurante)</option>
               </select>
             </label>
           </div>

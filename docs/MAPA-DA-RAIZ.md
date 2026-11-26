@@ -8,6 +8,7 @@ Sync/
 ├── .git/                       metadados do Git
 ├── .github/workflows/ci.yml    pipeline de CI (testes, build, checagem de segredos e audit)
 ├── api/                        funções Vercel Node para autenticação, sessão, health, estoque e equipe
+├── causa-social/               página independente da iniciativa social do VisionChef
 ├── css/                        estilo de botões compartilhado pelo piloto e pelo simulado
 ├── dist/                       saída gerada da versão integrada
 ├── docs/
@@ -64,6 +65,7 @@ Sync/
 ## Onde colocar mudanças
 
 - Componentes React da landing em `frontend/`, funções de backend em `api/`, tela de estoque em `piloto/`, scripts em `scripts/`, migrações em `supabase/migrations/` e testes em `tests/`.
+- Conteúdo da causa social em `causa-social/`; a landing aponta para ela sem substituir o bloco atual do VisionChef.
 - Requisitos e telas em `docs/product/`, decisões técnicas em `docs/architecture/` e melhorias futuras em `docs/futuras-implantacoes/`.
 - Materiais do simulado em `Insumo vencendo na cozinha/`. O estilo de botões usado pelos dois projetos fica em `css/botoes.css`.
 - Ao criar, mover ou renomear um item listado, atualize este mapa e os caminhos afetados na mesma mudança. O [README](../README.md) é o ponto de entrada do repositório.

@@ -38,7 +38,7 @@ async function comAmbienteApi(overrides, fn) {
   }
 }
 
-test('cadastro exige pelo menos seis caracteres e domínio com MX de recebimento', async (t) => {
+test('cadastro exige pelo menos oito caracteres e domínio com MX de recebimento', async (t) => {
   // A simulação garante que e-mails recusados nunca chegam ao endpoint de cadastro do Supabase.
   const dns = t.mock.method(Resolver.prototype, 'resolveMx', async (dominio) => {
     if (dominio === 'nulo.test') return [{ exchange: '.', priority: 0 }];
@@ -55,13 +55,13 @@ test('cadastro exige pelo menos seis caracteres e domínio com MX de recebimento
   });
 
   await comAmbienteApi({}, async () => {
-    const cadastrar = (email, senha = 'abc123') => tratarApi(new Request('https://sync.test/api/auth/signup', {
+    const cadastrar = (email, senha = 'abc12345') => tratarApi(new Request('https://sync.test/api/auth/signup', {
       method: 'POST', headers: { Origin: 'https://sync.test', 'Content-Type': 'application/json' },
       body: JSON.stringify({ nomeUsuario: 'teste', email, senha }),
     }));
-    const senhaCurta = await cadastrar('teste@recebe.test', 'abc12');
+    const senhaCurta = await cadastrar('teste@recebe.test', 'abc1234');
     assert.equal(senhaCurta.status, 400);
-    assert.match((await senhaCurta.json()).erro, /entre 6 e 128 caracteres/);
+    assert.match((await senhaCurta.json()).erro, /entre 8 e 128 caracteres/);
     assert.equal((await cadastrar('teste@recebe.test/extra')).status, 400);
     assert.equal(dns.mock.callCount(), 0);
     assert.equal((await cadastrar('teste@ausente.test')).status, 400);
@@ -114,7 +114,8 @@ test('a criação de restaurante na API exige sessão e usa o token individual',
     const cookie = login.headers.get('set-cookie').split(';')[0];
     const criacao = await post('restaurantes', dados, cookie);
     assert.equal(criacao.status, 200);
-    assert.deepEqual(await criacao.json(), restaurante);
+    // A API acrescenta o papel efetivo concedido pelo RPC, ignorando o papel adulterado no corpo.
+    assert.deepEqual(await criacao.json(), { ...restaurante, papel: 'dono' });
   });
 });
 
@@ -286,6 +287,10 @@ test('sessão persiste automaticamente por 7 dias com renovação deslizante e t
       if (textoUrl.includes('/rest/v1/restaurantes')) {
         return Response.json([{ id: '10000000-0000-4000-8000-000000000001', nome: 'Restaurante piloto' }]);
       }
+      // A consulta de sessão também lê o vínculo ativo para retornar o papel real do usuário.
+      if (textoUrl.includes('/rest/v1/membros_restaurante')) {
+        return Response.json([{ restaurante_id: '10000000-0000-4000-8000-000000000001', papel: 'dono' }]);
+      }
       if (textoUrl.includes('/auth/v1/logout')) {
         return new Response(null, { status: 204 });
       }
@@ -378,15 +383,18 @@ test('sessão persiste automaticamente por 7 dias com renovação deslizante e t
 });
 
 test('auth diferencia conta não confirmada e limite de envio de e-mail do Supabase', async (t) => {
-  // Garante retorno específico para diagnóstico sem confundir bloqueio de e-mail com senha errada.
+  // Confirma resposta indistinguível para qualquer e-mail, inclusive quando o Auth limita envios.
+  let chamadasRecuperacao = 0;
+  let chamadasVerificacao = 0;
   t.mock.method(globalThis, 'fetch', async (url) => {
     const caminho = new URL(String(url)).pathname;
     if (caminho === '/functions/v1/limitar-autenticacao') return Response.json({ permitido: true });
-    if (caminho === '/functions/v1/verificacao-email') return Response.json({ existe: true });
+    if (caminho === '/functions/v1/verificacao-email') { chamadasVerificacao += 1; return Response.json({ existe: true }); }
     if (caminho === '/auth/v1/token') {
       return Response.json({ error_code: 'email_not_confirmed', msg: 'Email not confirmed' }, { status: 400 });
     }
     if (caminho === '/auth/v1/recover') {
+      chamadasRecuperacao += 1;
       return Response.json({ error_code: 'over_email_send_rate_limit', msg: 'Email rate limit exceeded' }, { status: 429 });
     }
     return new Response(null, { status: 404 });
@@ -409,7 +417,18 @@ test('auth diferencia conta não confirmada e limite de envio de e-mail do Supab
       headers: { Origin: 'https://sync.test', 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'conta@piloto.test' }),
     }));
-    assert.equal(recover.status, 429);
-    assert.equal((await recover.json()).codigo, 'limite_envio_email');
+    assert.equal(recover.status, 200);
+    const respostaExistente = await recover.json();
+    assert.match(respostaExistente.mensagem, /Se houver uma conta/);
+
+    const recoverInexistente = await tratarApi(new Request('https://sync.test/api/auth/recover', {
+      method: 'POST',
+      headers: { Origin: 'https://sync.test', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'nao-cadastrada@piloto.test' }),
+    }));
+    assert.equal(recoverInexistente.status, 200);
+    assert.deepEqual(await recoverInexistente.json(), respostaExistente);
+    assert.equal(chamadasRecuperacao, 2);
+    assert.equal(chamadasVerificacao, 0);
   });
 });

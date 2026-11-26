@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Estoque | VisionChef</title>
+  <!-- Usa somente o ícone da coruja Sync como favicon também na área de estoque. -->
+  <link rel="icon" type="image/png" href="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/coruja-sync-icone.png">
   <!-- A página de estoque fica em /estoque/ e compartilha os recursos servidos na raiz. -->
   <link rel="stylesheet" href="../css/estoque.css">
   <!-- Reutiliza o padrão de botões definido para o projeto. -->
@@ -100,6 +102,7 @@
         <ul>
           <li>Dono do piloto <strong>dono.piloto</strong> ou <strong>dono@piloto.test</strong></li>
           <li>Funcionário do piloto <strong>funcionario.piloto</strong> ou <strong>funcionario@piloto.test</strong></li>
+          <li>Gerente do piloto <strong>gerente.piloto</strong> ou <strong>gerente@piloto.test</strong></li>
           <li>Dono de outro restaurante <strong>dono.outro</strong> ou <strong>dono@outro.test</strong></li>
         </ul>
         <p>Senha das contas de teste <code>senha123</code></p>
@@ -136,7 +139,8 @@
             <h1 id="titulo-inventario" tabindex="-1">Estoque</h1>
             <p class="subtitulo-modulo">Saldos disponíveis por produto. As quantidades acompanham os lotes registrados no controle de validade.</p>
           </div>
-          <button class="botao botao-primario" id="adicionar-estoque" type="button">Adicionar entrada</button>
+          <!-- A ação principal leva à busca do gerenciador; a reposição acontece no cartão do produto escolhido. -->
+          <button class="botao botao-primario" id="gerenciar-estoque" type="button" aria-controls="busca-inventario">Gerenciar estoque</button>
         </div>
         <section class="painel inventario-painel" aria-labelledby="titulo-produtos-inventario">
           <div class="inventario-cabecalho">
@@ -339,7 +343,8 @@
               <label>Perfil de acesso
                 <select name="papel">
                   <option value="funcionario">Funcionário (estoque e consulta de fornecedores)</option>
-                  <option value="dono">Dono (estoque, equipe e fornecedores)</option>
+                  <option value="gerente">Gerente (acessos de funcionário, equipe e fornecedores)</option>
+                  <option value="dono">Dono (propriedade e controle total do restaurante)</option>
                 </select>
               </label>
             </div>
@@ -370,6 +375,21 @@
           </div>
         </dialog>
       </div>
+
+      <!-- MÓDULO CAUSA SOCIAL: destinação separada, liberada somente a dono e gerente. -->
+      <section id="modulo-causa-social" class="painel" aria-labelledby="titulo-causa-social" hidden>
+        <div class="cabecalho-estoque">
+          <div><p class="entrada-rotulo">VISIONCHEF · CAUSA QUE ALIMENTA</p><h1 id="titulo-causa-social" tabindex="-1">Um alimento a tempo pode chegar à mesa de alguém.</h1>
+          <p class="subtitulo-modulo">Confira os lotes próximos da validade, escolha uma instituição cadastrada e combine uma retirada segura.</p></div>
+          <a class="botao botao-secundario" href="../causa-social/">Cadastro e orientações para instituições ↗</a>
+        </div>
+        <div class="painel painel-lista">
+          <h2>Destinar alimento com cuidado</h2>
+          <p>Antes de oferecer, confirme embalagem íntegra, armazenamento correto e tempo suficiente para retirada e consumo dentro da validade.</p>
+          <p class="mensagem" role="note">A destinação é um fluxo separado do estoque e do relatório de desperdício. Registre a saída como doação somente após confirmar a entrega à instituição.</p>
+          <a class="botao botao-primario" href="../causa-social/?painel=gestao">Abrir área de destinação e instituições ↗</a>
+        </div>
+      </section>
 
       <!-- MÓDULO 3: FORNECEDORES (DONO GERENCIA · FUNCIONÁRIO CONSULTA ATIVOS) -->
       <div id="modulo-fornecedores" hidden>

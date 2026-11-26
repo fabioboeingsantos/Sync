@@ -65,13 +65,13 @@ const TEMAS_DOCK = {
 // O menu reage ao perfil e à tela ativa emitidos pela aplicação de estoque.
 function NavegacaoEstoque() {
   const [tema, setTema] = useState(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
-  const [ehDono, setEhDono] = useState(false);
+  const [podeGerenciar, setPodeGerenciar] = useState(false);
   const [modulo, setModulo] = useState('inventario');
   useEffect(() => {
     // Sincroniza o tema sem duplicar o controle já exibido no cabeçalho.
     const observador = new MutationObserver(() => setTema(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'));
     observador.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    const perfil = (evento) => setEhDono(Boolean(evento.detail?.ehDono));
+    const perfil = (evento) => setPodeGerenciar(Boolean(evento.detail?.podeGerenciar));
     const tela = (evento) => setModulo(evento.detail?.modulo || 'inventario');
     window.addEventListener('visionchef:perfil', perfil);
     window.addEventListener('visionchef:modulo', tela);
@@ -83,13 +83,15 @@ function NavegacaoEstoque() {
   const itens = useMemo(() => [
     { icon: glyph(Home01Icon), label: 'Estoque', active: modulo === 'inventario', onClick: () => navegar('inventario') },
     { icon: glyph(Calendar01Icon), label: 'Controle de validade', active: modulo === 'estoque', onClick: () => navegar('estoque') },
-    ...(ehDono ? [
+    ...(podeGerenciar ? [
       { icon: glyph(ChartLineData01Icon), label: 'Relatório de desperdício', active: modulo === 'desperdicio', onClick: () => navegar('desperdicio') },
       { separator: true },
-      { icon: glyph(UserGroup03Icon), label: 'Equipe', active: modulo === 'equipe', onClick: () => navegar('equipe') }
+      { icon: glyph(UserGroup03Icon), label: 'Equipe', active: modulo === 'equipe', onClick: () => navegar('equipe') },
+      // Mantém a destinação social em módulo próprio e só mostra o atalho a dono e gerente.
+      { icon: <span aria-hidden="true" className="icone-causa-dock">♡</span>, label: 'Causa social', active: modulo === 'causa', onClick: () => navegar('causa') }
     ] : []),
     { icon: glyph(TruckDeliveryIcon), label: 'Fornecedores', active: modulo === 'fornecedores', onClick: () => navegar('fornecedores') }
-  ], [ehDono, modulo, navegar]);
+  ], [podeGerenciar, modulo, navegar]);
   return <Dock items={itens} ariaLabel="Navegação do restaurante" theme={tema}
     baseItemSize={50} magnification={70} panelHeight={68} accentColor="#2a7f8e"
     badgeColor="#d73535" position="bottom" distance={200} gap={10} roundness={0.5}

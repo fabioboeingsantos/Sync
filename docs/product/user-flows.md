@@ -9,12 +9,12 @@
 | Entrar | Dono e funcionário | Entrar com usuário ou e-mail e senha. Contas com vínculo ativo vão ao estoque. Contas que aguardam vínculo voltam à configuração de acesso. A tela oferece recuperação de senha como ação secundária. |
 | Minha conta | Pessoa autenticada | Abrir uma página própria. Consultar e-mail, usuário e acesso ao estoque; completar o usuário quando a conta legada ainda não tem um nome personalizado; ver claramente e-mail confirmado ou pendente; solicitar confirmação nesta área; trocar senha após confirmar a senha atual (sem exibi-la); recuperar a senha por link; encerrar todas as sessões. |
 | Recuperar senha | Pessoa sem sessão | Informar o e-mail e receber resposta genérica. O link abre o formulário para escolher nova senha. Não oferecer reenvio de confirmação nesta tela. |
-| Estoque | Dono e funcionário | Consultar o saldo agregado por produto e alternar entre grade e lista. Identificar cada alimento pela foto com o nome sobreposto. A ação de cada item abre o Controle de validade filtrado para aquele insumo. |
+| Estoque | Dono e funcionário | Consultar o saldo agregado e as especificações por produto, alternar entre grade e lista e localizar itens pelo nome ou categoria. A ação **Atualizar estoque** abre uma entrada para o produto com unidade e local sugeridos; o saldo é recalculado pelos lotes registrados. Nenhum cartão deste módulo abre o controle de validade. |
 | Controle de validade | Dono e funcionário | Consultar lotes por vencimento, filtrar por situação e insumo, cadastrar ou corrigir lote, registrar abertura, uso ou descarte. Saldos agregados do Estoque refletem os mesmos lotes. |
 | Cadastrar ou corrigir lote | Dono e funcionário | Informar insumo, quantidade, medida e validade no cadastro. Corrigir os dados quando necessário. Mostrar os campos inválidos e confirmar quando o registro for salvo. |
 | Registrar abertura ou fracionamento | Dono e funcionário | Selecionar o lote, indicar quanto foi aberto ou fracionado, a data da operação e a validade aplicável. Conferir no estoque a quantidade aberta e a fechada, com suas respectivas datas. |
 | Registrar uso ou descarte | Dono e funcionário | Selecionar a parte do lote, o tipo de saída e a quantidade na medida cadastrada. Mostrar o saldo atualizado. Se a quantidade exceder o saldo, explicar o erro e permitir correção. |
-| Acessos da equipe | Dono | Convidar pessoas e remover acessos. Mostrar o resultado da ação e indicar como tentar novamente se houver erro. |
+| Acessos da equipe | Dono e Gerente | Convidar ou reativar funcionários e gerentes e remover seus acessos. O Gerente não pode alterar vínculos de Donos. Mostrar o resultado da ação e indicar como tentar novamente se houver erro. |
 
 ## Revisão no celular e no computador
 
@@ -35,8 +35,8 @@
 
 - `/` para a apresentação do VisionChef e a demonstração ilustrativa de validade.
 - `/estoque/` para entrar na área do produto.
-- `/estoque/` começa no módulo **Estoque**, com grade/lista e filtros por produto e categoria. O Dock inferior organiza **Estoque**, **Controle de validade**, **Relatório de desperdício**, **Equipe** e **Fornecedores** conforme o perfil; o relatório é um módulo independente acessível apenas ao dono. O botão **Adicionar entrada** abre o cadastro manual. O sino BellToggle mostra somente itens que vencem hoje ou em breve e exibe a contagem desses alertas. Os saldos do estoque são calculados dos mesmos lotes e o tema claro/escuro acompanha o Dock.
-- `/equipe/` (com redirecionamento de `/equipe` para `/equipe/`) para o dono ativo liberar acesso por usuário ou e-mail, reativar vínculos e remover acessos com efeito imediato mesmo com sessão aberta.
+- `/estoque/` começa no módulo **Estoque**, com grade/lista e filtros por produto e categoria. O Dock inferior organiza **Estoque**, **Controle de validade**, **Relatório de desperdício**, **Equipe** e **Fornecedores** conforme o perfil; os módulos gerenciais são acessíveis ao Dono e ao Gerente. **Estoque** é a visão e o gerenciador por produto, com busca pelo nome e atualização que sugere unidade e local; entradas permanecem registradas como novos lotes. A consulta e as ações de validade ficam no módulo **Controle de validade**. O sino BellToggle mostra somente itens que vencem hoje ou em breve e exibe a contagem desses alertas. Os saldos do estoque são calculados dos mesmos lotes e o tema claro/escuro acompanha o Dock.
+- `/equipe/` (com redirecionamento de `/equipe` para `/equipe/`) para o dono ou gerente ativo administrar funcionários e gerentes; operações sobre donos permanecem exclusivas do dono.
 - `/conta/` para consultar dados pessoais, confirmação do e-mail e segurança da senha numa página independente, responsiva e compatível com tema claro ou escuro.
 
 ## Demonstração local do estoque

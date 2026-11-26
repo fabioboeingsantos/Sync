@@ -19,6 +19,18 @@ let banco;
 before(async () => { banco = await abrirBancoLocal(); });
 after(async () => { await banco?.close(); });
 
+test('o estoque gerencia produtos pela busca e não encaminha cartões para validade', async () => {
+  // Protege a separação entre o catálogo operacional e a tela própria de lotes e validade.
+  const html = await readFile(new URL('../piloto/index.html', import.meta.url), 'utf8');
+  const script = await readFile(new URL('../piloto/estoque.js', import.meta.url), 'utf8');
+  assert.match(html, /id="gerenciar-estoque"[^>]*>Gerenciar estoque/);
+  assert.match(script, /botaoAtualizarEstoque/);
+  assert.match(script, /abrirEntradaProduto/);
+  assert.doesNotMatch(script, /botaoVerLotes|Controlar validade/);
+  // Os cartões e indicadores do catálogo não misturam prazos de validade ou detalhes de lote.
+  assert.doesNotMatch(script, /validade mais próxima|Bloqueado por validade|Sem saldo vencido|Lotes com saldo/);
+});
+
 function lote(dados = {}) {
   return {
     p_restaurante_id: restaurantePiloto,
@@ -68,6 +80,10 @@ test('dono e funcionário compartilham o estoque em ordem de validade, incluindo
   const codigoEntrada = await moduloEntrada.text();
   assert.match(codigoEntrada, /from\s*["']\.\/api\.js["']/);
   assert.match(codigoEntrada, /createRoot/);
+  // O código fonte registra o clique mesmo quando o hash #cadastro já está na URL.
+  const fonteEntrada = await readFile(new URL('../frontend/entrada.jsx', import.meta.url), 'utf8');
+  assert.match(fonteEntrada, /a\[href="#prototipos"\], a\[href="#cadastro"\]/);
+  assert.match(fonteEntrada, /getAttribute\('href'\) === '#cadastro'/);
   assert.match(codigoEntrada, /identificador/);
   const estoqueInicial = await fetch(`${origem}/estoque`);
   assert.equal(estoqueInicial.url, `${origem}/estoque/`);
@@ -104,7 +120,11 @@ test('dono e funcionário compartilham o estoque em ordem de validade, incluindo
   const outroDono = await entrar('dono.outro');
   const restaurantes = await (await chamada('restaurantes', { cookie: dono })).json();
   assert.equal(restaurantes[0].id, restaurantePiloto);
-  assert.deepEqual(await (await chamada('restaurantes', { cookie: funcionário })).json(), restaurantes);
+  const restaurantesFuncionario = await (await chamada('restaurantes', { cookie: funcionário })).json();
+  // Dono e funcionário veem o restaurante compartilhado, cada qual com seu papel efetivo para autorização da interface.
+  assert.deepEqual(restaurantesFuncionario.map(({ id, nome }) => ({ id, nome })), restaurantes.map(({ id, nome }) => ({ id, nome })));
+  assert.equal(restaurantes[0].papel, 'dono');
+  assert.equal(restaurantesFuncionario[0].papel, 'funcionario');
   const identificadorInexistente = await chamada('entrar', { dados: { identificador: 'cozinha.inexistente', senha: senhaLocal } });
   const senhaIncorreta = await chamada('entrar', { dados: { identificador: 'funcionario.piloto', senha: 'senha-incorreta' } });
   assert.equal(identificadorInexistente.status, 401);

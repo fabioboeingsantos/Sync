@@ -4,8 +4,8 @@ import { domainToASCII } from 'node:url';
 import nodemailer from 'nodemailer';
 
 // A política vale ao criar ou redefinir senhas. O login valida a credencial que já existe.
-const senhaNovaValida = (senha) => typeof senha === 'string' && senha.length >= 6 && senha.length <= 128;
-const mensagemSenhaNova = 'A senha deve ter entre 6 e 128 caracteres.';
+const senhaNovaValida = (senha) => typeof senha === 'string' && senha.length >= 8 && senha.length <= 128;
+const mensagemSenhaNova = 'A senha deve ter entre 8 e 128 caracteres.';
 
 // Consulta apenas o domínio. O DNS verifica o serviço de e-mail sem enviar uma mensagem à caixa postal.
 const dnsCadastro = new Resolver({ timeout: 1500, tries: 2 });
@@ -71,6 +71,14 @@ function configuracao() {
 // Padroniza respostas JSON e impede que páginas ou caches guardem dados autenticados.
 function resposta(dados, status = 200, cabecalhos = {}) {
   return Response.json(dados, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...cabecalhos } });
+}
+
+// Mantém status e corpo constantes após uma solicitação válida, independentemente dos limites e do resultado do Auth.
+function respostaRecuperacaoGenerica() {
+  return resposta({
+    enviada: true,
+    mensagem: 'Se houver uma conta para esse e-mail, enviaremos um link de recuperação. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações.',
+  });
 }
 
 // Extrai apenas o código técnico de erro do Supabase Auth, sem registrar e-mail, senha ou token.
@@ -156,6 +164,21 @@ async function supabase(cfg, caminho, { metodo = 'GET', corpo, token, cabecalhos
   let dados;
   try { dados = texto ? JSON.parse(texto) : null; } catch { dados = null; }
   return { ok: respostaRemota.ok, status: respostaRemota.status, dados };
+}
+
+// Anexa o papel ao restaurante para a interface distinguir Dono, Gerente e Funcionário.
+async function restaurantesComPapel(cfg, token) {
+  const [restaurantes, vinculos] = await Promise.all([
+    supabase(cfg, '/rest/v1/restaurantes?select=id,nome&order=nome.asc,id.asc', { token }),
+    supabase(cfg, '/rest/v1/membros_restaurante?select=restaurante_id,papel&ativo=eq.true', { token }),
+  ]);
+  if (!restaurantes.ok) return restaurantes;
+  if (!vinculos.ok) return vinculos;
+  const papeis = new Map(vinculos.dados.map(({ restaurante_id, papel }) => [restaurante_id, papel]));
+  return {
+    ...restaurantes,
+    dados: restaurantes.dados.map((restaurante) => ({ ...restaurante, papel: papeis.get(restaurante.id) ?? null })),
+  };
 }
 
 // Gera uma chave de limite sem persistir e-mail, nome de usuário ou endereço IP no banco.
@@ -390,8 +413,18 @@ export async function tratarApi(requisicao) {
         }
         return resposta({ erro: remoto.status === 429 ? 'Muitas tentativas. Aguarde e tente novamente.' : 'Confira o usuário ou e-mail e a senha.' }, remoto.status === 429 ? 429 : remoto.status >= 500 ? 503 : 401);
       }
+      // Se o Auth retornar os tokens sem o perfil, confirma a identidade com o próprio token.
+      let sessaoAuth = remoto.dados;
+      if (!sessaoAuth.user?.id) {
+        const perfilAuth = await supabase(cfg, '/auth/v1/user', { token: sessaoAuth.access_token });
+        if (!perfilAuth.ok || !perfilAuth.dados?.id) {
+          console.warn('Falha ao obter identidade após o login:', { status: perfilAuth.status });
+          return resposta({ erro: 'Não foi possível abrir sua sessão. Tente novamente.' }, 503);
+        }
+        sessaoAuth = { ...sessaoAuth, user: perfilAuth.dados };
+      }
       await controlarLimite(cfg, 'login', chave, 'reset').catch(() => null);
-      const token = assinarSessao(remoto.dados, cfg);
+      const token = assinarSessao(sessaoAuth, cfg);
       return resposta({ autenticado: true }, 200, { 'Set-Cookie': cookieSessao(token, cfg, requisicao) });
     }
 
@@ -446,34 +479,14 @@ export async function tratarApi(requisicao) {
       const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
       const chave = chaveLimite(ip, 'login', email);
       const limite = await controlarLimite(cfg, 'login', chave);
-      if (!limite.permitido) return resposta({ erro: 'Muitas solicitações. Aguarde e tente novamente.' }, 429);
-      // Confere no servidor se o e-mail está cadastrado para dar retorno claro ao usuário (protegido pelo limite acima).
-      let verificadoExiste = null;
-      try {
-        const consulta = await verificacaoEmail(cfg, { acao: 'existe', email });
-        verificadoExiste = Boolean(consulta?.existe);
-      } catch (erro) {
-        // Mantém compatibilidade caso a Edge Function ainda não tenha sido atualizada no Supabase.
-        console.warn('Verificação prévia de conta na recuperação indisponível:', { status: erro?.status ?? 503 });
-      }
-      if (verificadoExiste === false) {
-        return resposta({ erro: 'Nenhuma conta foi encontrada para esse e-mail.' }, 404);
-      }
+      if (!limite.permitido) return respostaRecuperacaoGenerica();
+      // Evita consulta prévia de existência: endereços cadastrados e não cadastrados seguem o mesmo fluxo.
       const remoto = await supabase(cfg, `/auth/v1/recover?redirect_to=${encodeURIComponent(url.origin)}`, { metodo: 'POST', corpo: { email } });
       if (!remoto.ok) {
         const codigo = codigoErroAuth(remoto.dados);
         console.warn('Falha na recuperação via Auth:', { status: remoto.status, codigo });
-        if (remoto.status === 429 || codigo === 'over_email_send_rate_limit') {
-          return resposta({ erro: 'Muitos envios de e-mail em sequência. Aguarde alguns minutos e tente novamente.', codigo: 'limite_envio_email' }, 429);
-        }
-        return resposta({ erro: 'Não foi possível solicitar a recuperação agora.' }, remoto.status >= 500 ? 503 : remoto.status);
       }
-      return resposta({
-        enviada: true,
-        mensagem: verificadoExiste === true
-          ? 'Enviamos um link de recuperação. Ele costuma chegar em alguns minutos. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações.'
-          : 'Se houver uma conta para esse e-mail, enviaremos um link de recuperação. A entrega costuma levar alguns minutos; confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações.',
-      });
+      return respostaRecuperacaoGenerica();
     }
 
     if (caminho === 'auth/update-password' && requisicao.method === 'POST') {
@@ -530,7 +543,7 @@ export async function tratarApi(requisicao) {
     if (caminho === 'auth/session' && requisicao.method === 'GET') {
       const [usuario, restaurantes] = await Promise.all([
         supabase(cfg, '/auth/v1/user', { token }),
-        supabase(cfg, '/rest/v1/restaurantes?select=id,nome&order=nome.asc,id.asc', { token }),
+        restaurantesComPapel(cfg, token),
       ]);
       if (!usuario.ok) return resposta({ erro: 'Entre novamente para continuar.' }, 401, { ...cookieAtualizado, 'Set-Cookie': cookieRemovido(cfg, requisicao) });
       if (!restaurantes.ok) return erroBanco(restaurantes);
@@ -635,7 +648,7 @@ export async function tratarApi(requisicao) {
     }
 
     if (caminho === 'restaurantes' && requisicao.method === 'GET') {
-      const remoto = await supabase(cfg, '/rest/v1/restaurantes?select=id,nome&order=nome.asc,id.asc', { token });
+      const remoto = await restaurantesComPapel(cfg, token);
       return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
     }
 
@@ -645,7 +658,7 @@ export async function tratarApi(requisicao) {
       const remoto = await supabase(cfg, '/rest/v1/rpc/criar_restaurante_inicial', {
         metodo: 'POST', token, corpo: { p_nome: typeof dados?.nome === 'string' ? dados.nome : null },
       });
-      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+      return remoto.ok ? resposta({ ...remoto.dados, papel: 'dono' }, 200, cookieAtualizado) : erroBanco(remoto);
     }
 
     if (caminho === 'estoque' && requisicao.method === 'GET') {
@@ -664,7 +677,7 @@ export async function tratarApi(requisicao) {
       if (!/^20\d{2}-(0[1-9]|1[0-2])$/.test(mes)) return resposta({ erro: 'Mês do relatório inválido.' }, 400);
       const membro = await supabase(cfg, `/rest/v1/membros_restaurante?select=papel&restaurante_id=eq.${restaurante}&limit=1`, { token });
       if (!membro.ok) return erroBanco(membro);
-      if (membro.dados?.[0]?.papel !== 'dono') return resposta(null, 200, cookieAtualizado);
+      if (!['dono', 'gerente'].includes(membro.dados?.[0]?.papel)) return resposta(null, 200, cookieAtualizado);
       // As contas do produto usam America/Sao_Paulo (UTC-3); os limites são meia-noite local, com fim exclusivo.
       const [ano, numeroMes] = mes.split('-').map(Number);
       const inicio = new Date(Date.UTC(ano, numeroMes - 1, 1, 3)).toISOString();
@@ -698,7 +711,7 @@ export async function tratarApi(requisicao) {
       const restaurante = typeof dados.p_restaurante_id === 'string' ? dados.p_restaurante_id : '';
       const identificador = typeof dados.p_identificador === 'string' ? dados.p_identificador.trim() : '';
       const papel = typeof dados.p_papel === 'string' ? dados.p_papel.trim().toLowerCase() : 'funcionario';
-      if (!/^[0-9a-f-]{36}$/i.test(restaurante) || identificador.length < 3 || identificador.length > 254 || !['funcionario', 'dono'].includes(papel)) {
+      if (!/^[0-9a-f-]{36}$/i.test(restaurante) || identificador.length < 3 || identificador.length > 254 || !['funcionario', 'gerente', 'dono'].includes(papel)) {
         return resposta({ erro: 'Confira o usuário ou e-mail e o perfil escolhido.' }, 400, cookieAtualizado);
       }
       const remoto = await supabase(cfg, '/rest/v1/rpc/vincular_membro_restaurante', {

@@ -23,6 +23,12 @@ const arquivosOcr = [
 ];
 export const arquivosPublicos = [
   'informacoes.html',
+  // A página social é independente e usa recursos locais próprios.
+  'causa-social/index.html',
+  'causa-social/styles.css',
+  'causa-social/imagens/cesta-grande.webp',
+  'causa-social/imagens/refeicao-compartilhada.png',
+  'causa-social/app.js',
   'css/botoes.css',
   `${tema}/abertura/sync.css`,
   `${tema}/abertura/js/tema.js`,
@@ -32,6 +38,7 @@ export const arquivosPublicos = [
   `${tema}/abertura/imagens/LogoOficial.webp`,
   `${tema}/abertura/imagens/sync-emblema-animado.mp4`,
   `${tema}/imagens/visionchef-logo.jpg`,
+  `${tema}/imagens/visionchef-logo-pictorica.png`,
   `${tema}/htmls/agente-ia-cadastro.html`,
   // A demonstração pública da Vision compartilha o interpretador e o microfone com o exemplar E3.
   `${tema}/htmls/interpretar-lote.js`,
@@ -60,6 +67,7 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
     .replace('<!-- login-piloto-modulo -->', '<script type="module" src="entrada.js"></script>');
   const paginaEstoque = local ? estoque : estoque.replace(blocoContas, '');
   await Promise.all([
+    mkdir(resolve(destino, 'causa-social/imagens'), { recursive: true }),
     mkdir(resolve(destino, 'estoque'), { recursive: true }),
     mkdir(resolve(destino, 'equipe'), { recursive: true }),
     mkdir(resolve(destino, 'conta'), { recursive: true }),

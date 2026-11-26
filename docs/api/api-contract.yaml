@@ -56,7 +56,7 @@ components:
         usuario_id: { type: string, format: uuid }
         nome_usuario: { type: string, nullable: true }
         email: { type: string, format: email }
-        papel: { type: string, enum: [dono, funcionario] }
+        papel: { type: string, enum: [dono, gerente, funcionario] }
         ativo: { type: boolean }
 
 paths:
@@ -124,7 +124,7 @@ paths:
               properties:
                 nomeUsuario: { type: string, pattern: "^[a-z0-9][a-z0-9._-]{2,31}$" }
                 email: { type: string, format: email }
-                senha: { type: string, minLength: 6, maxLength: 128 }
+                senha: { type: string, minLength: 8, maxLength: 128 }
       responses:
         "201":
           description: Conta criada
@@ -138,7 +138,7 @@ paths:
   /api/auth/recover:
     post:
       summary: Solicitar link de recuperação de senha
-      description: Protegido por rate limit compartilhado. Por exceção formal (ADR-002), retorna 404 quando não existe conta para o e-mail informado.
+      description: Protegido por rate limit compartilhado. Respostas e mensagens não revelam se existe uma conta para o e-mail informado.
       requestBody:
         required: true
         content:
@@ -153,8 +153,6 @@ paths:
           description: Link de recuperação solicitado via Supabase Auth
         "400":
           description: E-mail inválido
-        "404":
-          description: Nenhuma conta encontrada para o e-mail informado
         "429":
           description: Limite de solicitações excedido
 
@@ -170,7 +168,7 @@ paths:
               required: [access_token, senha]
               properties:
                 access_token: { type: string }
-                senha: { type: string, minLength: 6, maxLength: 128 }
+                senha: { type: string, minLength: 8, maxLength: 128 }
       responses:
         "200":
           description: Senha atualizada e cookie de sessão limpo
@@ -219,7 +217,7 @@ paths:
               required: [senha_atual, senha_nova]
               properties:
                 senha_atual: { type: string, minLength: 1, maxLength: 128 }
-                senha_nova: { type: string, minLength: 6, maxLength: 128 }
+                senha_nova: { type: string, minLength: 8, maxLength: 128 }
       responses:
         "200":
           description: Senha atualizada e todas as sessões encerradas
@@ -399,7 +397,7 @@ paths:
 
   /api/descartes:
     get:
-      summary: Consultar últimos 50 descartes (exclusivo para dono; retorna null para funcionário)
+      summary: Consultar últimos 50 descartes (dono ou gerente; retorna null para funcionário)
       security:
         - sessionCookie: []
       parameters:
@@ -408,11 +406,11 @@ paths:
           required: true
           schema: { type: string, format: uuid }
       responses:
-        "200": { description: Lista de descartes ou null quando o perfil não é dono }
+        "200": { description: Lista de descartes ou null para perfil sem permissão gerencial }
 
   /api/equipe:
     get:
-      summary: Listar membros da equipe do restaurante (exclusivo para dono ativo)
+      summary: Listar membros da equipe (dono ou gerente ativo)
       security:
         - sessionCookie: []
       parameters:
@@ -430,11 +428,11 @@ paths:
                 items: { $ref: "#/components/schemas/MembroEquipe" }
         "400": { description: Restaurante inválido }
         "401": { description: Sessão necessária }
-        "403": { description: Acesso restrito ao dono ativo do restaurante }
+        "403": { description: Acesso restrito ao dono ou gerente ativo do restaurante }
 
   /api/equipe/vincular:
     post:
-      summary: Liberar ou reativar acesso de conta cadastrada ao restaurante (exclusivo para dono)
+      summary: Liberar ou reativar acesso da equipe (dono ou gerente ativo)
       security:
         - sessionCookie: []
       requestBody:
@@ -447,7 +445,7 @@ paths:
               properties:
                 p_restaurante_id: { type: string, format: uuid }
                 p_identificador: { type: string, minLength: 3, maxLength: 254 }
-                p_papel: { type: string, enum: [funcionario, dono], default: funcionario }
+                p_papel: { type: string, enum: [funcionario, gerente, dono], default: funcionario }
       responses:
         "200":
           description: Vínculo criado ou reativado
@@ -455,13 +453,13 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/MembroEquipe" }
         "400": { description: Dados inválidos }
-        "403": { description: Acesso restrito ao dono ativo }
+        "403": { description: Acesso restrito ao dono ou gerente ativo }
         "404": { description: Conta não encontrada para o usuário ou e-mail informado (PT404) }
         "409": { description: Tentativa de rebaixar o único dono ativo (PT409) }
 
   /api/equipe/remover:
     post:
-      summary: Revogar imediatamente o acesso de um membro ao restaurante (exclusivo para dono)
+      summary: Revogar acesso de um membro (gerente só pode revogar funcionário ou gerente)
       security:
         - sessionCookie: []
       requestBody:
@@ -484,13 +482,13 @@ paths:
                 properties:
                   removido: { type: boolean }
         "400": { description: Identificadores inválidos }
-        "403": { description: Acesso restrito ao dono ativo }
+        "403": { description: Acesso restrito ao dono ou gerente ativo }
         "404": { description: Membro não encontrado neste restaurante (PT404) }
         "409": { description: Tentativa de remover o único dono ativo (PT409) }
 
   /api/fornecedores:
     get:
-      summary: Listar fornecedores do restaurante (dono vê todos; funcionário vê apenas ativos)
+      summary: Listar fornecedores (dono e gerente veem todos; funcionário vê apenas ativos)
       security:
         - sessionCookie: []
       parameters:
@@ -505,21 +503,21 @@ paths:
 
   /api/fornecedores/salvar:
     post:
-      summary: Criar ou atualizar fornecedor do restaurante (exclusivo para dono ativo)
+      summary: Criar ou atualizar fornecedor (dono ou gerente ativo)
       security:
         - sessionCookie: []
       responses:
         "200": { description: Fornecedor salvo }
         "400": { description: Dados inválidos }
-        "403": { description: Acesso restrito ao dono ativo }
+        "403": { description: Acesso restrito ao dono ou gerente ativo }
         "404": { description: Fornecedor não encontrado para edição }
 
   /api/fornecedores/status:
     post:
-      summary: Ativar ou desativar fornecedor do restaurante (exclusivo para dono ativo)
+      summary: Ativar ou desativar fornecedor (dono ou gerente ativo)
       security:
         - sessionCookie: []
       responses:
         "200": { description: Novo status do fornecedor }
-        "403": { description: Acesso restrito ao dono ativo }
+        "403": { description: Acesso restrito ao dono ou gerente ativo }
         "404": { description: Fornecedor não encontrado }

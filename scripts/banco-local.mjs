@@ -12,6 +12,7 @@ export const contas = new Map([
   ['dono@piloto.test', { id: '20000000-0000-4000-8000-000000000001', nome: 'dono.piloto', restaurante: restaurantePiloto, papel: 'dono' }],
   ['funcionario@piloto.test', { id: '20000000-0000-4000-8000-000000000002', nome: 'funcionario.piloto', restaurante: restaurantePiloto, papel: 'funcionario' }],
   ['dono@outro.test', { id: '20000000-0000-4000-8000-000000000003', nome: 'dono.outro', restaurante: outroRestaurante, papel: 'dono' }],
+  ['gerente@piloto.test', { id: '20000000-0000-4000-8000-000000000004', nome: 'gerente.piloto', restaurante: restaurantePiloto, papel: 'gerente' }],
 ]);
 
 // Usa o calendário de São Paulo para manter datas demonstrativas coerentes com quem testa no Brasil.
@@ -199,7 +200,7 @@ export async function autenticarContaLocal(banco, identificador, senha) {
 export async function criarContaLocal(banco, { nomeUsuario, email, senha }) {
   const nome = typeof nomeUsuario === 'string' ? nomeUsuario.trim().toLowerCase() : '';
   const endereco = typeof email === 'string' ? email.trim().toLowerCase() : '';
-  if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(endereco) || typeof senha !== 'string' || senha.length < 6 || senha.length > 128) {
+  if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(endereco) || typeof senha !== 'string' || senha.length < 8 || senha.length > 128) {
     throw Object.assign(new Error('Confira o usuário, o e-mail e a senha.'), { status: 400 });
   }
   const senhaHash = await gerarHashSenha(senha);
@@ -216,8 +217,8 @@ export async function criarContaLocal(banco, { nomeUsuario, email, senha }) {
 
 // Valida o tamanho da nova senha antes de gravar um hash Argon2id com novo sal aleatório.
 export async function redefinirSenhaLocal(banco, usuarioId, novaSenha) {
-  if (typeof novaSenha !== 'string' || novaSenha.length < 6 || novaSenha.length > 128) {
-    throw Object.assign(new Error('A senha deve ter entre 6 e 128 caracteres.'), { status: 400 });
+  if (typeof novaSenha !== 'string' || novaSenha.length < 8 || novaSenha.length > 128) {
+    throw Object.assign(new Error('A senha deve ter entre 8 e 128 caracteres.'), { status: 400 });
   }
   const novoHash = await gerarHashSenha(novaSenha);
   const { rows } = await banco.query(`
@@ -239,7 +240,13 @@ export function comoUsuario(banco, usuario, executar) {
 }
 
 export async function listarRestaurantes(tx) {
-  const { rows } = await tx.query('select id, nome from public.restaurantes order by nome, id');
+  const { rows } = await tx.query(`
+    select r.id, r.nome, m.papel
+    from public.restaurantes as r
+    join public.membros_restaurante as m on m.restaurante_id = r.id
+    where m.usuario_id = auth.uid() and m.ativo = true
+    order by r.nome, r.id
+  `);
   return rows;
 }
 
@@ -296,9 +303,9 @@ export async function registrarSaida(tx, s) {
 }
 
 export async function listarDescartes(tx, restaurante, mes) {
-  // Um relatório vazio é diferente de uma conta sem acesso à visão do dono.
-  const { rows: [membro] } = await tx.query('select papel from public.membros_restaurante where restaurante_id = $1', [restaurante]);
-  if (membro?.papel !== 'dono') return null;
+  // Um relatório vazio é diferente de uma conta sem acesso à visão gerencial.
+  const { rows: [membro] } = await tx.query('select papel from public.membros_restaurante where restaurante_id = $1 and usuario_id = auth.uid() and ativo = true', [restaurante]);
+  if (!['dono', 'gerente'].includes(membro?.papel)) return null;
   const [ano, numeroMes] = mes.split('-').map(Number);
   // Meia-noite de São Paulo corresponde a 03:00 UTC; o limite final exclui o mês seguinte.
   const inicio = new Date(Date.UTC(ano, numeroMes - 1, 1, 3)).toISOString();
@@ -310,7 +317,7 @@ export async function listarDescartes(tx, restaurante, mes) {
   return rows;
 }
 
-// Consulta os membros do restaurante usando a mesma RPC restrita ao dono da versão online.
+// Consulta os membros do restaurante usando a mesma RPC restrita a dono e gerente da versão online.
 export async function listarEquipe(tx, restaurante) {
   const { rows } = await tx.query('select * from public.listar_equipe_restaurante($1)', [restaurante]);
   return rows;
@@ -334,13 +341,13 @@ export async function removerMembro(tx, dados) {
   return { removido: Boolean(registro.removido) };
 }
 
-// Consulta fornecedores do restaurante respeitando perfil (dono vê todos; funcionário apenas ativos).
+// Consulta fornecedores do restaurante respeitando perfil (dono e gerente veem todos; funcionário apenas ativos).
 export async function listarFornecedores(tx, restaurante) {
   const { rows } = await tx.query('select * from public.listar_fornecedores_restaurante($1)', [restaurante]);
   return rows;
 }
 
-// Cria ou atualiza um fornecedor no restaurante (restrito ao dono ativo).
+// Cria ou atualiza um fornecedor no restaurante (restrito a dono ou gerente ativo).
 export async function salvarFornecedor(tx, dados) {
   const { rows: [registro] } = await tx.query(
     'select public.salvar_fornecedor_restaurante($1, $2, $3, $4, $5, $6, $7) as fornecedor',
@@ -357,7 +364,7 @@ export async function salvarFornecedor(tx, dados) {
   return registro.fornecedor;
 }
 
-// Ativa ou desativa um fornecedor do restaurante (restrito ao dono ativo).
+// Ativa ou desativa um fornecedor do restaurante (restrito a dono ou gerente ativo).
 export async function alterarStatusFornecedor(tx, dados) {
   const { rows: [registro] } = await tx.query(
     'select public.alterar_status_fornecedor($1, $2, $3) as ativo',

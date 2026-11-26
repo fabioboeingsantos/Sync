@@ -20,6 +20,9 @@ const imagensProdutos = await readdir(resolve(raiz, 'piloto/imagens/produtos'));
 const arquivos = new Map([
   ...arquivosPublicos.map((arquivo) => [encodeURI(`/${arquivo}`), arquivo]),
   ['/index.html', 'index.html'],
+  // Serve a página social pelo endereço amigável no servidor local.
+  ['/causa-social/', 'causa-social/index.html'],
+  ['/causa-social/index.html', 'causa-social/index.html'],
   ['/', 'index.html'],
   ['/estoque/', 'estoque/index.html'],
   ['/estoque/index.html', 'estoque/index.html'],
@@ -90,7 +93,7 @@ export function criarServidorLocal(banco, pastaPublica) {
     const arquivo = arquivos.get(url.pathname);
     try {
       // O endereço da pasta mantém os links relativos das telas de estoque e equipe consistentes.
-      if (req.method === 'GET' && ['/estoque', '/equipe', '/conta'].includes(url.pathname)) {
+      if (req.method === 'GET' && ['/estoque', '/equipe', '/conta', '/causa-social'].includes(url.pathname)) {
         res.writeHead(308, { Location: `${url.pathname}/${url.search}` });
         res.end();
         return;
@@ -165,7 +168,7 @@ export function criarServidorLocal(banco, pastaPublica) {
           await redefinirSenhaLocal(banco, conta.id, novaSenha);
         } catch {
           // Apresenta o mesmo intervalo aplicado pela validação do banco local.
-          json(res, 400, { erro: 'A nova senha deve ter entre 6 e 128 caracteres.' });
+          json(res, 400, { erro: 'A nova senha deve ter entre 8 e 128 caracteres.' });
           return;
         }
         // Revoga todas as sessões ativas da conta após a troca de senha.
@@ -222,7 +225,8 @@ export function criarServidorLocal(banco, pastaPublica) {
       } else if (req.method === 'POST' && url.pathname === '/demo/restaurantes') {
         const dados = await lerJson(req);
         const nome = typeof dados?.nome === 'string' ? dados.nome : null;
-        json(res, 200, await comoUsuario(banco, conta.id, (tx) => criarRestauranteInicial(tx, nome)));
+        const criado = await comoUsuario(banco, conta.id, (tx) => criarRestauranteInicial(tx, nome));
+        json(res, 200, { ...criado, papel: 'dono' });
       } else if (req.method === 'GET' && url.pathname === '/demo/restaurantes') {
         json(res, 200, await comoUsuario(banco, conta.id, listarRestaurantes));
       } else if (req.method === 'GET' && url.pathname === '/demo/lotes') {

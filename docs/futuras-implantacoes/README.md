@@ -17,7 +17,7 @@ O [plano de divulgação das soluções](portfolio-e-divulgacao-sync.md) reúne 
 
 **Status** — Planejado para uma etapa posterior ao piloto.
 
-No piloto, public.membros_restaurante usa os papéis de acesso dono e funcionario. As categorias profissionais serão modeladas em tabelas próprias quando forem definidas, sem alterar a finalidade dos papéis de acesso.
+No piloto, `public.membros_restaurante` usa os papéis de acesso `dono`, `gerente` e `funcionario`. `Gerente` é um funcionário chefe com os mesmos acessos operacionais do dono; somente o dono pode alterar vínculos de outros donos. Categorias profissionais continuam podendo ser modeladas em tabelas próprias quando forem definidas.
 
 ## Integração de Notas Fiscais (NF-e / NFC-e) com a Assistente IA
 

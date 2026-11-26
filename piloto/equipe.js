@@ -1,6 +1,6 @@
 import { api } from './api.js';
 
-// Controla o gerenciamento de acessos da equipe (/equipe/), restrito ao dono ativo do restaurante.
+// Controla a gestão da equipe (/equipe/), disponível ao dono e ao gerente.
 const porId = (id) => document.getElementById(id);
 const situacaoSessao = porId('situacao-sessao');
 const contaTopo = porId('conta-topo');
@@ -23,6 +23,7 @@ const confirmarRemover = porId('confirmar-remover');
 const cancelarRemover = porId('cancelar-remover');
 
 let restaurante = null;
+let papelAtual = 'funcionario';
 let membroSelecionado = null;
 
 function ocupado(botao, estado) {
@@ -57,7 +58,8 @@ function criarLinhaMembro(membro, totalDonosAtivos) {
     celulaPessoa.append(subtitulo);
   }
 
-  const papelTexto = membro.papel === 'dono' ? 'Dono' : 'Funcionário';
+  const nomesPerfil = { dono: 'Dono', gerente: 'Gerente', funcionario: 'Funcionário' };
+  const papelTexto = nomesPerfil[membro.papel] ?? 'Funcionário';
   adicionarCelula(linha, papelTexto, 'Perfil');
 
   const estado = document.createElement('span');
@@ -69,8 +71,9 @@ function criarLinhaMembro(membro, totalDonosAtivos) {
   const acoes = document.createElement('div');
   acoes.className = 'acoes';
   const unicoDono = membro.ativo && membro.papel === 'dono' && totalDonosAtivos <= 1;
+  const podeGerenciarMembro = papelAtual === 'dono' || membro.papel !== 'dono';
 
-  if (membro.ativo && !unicoDono) {
+  if (membro.ativo && !unicoDono && podeGerenciarMembro) {
     const botaoRemover = document.createElement('button');
     botaoRemover.type = 'button';
     botaoRemover.className = 'botao botao-secundario danger';
@@ -78,7 +81,7 @@ function criarLinhaMembro(membro, totalDonosAtivos) {
     botaoRemover.setAttribute('aria-label', `Remover acesso de ${identificacao}`);
     botaoRemover.addEventListener('click', () => abrirConfirmacaoRemocao(membro));
     acoes.append(botaoRemover);
-  } else if (!membro.ativo) {
+  } else if (!membro.ativo && podeGerenciarMembro) {
     const botaoReativar = document.createElement('button');
     botaoReativar.type = 'button';
     botaoReativar.className = 'botao botao-secundario';
@@ -88,7 +91,9 @@ function criarLinhaMembro(membro, totalDonosAtivos) {
     acoes.append(botaoReativar);
   } else {
     const aviso = document.createElement('small');
-    aviso.textContent = 'Dono principal ativo';
+    aviso.textContent = membro.papel === 'dono' && papelAtual === 'gerente'
+      ? 'Acesso do dono reservado ao proprietário'
+      : 'Dono principal ativo';
     acoes.append(aviso);
   }
 
@@ -137,6 +142,9 @@ async function verificarSessao(focar = false) {
   const restaurantes = sessao?.restaurantes ?? await api.restaurantes();
   const autenticado = Boolean(sessao?.user) || restaurantes !== null;
   restaurante = restaurantes?.[0] ?? null;
+  papelAtual = restaurante?.papel ?? 'funcionario';
+  const opcaoDono = formVincular.elements.papel.querySelector('option[value="dono"]');
+  if (opcaoDono) opcaoDono.hidden = papelAtual !== 'dono';
 
   const email = sessao?.user?.email ?? '';
   contaTopo.textContent = email;

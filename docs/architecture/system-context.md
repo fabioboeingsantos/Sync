@@ -1,6 +1,6 @@
 # VisionChef — contexto do sistema (F02)
 
-**Atualizado em:** 25/11/2026  
+**Atualizado em:** 26/11/2026  
 **Referências:** [ADR-001](decisions/ADR-001-arquitetura-do-piloto.md) · [ADR-002](decisions/ADR-002-autenticacao-e-emails.md) · [Contrato da API](../api/api-contract.yaml)
 
 ## 1. Atores
@@ -9,8 +9,9 @@
 | --- | --- | --- |
 | Visitante | Sem sessão | Navega na landing Sync (`/`), cria conta individual (`/#cadastro`) ou solicita recuperação de senha (`/#recuperar`). |
 | Usuário autenticado sem vínculo | Sessão válida sem linha ativa em `membros_restaurante` | Acessa **Minha conta**, consulta status de vínculo e solicita/confirma e-mail opcional. Não acessa estoque nem equipe. |
-| Funcionário (`funcionario`) | Vínculo ativo em `membros_restaurante` | Consulta lotes do seu restaurante, cadastra, corrige validade, registra abertura/fracionamento e baixas (uso/descarte). Não acessa descartes gerenciais nem `/equipe/`. |
-| Dono (`dono`) | Vínculo ativo com `papel = 'dono'` | Todas as ações do funcionário + relatório mensal de descartes reais + gestão completa de acessos em `/equipe/` (vincular, reativar e revogar). |
+| Funcionário (`funcionario`) | Vínculo ativo em `membros_restaurante` | Consulta lotes do seu restaurante, cadastra, corrige validade, registra abertura/fracionamento e baixas (uso/descarte). Não acessa relatório gerencial nem `/equipe/`. |
+| Gerente (`gerente`) | Vínculo ativo com `papel = 'gerente'` | Ações operacionais do dono: estoque, controle de validade, relatório de desperdício, fornecedores e gestão de funcionários/gerentes. Não pode alterar o acesso de um dono. |
+| Dono (`dono`) | Vínculo ativo com `papel = 'dono'` | Acesso completo, incluindo gestão de todos os perfis e dos vínculos de propriedade do restaurante. |
 
 ## 2. Fronteiras de confiança e fluxo de dados
 

@@ -53,6 +53,7 @@ const moduloInventario = porId('modulo-inventario');
 const moduloRelatorioDesperdicio = porId('modulo-relatorio-desperdicio');
 const moduloEquipe = porId('modulo-equipe');
 const moduloFornecedores = porId('modulo-fornecedores');
+const moduloCausaSocial = porId('modulo-causa-social');
 const formEquipePainel = porId('form-equipe-painel');
 const erroEquipePainel = porId('erro-equipe-painel');
 const feedbackEquipe = porId('feedback-equipe');
@@ -120,7 +121,8 @@ try {
   visualizacaoInventario = 'grade';
 }
 let moduloAtivo = 'inventario';
-let ehDonoAtual = false;
+let podeGerenciarAtual = false;
+let papelAtual = 'funcionario';
 let membroEmRemocao = null;
 let lotesCarregados = [];
 let duplicadoConfirmado = null;
@@ -171,6 +173,9 @@ async function mostrarSessao(focar = false) {
   const restaurantes = sessao?.restaurantes ?? await api.restaurantes();
   sessaoAtual = sessao;
   restaurante = restaurantes?.[0] ?? null;
+  papelAtual = restaurante?.papel ?? 'funcionario';
+  const opcaoDonoEquipe = formEquipePainel?.querySelector('option[value="dono"]');
+  if (opcaoDonoEquipe) opcaoDonoEquipe.hidden = papelAtual !== 'dono';
   const autenticado = Boolean(sessao?.user) || restaurantes !== null;
   porId('entrada').hidden = autenticado;
   porId('sem-restaurante').hidden = !autenticado || Boolean(restaurante);
@@ -183,7 +188,8 @@ async function mostrarSessao(focar = false) {
 
   if (!restaurante) {
     versaoConsulta += 1;
-    ehDonoAtual = false;
+    podeGerenciarAtual = false;
+    papelAtual = 'funcionario';
     porId('lotes').replaceChildren();
     porId('grade-estoque').replaceChildren();
     gradeInventario?.replaceChildren();
@@ -676,24 +682,39 @@ function alternarParaValidade(produto = '') {
   porId('titulo-estoque')?.focus();
 }
 
-function botaoVerLotes(produto) {
+// Abre uma entrada vinculada ao produto selecionado e conserva o registro por lote e validade.
+function botaoAtualizarEstoque(produto) {
   const botao = document.createElement('button');
   botao.type = 'button';
-  botao.className = 'botao botao-secundario';
-  botao.textContent = 'Controlar validade';
-  botao.addEventListener('click', () => alternarParaValidade(produto));
+  botao.className = 'botao botao-primario';
+  botao.textContent = 'Atualizar estoque';
+  botao.setAttribute('aria-label', `Atualizar estoque de ${produto.nome}`);
+  botao.addEventListener('click', () => abrirEntradaProduto(produto));
   return botao;
+}
+
+// Pré-seleciona o produto e a unidade no formulário existente; quantidade e validade continuam explícitas.
+function abrirEntradaProduto(produto) {
+  alternarModulo('estoque', false);
+  // Evita que uma entrada cancelada deixe quantidade, lote ou validade de outro produto no formulário.
+  formLote.reset();
+  limparErros();
+  definirCadastro(true, 'manual');
+  campos.insumo.value = produto.nome;
+  campos.medida.value = produto.medida;
+  campos.local.value = produto.local || '';
+  campos.quantidade.focus();
 }
 
 function renderizarIndicadoresInventario(produtos) {
   if (!indicadoresInventario) return;
-  const lotesAtivos = produtos.reduce((soma, produto) => soma + produto.lotes.filter((lote) => Number(lote.saldo) > 0).length, 0);
+  const comSaldo = produtos.filter((produto) => produto.saldoDisponivel > 0).length;
   const abaixoMinimo = produtos.filter((produto) => produto.minimo && produto.saldoDisponivel > 0 && produto.saldoDisponivel <= produto.minimo).length;
   const semSaldo = produtos.filter((produto) => produto.saldoDisponivel <= 0).length;
   indicadoresInventario.replaceChildren();
   for (const [numero, rotulo, detalhe] of [
     [String(produtos.length), 'Produtos', 'no catálogo'],
-    [String(lotesAtivos), 'Lotes com saldo', 'em controle de validade'],
+    [String(comSaldo), 'Com saldo', 'disponíveis para uso'],
     [String(abaixoMinimo), 'Estoque baixo', 'no limite mínimo'],
     [String(semSaldo), 'Sem saldo', 'para reposição'],
   ]) {
@@ -746,16 +767,10 @@ function renderizarCartaoProduto(produto) {
   const saldo = document.createElement('p');
   saldo.className = 'produto-saldo';
   saldo.textContent = `${formatarSaldo(produto.saldoDisponivel, produto.medida)} disponíveis`;
-  const detalhes = document.createElement('p');
-  detalhes.className = 'produto-detalhe';
-  detalhes.textContent = `${produto.lotes.length} ${produto.lotes.length === 1 ? 'lote' : 'lotes'} · ${produto.validadeMaisProxima ? `validade mais próxima: ${formatarData(produto.validadeMaisProxima)}` : 'sem entrada registrada'}`;
   const local = document.createElement('p');
   local.className = 'produto-detalhe';
   local.textContent = produto.local || 'Local não informado';
-  const vencido = document.createElement('p');
-  vencido.className = 'produto-detalhe';
-  vencido.textContent = produto.saldoVencido > 0 ? `Bloqueado por validade: ${formatarSaldo(produto.saldoVencido, produto.medida)}` : 'Sem saldo vencido';
-  corpo.append(titulo, categoria, saldo, detalhes, local, vencido, botaoVerLotes(produto.nome));
+  corpo.append(titulo, categoria, saldo, local, botaoAtualizarEstoque(produto));
   cartao.append(corpo);
   return cartao;
 }
@@ -775,11 +790,7 @@ function renderizarLinhaProduto(produto) {
   const saldo = document.createElement('strong');
   saldo.className = 'linha-produto-saldo';
   saldo.textContent = `${formatarSaldo(produto.saldoDisponivel, produto.medida)} disponíveis`;
-  const validade = document.createElement('span');
-  validade.textContent = produto.validadeMaisProxima ? `Validade mais próxima: ${formatarData(produto.validadeMaisProxima)}` : 'Sem entrada registrada';
-  const vencido = document.createElement('span');
-  vencido.textContent = produto.saldoVencido > 0 ? `Bloqueado por validade: ${formatarSaldo(produto.saldoVencido, produto.medida)}` : '';
-  linha.append(dados, saldo, validade, vencido, botaoVerLotes(produto.nome));
+  linha.append(dados, saldo, botaoAtualizarEstoque(produto));
   return linha;
 }
 
@@ -823,8 +834,8 @@ function renderizarInventario(lotes) {
   }
   gradeInventario.replaceChildren(...[...gradeInventario.children]);
   listaInventario.replaceChildren(...[...listaInventario.children]);
-  const totalItens = produtos.filter((produto) => produto.lotes.length > 0).length;
-  if (resumoInventario) resumoInventario.textContent = `${totalItens} de ${produtos.length} produtos com saldo ou lote registrado.`;
+  const totalItens = produtos.filter((produto) => produto.saldoDisponivel > 0).length;
+  if (resumoInventario) resumoInventario.textContent = `${totalItens} de ${produtos.length} produtos com saldo disponível.`;
   renderizarIndicadoresInventario(produtos);
   aplicarFiltrosInventario();
 }
@@ -852,10 +863,10 @@ buscaInventario?.addEventListener('input', aplicarFiltrosInventario);
 categoriaInventario?.addEventListener('change', aplicarFiltrosInventario);
 aplicarVisualizacaoInventario(false);
 
-porId('adicionar-estoque')?.addEventListener('click', () => {
-  alternarParaValidade();
-  definirCadastro(true, 'manual');
-  campos.insumo.focus();
+// A busca por nome ou categoria inicia o gerenciamento; a pessoa escolhe um produto antes de atualizar seu saldo.
+porId('gerenciar-estoque')?.addEventListener('click', () => {
+  buscaInventario?.focus();
+  buscaInventario?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 function aplicarFiltroEstoque() {
@@ -943,24 +954,25 @@ async function atualizarDescartes(id, consulta) {
     const periodo = mesAtualRelatorio();
     const descartes = await api.descartes(id, periodo);
     if (consulta !== versaoConsulta) return;
-    // O relatório, assim como equipe e fornecedores, só é exibido à conta dona do restaurante.
-    ehDonoAtual = descartes !== null;
-    if (linkEquipe) linkEquipe.hidden = !ehDonoAtual;
-    if (abrirFornecedor) abrirFornecedor.hidden = !ehDonoAtual;
-    if (colAcoesFornecedores) colAcoesFornecedores.hidden = !ehDonoAtual;
-    notificarPerfil(ehDonoAtual);
+    // O relatório e os módulos de gestão ficam disponíveis ao dono e ao gerente.
+    podeGerenciarAtual = descartes !== null;
+    if (linkEquipe) linkEquipe.hidden = !podeGerenciarAtual;
+    if (abrirFornecedor) abrirFornecedor.hidden = !podeGerenciarAtual;
+    if (colAcoesFornecedores) colAcoesFornecedores.hidden = !podeGerenciarAtual;
+    notificarPerfil(podeGerenciarAtual);
     if (perfilBadge) {
-      perfilBadge.textContent = ehDonoAtual ? 'Perfil: Dono' : 'Perfil: Funcionário';
+      const nomesPerfil = { dono: 'Dono', gerente: 'Gerente', funcionario: 'Funcionário' };
+      perfilBadge.textContent = `Perfil: ${nomesPerfil[papelAtual] ?? 'Funcionário'}`;
       perfilBadge.hidden = false;
     }
     if (subtituloFornecedores) {
-      subtituloFornecedores.textContent = ehDonoAtual
+      subtituloFornecedores.textContent = podeGerenciarAtual
         ? 'Cadastre, edite e organize os fornecedores do restaurante.'
         : 'Consulta dos fornecedores ativos cadastrados pelo dono do restaurante.';
     }
-    painelDescartes.hidden = !ehDonoAtual;
-    if (!ehDonoAtual && (moduloAtivo === 'equipe' || moduloAtivo === 'desperdicio')) alternarModulo('inventario', false);
-    if (!ehDonoAtual) return;
+    painelDescartes.hidden = !podeGerenciarAtual;
+    if (!podeGerenciarAtual && (moduloAtivo === 'equipe' || moduloAtivo === 'desperdicio' || moduloAtivo === 'causa')) alternarModulo('inventario', false);
+    if (!podeGerenciarAtual) return;
 
     const [ano, mes] = periodo.split('-').map(Number);
     const mesExtenso = new Intl.DateTimeFormat('pt-BR', {
@@ -1229,20 +1241,23 @@ function definirCadastro(aberto, modo = 'manual') {
 }
 
 // O perfil é repassado ao menu visual, mas a validação de acesso continua no módulo.
-function notificarPerfil(ehDono) {
-  window.dispatchEvent(new CustomEvent('visionchef:perfil', { detail: { ehDono } }));
+function notificarPerfil(podeGerenciar) {
+  window.dispatchEvent(new CustomEvent('visionchef:perfil', { detail: { podeGerenciar } }));
 }
 
 // Alterna entre o estoque agregado, o controle de validade, a equipe e os fornecedores.
 function alternarModulo(destino, carregar = true) {
-  if (destino === 'equipe' && !ehDonoAtual) destino = 'inventario';
-  if (destino === 'desperdicio' && !ehDonoAtual) destino = 'inventario';
+  if (destino === 'equipe' && !podeGerenciarAtual) destino = 'inventario';
+  if (destino === 'desperdicio' && !podeGerenciarAtual) destino = 'inventario';
+  // Revalida a permissão no controlador de tela, além de ocultar o atalho do funcionário.
+  if (destino === 'causa' && !podeGerenciarAtual) destino = 'inventario';
   moduloAtivo = destino;
   if (moduloEstoque) moduloEstoque.hidden = destino !== 'estoque';
   if (moduloInventario) moduloInventario.hidden = destino !== 'inventario';
   if (moduloRelatorioDesperdicio) moduloRelatorioDesperdicio.hidden = destino !== 'desperdicio';
   if (moduloEquipe) moduloEquipe.hidden = destino !== 'equipe';
   if (moduloFornecedores) moduloFornecedores.hidden = destino !== 'fornecedores';
+  if (moduloCausaSocial) moduloCausaSocial.hidden = destino !== 'causa';
   window.dispatchEvent(new CustomEvent('visionchef:modulo', { detail: { modulo: destino } }));
   if (!carregar || !restaurante) return;
   if (destino === 'equipe') void carregarEquipePainel();
@@ -1261,7 +1276,7 @@ window.addEventListener('visionchef:adicionar-entrada', () => {
 
 // O botão Equipe no cabeçalho também abre diretamente a aba Equipe dentro da conta.
 linkEquipe?.addEventListener('click', (evento) => {
-  if (!restaurante || !ehDonoAtual) return;
+  if (!restaurante || !podeGerenciarAtual) return;
   evento.preventDefault();
   alternarModulo('equipe', true);
   porId('titulo-equipe-painel')?.focus();
@@ -1269,7 +1284,7 @@ linkEquipe?.addEventListener('click', (evento) => {
 
 // ---------- MÓDULO EQUIPE INTEGRADO (EXCLUSIVO DONO) ----------
 async function carregarEquipePainel() {
-  if (!restaurante || !ehDonoAtual) return;
+  if (!restaurante || !podeGerenciarAtual) return;
   mensagemEquipeLista.textContent = 'Carregando equipe…';
   mensagemEquipeLista.classList.remove('erro');
   try {
@@ -1285,7 +1300,8 @@ async function carregarEquipePainel() {
         sub.textContent = membro.email;
         celPessoa.append(sub);
       }
-      adicionarCelula(linha, membro.papel === 'dono' ? 'Dono' : 'Funcionário', 'Perfil');
+      const nomesPerfil = { dono: 'Dono', gerente: 'Gerente', funcionario: 'Funcionário' };
+      adicionarCelula(linha, nomesPerfil[membro.papel] ?? 'Funcionário', 'Perfil');
       const badge = document.createElement('span');
       badge.className = 'estado';
       badge.dataset.situacao = membro.ativo ? 'em_dia' : 'vencido';
@@ -1295,7 +1311,8 @@ async function carregarEquipePainel() {
       const acoes = document.createElement('div');
       acoes.className = 'acoes';
       const unicoDono = membro.ativo && membro.papel === 'dono' && totalDonosAtivos <= 1;
-      if (membro.ativo && !unicoDono) {
+      const podeGerenciarMembro = papelAtual === 'dono' || membro.papel !== 'dono';
+      if (membro.ativo && !unicoDono && podeGerenciarMembro) {
         const btnRem = document.createElement('button');
         btnRem.type = 'button';
         btnRem.className = 'botao botao-secundario danger';
@@ -1308,7 +1325,7 @@ async function carregarEquipePainel() {
           confirmarRemoverMembro.focus();
         });
         acoes.append(btnRem);
-      } else if (!membro.ativo) {
+      } else if (!membro.ativo && podeGerenciarMembro) {
         const btnReat = document.createElement('button');
         btnReat.type = 'button';
         btnReat.className = 'botao botao-secundario';
@@ -1332,7 +1349,9 @@ async function carregarEquipePainel() {
         acoes.append(btnReat);
       } else {
         const nota = document.createElement('small');
-        nota.textContent = 'Dono principal ativo';
+        nota.textContent = membro.papel === 'dono' && papelAtual === 'gerente'
+          ? 'Acesso do dono reservado ao proprietário'
+          : 'Dono principal ativo';
         acoes.append(nota);
       }
       adicionarCelula(linha, acoes);
@@ -1350,7 +1369,7 @@ async function carregarEquipePainel() {
 formEquipePainel?.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const botao = formEquipePainel.querySelector('[type="submit"]');
-  if (!restaurante || !ehDonoAtual || botao.disabled) return;
+  if (!restaurante || !podeGerenciarAtual || botao.disabled) return;
   const dados = Object.fromEntries(new FormData(formEquipePainel));
   const identificador = String(dados.identificador ?? '').trim();
   if (identificador.length < 3) {
@@ -1396,7 +1415,7 @@ confirmarRemoverMembro?.addEventListener('click', async () => {
 
 // ---------- MÓDULO FORNECEDORES INTEGRADO (DONO GERENCIA · FUNCIONÁRIO CONSULTA) ----------
 function abrirFormularioFornecedor(fornecedor = null) {
-  if (!ehDonoAtual) return;
+  if (!podeGerenciarAtual) return;
   formFornecedor.reset();
   erroFornecedor.textContent = '';
   formFornecedor.elements.id.value = fornecedor?.id ?? '';
@@ -1445,7 +1464,7 @@ async function carregarFornecedoresPainel() {
       badge.textContent = item.ativo ? 'Ativo' : 'Inativo';
       adicionarCelula(linha, badge, 'Situação');
 
-      if (ehDonoAtual) {
+      if (podeGerenciarAtual) {
         const acoes = document.createElement('div');
         acoes.className = 'acoes';
         const btnEditar = document.createElement('button');
@@ -1480,7 +1499,7 @@ async function carregarFornecedoresPainel() {
     }));
     tabelaFornecedores.hidden = lista.length === 0;
     mensagemFornecedores.textContent = lista.length === 0
-      ? (ehDonoAtual ? 'Nenhum fornecedor cadastrado. Use “Novo fornecedor” para começar.' : 'Nenhum fornecedor ativo cadastrado pelo restaurante.')
+      ? (podeGerenciarAtual ? 'Nenhum fornecedor cadastrado. Use “Novo fornecedor” para começar.' : 'Nenhum fornecedor ativo cadastrado pelo restaurante.')
       : '';
   } catch (erro) {
     tabelaFornecedores.hidden = true;
@@ -1492,7 +1511,7 @@ async function carregarFornecedoresPainel() {
 formFornecedor?.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const botao = formFornecedor.querySelector('[type="submit"]');
-  if (!restaurante || !ehDonoAtual || botao.disabled) return;
+  if (!restaurante || !podeGerenciarAtual || botao.disabled) return;
   const dados = Object.fromEntries(new FormData(formFornecedor));
   const nome = String(dados.nome ?? '').trim();
   if (!nome) {

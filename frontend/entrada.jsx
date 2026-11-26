@@ -135,10 +135,10 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
 
   useEffect(() => {
     // Reaproveita os links da página: com sessão ativa no restaurante, leva direto ao estoque sem pedir login de novo.
-    const links = document.querySelectorAll('a[href="#prototipos"]');
+    const links = document.querySelectorAll('a[href="#prototipos"], a[href="#cadastro"]');
     const abrir = (evento) => {
       evento.preventDefault();
-      const querCadastro = evento.currentTarget.dataset.modoAcesso === 'cadastro';
+      const querCadastro = evento.currentTarget.dataset.modoAcesso === 'cadastro' || evento.currentTarget.getAttribute('href') === '#cadastro';
       if (temAcesso && !querCadastro) {
         window.location.assign(destino);
         return;
@@ -231,8 +231,8 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
       definirMensagem('As senhas não coincidem.');
       return;
     }
-    if (dados.senha.length < 6) {
-      definirMensagem('Use uma senha com pelo menos 6 caracteres.');
+    if (dados.senha.length < 8) {
+      definirMensagem('Use uma senha com pelo menos 8 caracteres.');
       return;
     }
     envioEmCurso.current = true;
@@ -368,8 +368,8 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
   async function redefinirSenha(evento) {
     evento.preventDefault();
     const dados = Object.fromEntries(new FormData(evento.currentTarget));
-    if (dados.senha.length < 6 || dados.senha !== dados.confirmarSenha) {
-      definirMensagem(dados.senha.length < 6 ? 'Use uma senha com pelo menos 6 caracteres.' : 'As senhas não coincidem.');
+    if (dados.senha.length < 8 || dados.senha !== dados.confirmarSenha) {
+      definirMensagem(dados.senha.length < 8 ? 'Use uma senha com pelo menos 8 caracteres.' : 'As senhas não coincidem.');
       return;
     }
     definirEnvio(true);
@@ -409,7 +409,7 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
         {!conta && <button className="botao botao-secundario botao-criar-conta" type="button"
           onClick={() => { definirMensagem(''); definirModo('cadastro'); definirDialogoAberto(true); }}>Criar conta</button>}
       </>)}
-      <dialog className={`dialogo-acesso-sync${["entrar", "cadastro"].includes(modo) ? " acesso-inicial" : ""}`} ref={dialogo} aria-labelledby="titulo-acesso"
+      <dialog className={`dialogo-acesso-sync${["entrar", "cadastro"].includes(modo) ? " acesso-inicial" : ""}${modo === "restaurante" ? " acesso-primeiro-uso" : ""}`} ref={dialogo} aria-labelledby="titulo-acesso"
         onCancel={(evento) => { evento.preventDefault(); definirDialogoAberto(false); }}
         onClick={(evento) => { if (evento.target === dialogo.current) definirDialogoAberto(false); }}>
         <section className="cartao-acesso">
@@ -437,8 +437,8 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
           {modo === 'cadastro' && <form className="formulario-acesso" onSubmit={criarConta}>
             <label>Nome de usuário<input name="nomeUsuario" type="text" placeholder="Digite seu nome de usuário" autoComplete="username" minLength="3" maxLength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}" required /></label>
             <label>E-mail<input name="email" type="email" placeholder="Digite seu e-mail" autoComplete="email" maxLength="254" required /></label>
-            <CampoSenha rotulo="Senha (mínimo de 6 caracteres)" name="senha" placeholder="Crie sua senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
-            <CampoSenha rotulo="Confirmar senha" name="confirmarSenha" placeholder="Repita sua senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Senha (mínimo de 8 caracteres)" name="senha" placeholder="Crie sua senha" autoComplete="new-password" minLength="8" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Confirmar senha" name="confirmarSenha" placeholder="Repita sua senha" autoComplete="new-password" minLength="8" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Criando…' : 'Criar conta'}</BotaoGlass>
           </form>}
           {/* O primeiro acesso diferencia a criação de um restaurante da autorização de um funcionário. */}
@@ -447,6 +447,11 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
               <h3>Sou dono</h3>
               <p>Crie o restaurante e gerencie o estoque e os acessos da equipe.</p>
               <BotaoGlass className="botao-primario" type="button" onClick={() => { definirMensagem(''); definirModo('criar-restaurante'); }}>Criar meu restaurante</BotaoGlass>
+            </article>
+            <article className="primeiro-acesso-opcao">
+              <h3>Sou uma instituição</h3>
+              <p>Use o VisionChef para cadastrar sua organização e acompanhar alimentos oferecidos para doação.</p>
+              <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); window.location.assign('/causa-social/?perfil=instituicao'); }}>Acessar área de instituições</BotaoGlass>
             </article>
             <article className="primeiro-acesso-opcao">
               <h3>Sou funcionário</h3>
@@ -469,8 +474,8 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
           </form>}
           {modo === 'redefinir' && <form className="formulario-acesso" onSubmit={redefinirSenha}>
             {/* Mostra o mesmo mínimo obrigatório do cadastro antes de a pessoa digitar. */}
-            <CampoSenha rotulo="Nova senha (mínimo de 6 caracteres)" name="senha" placeholder="Digite a nova senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
-            <CampoSenha rotulo="Confirmar nova senha" name="confirmarSenha" placeholder="Repita a nova senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Nova senha (mínimo de 8 caracteres)" name="senha" placeholder="Digite a nova senha" autoComplete="new-password" minLength="8" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Confirmar nova senha" name="confirmarSenha" placeholder="Repita a nova senha" autoComplete="new-password" minLength="8" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Salvar nova senha</BotaoGlass>
           </form>}
           {modo === 'confirmar' && <form className="formulario-acesso" onSubmit={confirmarEmail}>

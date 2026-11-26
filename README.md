@@ -19,6 +19,7 @@ Abra diretamente a [tela de estoque](http://127.0.0.1:8080/estoque/) e use uma d
 | --- | --- | --- |
 | `dono.piloto` | `dono@piloto.test` | Cadastra e consulta os lotes do restaurante piloto. |
 | `funcionario.piloto` | `funcionario@piloto.test` | Acessa o mesmo estoque do dono com outra conta. |
+| `gerente.piloto` | `gerente@piloto.test` | Acessa estoque, relatório, fornecedores e equipe; não pode alterar acessos de donos. |
 | `dono.outro` | `dono@outro.test` | Acessa apenas o estoque de outro restaurante fictício. |
 
 O campo **Usuário ou e-mail** aceita qualquer uma das duas opções para a mesma conta. O nome de usuário tem de 3 a 32 caracteres. Pode conter letras sem acento, números, ponto, hífen e sublinhado e deve começar por letra ou número. A exclusividade vale em todo o sistema e ignora maiúsculas e minúsculas.

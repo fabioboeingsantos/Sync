@@ -1193,6 +1193,10 @@ body:has(#inicio.hero) section[id] {
   margin-bottom: .5rem;
 }
 .solucao-destaque { align-items: center; }
+/* Mantém lado a lado as ações do card VisionChef sem mexer no restante da landing. */
+.solucao-destaque .section-intro .actions { flex-wrap: nowrap; gap: .55rem; }
+.solucao-destaque .section-intro .actions .botao { flex: 1 1 0; min-width: 0; padding-inline: .75rem; font-size: .9rem; white-space: nowrap; }
+@media (max-width: 34rem) { .solucao-destaque .section-intro .actions { flex-wrap: wrap; } }
 .solucao-emblema {
   display: flex;
   align-items: center;
@@ -1231,3 +1235,22 @@ body:has(#inicio.hero) section[id] {
 @media (max-width: 43rem) {
   .solucao-emblema { display: none; }
 }
+
+/* Mantém as três escolhas iniciais e Minha conta visíveis sem rolagem no diálogo. */
+.dialogo-acesso-sync.acesso-primeiro-uso{box-sizing:border-box;max-height:min(calc(100dvh - 1rem),52rem);overflow:hidden}
+.dialogo-acesso-sync.acesso-primeiro-uso .cartao-acesso{gap:clamp(.35rem,1dvh,.6rem);padding:clamp(.55rem,1.2dvh,.8rem) clamp(.8rem,4vw,1.35rem)}
+.dialogo-acesso-sync.acesso-primeiro-uso .marca-acesso{padding-top:0}
+.dialogo-acesso-sync.acesso-primeiro-uso .vc-pictorica-modal{width:4rem;margin-bottom:.1rem}
+.dialogo-acesso-sync.acesso-primeiro-uso .marca-acesso-titulo{font-size:1.25rem}
+.dialogo-acesso-sync.acesso-primeiro-uso .divisor-acesso{margin:0}
+.dialogo-acesso-sync.acesso-primeiro-uso .cabecalho-acesso h2{margin:.1rem 0 .2rem;font-size:clamp(1.4rem,3.6vw,1.75rem);line-height:1.08}
+.dialogo-acesso-sync.acesso-primeiro-uso .subtitulo-acesso{font-size:.9rem;line-height:1.25}
+.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcoes{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcao{gap:.35rem;padding:.6rem;min-height:0}
+.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcao h3{font-size:.95rem}
+.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcao p{font-size:.86rem;line-height:1.28}
+.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcao .glass-botao-wrap{margin-top:auto}
+.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcao .botao{min-height:44px;padding:8px 10px;line-height:1.15}
+.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-conta{grid-column:1/-1;max-width:13rem;min-height:44px}
+@media(max-height:48rem){.dialogo-acesso-sync.acesso-primeiro-uso .marca-acesso,.dialogo-acesso-sync.acesso-primeiro-uso .divisor-acesso{display:none}.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcao p{display:none}}
+@media(max-width:440px){.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-opcoes{grid-template-columns:repeat(2,minmax(0,1fr))}.dialogo-acesso-sync.acesso-primeiro-uso .primeiro-acesso-conta{grid-column:1/-1}}

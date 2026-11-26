@@ -1,5 +1,5 @@
 # Rastreabilidade de implementação do VisionChef (conforme Seção 9 da especificação normativa)
-atualizado_em: "2026-11-25"
+atualizado_em: "2026-11-26"
 produto: "VisionChef (Sync)"
 stack_aprovada: "Node.js >=24 + React 19 / Vite 8 + Vercel Functions + Supabase (PostgreSQL/Auth/Edge Functions)"
 llm_required: false
@@ -54,7 +54,7 @@ fases:
       - "supabase/functions/verificacao-email/index.js"
       - "supabase/functions/limitar-autenticacao/index.js"
       - "supabase/functions/login-usuario/handler.js"
-    evidencia_atual: "Recuperação (Supabase Auth + 404 para inexistente), confirmação opcional ponta a ponta em produção, Argon2id local e gestão/revogação imediata de equipe implementados"
+    evidencia_atual: "Recuperação genérica sem enumeração (inclusive no limite SMTP), confirmação opcional ponta a ponta em produção, Argon2id local e gestão/revogação imediata de equipe implementados"
     pendencias: []
   F06_jornada_vertical:
     status: "READY_FOR_RELEASE"
@@ -66,7 +66,7 @@ fases:
     justificativa: "Piloto aprovado com llm_required: false; assistente de lote e parser NF-e XML permanecem determinísticos locais em piloto/interpretar-lote.js, piloto/interpretar-nfe.js e agente-ia-cadastro.html"
   F08_verificacao_release:
     status: "PASS"
-    evidencia_atual: "26/26 testes passando (fail 0) incluindo estoque, roteamento/health/CI, Argon2id (senhas.test.mjs), equipe/revogação imediata (equipe.test.mjs) e landing/temas/VoicePill/NF-e/pitch (landing-e-assistente.test.mjs); npm run build concluído em dist/"
+    evidencia_atual: "30/30 testes passando (fail 0) incluindo estoque, roteamento/health/CI, Argon2id (senhas.test.mjs), equipe/revogação imediata (equipe.test.mjs) e landing/temas/VoicePill/NF-e/pitch (landing-e-assistente.test.mjs); npm run build concluído em dist/"
     pendencias: []
   F09_deploy_operacao:
     status: "READY_FOR_RELEASE"

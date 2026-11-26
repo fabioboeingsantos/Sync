@@ -1,6 +1,6 @@
 # ADR-002 — Backend Node na Vercel, autenticação, recuperação e operação do piloto
 
-**Status:** Aprovada pelo responsável pelo projeto em 24/11/2026  
+**Status:** Aprovada em 24/11/2026; a exceção de enumeração foi revogada em 26/11/2026  
 **Substitui parcialmente:** seção de integração direta do navegador em [ADR-001](ADR-001-arquitetura-do-piloto.md)
 
 ## Contexto
@@ -18,11 +18,11 @@ O piloto do VisionChef (`C:\Users\fabio\Desktop\Sync`) evoluiu de chamadas diret
    - **Produção:** manter **Supabase Auth** (`auth.users.encrypted_password`, hash `bcrypt` com sal único). Não criar tabela paralela de senhas em produção.
    - **Ambiente local / módulo reutilizável Node:** adotar **Argon2id** (parâmetros OWASP: `m=19456 KiB`, `t=2`, `p=1`) em etapa dedicada, substituindo a comparação de `senhaLocal` em texto puro.
    - **Tokens de uso único (confirmação opcional de e-mail):** manter **SHA-256** sobre tokens aleatórios de 256 bits (`randomBytes(32)`), com expiração de 24h e consumo único.
-3. **Exceção formal à regra de anti-enumeração na recuperação de senha (`SEC-04` / F05):**
+3. **Decisão histórica revogada — exceção à anti-enumeração na recuperação (`SEC-04` / F05):**
    - **Contradição registrada (Regra 8):** a especificação F05 e `SEC-04` recomendam resposta genérica na recuperação de senha para evitar enumeração de contas.
-   - **Decisão do responsável:** priorizar UX informando explicitamente quando o e-mail não está cadastrado (`HTTP 404 — "Nenhuma conta foi encontrada para esse e-mail."`), implementado via migração `010` (`public.email_cadastrado`, restrita a `service_role`) + Edge Function `verificacao-email` (`acao: 'existe'` sob HMAC).
-   - **Mitigação obrigatória:** rate limit compartilhado em PostgreSQL (`limitar-autenticacao`) executado **antes** da consulta de existência; nenhuma informação extra da conta é exposta além de existir/não existir.
-   - **Risco aceito:** enumeração lenta limitada pela janela de rate limit (`AUTH_LOGIN_LIMIT` / `AUTH_RATE_WINDOW_SECONDS`).
+   - **Decisão anterior (revogada):** priorizar UX informando explicitamente quando o e-mail não está cadastrado (`HTTP 404 — "Nenhuma conta foi encontrada para esse e-mail."`), implementado via migração `010` (`public.email_cadastrado`, restrita a `service_role`) + Edge Function `verificacao-email` (`acao: 'existe'` sob HMAC).
+   - **Decisão vigente:** a existência da conta nunca é consultada para recuperação. A resposta permanece genérica inclusive se o Supabase Auth limitar o envio; o rate limit próprio continua ativo.
+   - **Risco anterior (revogado):** enumeração lenta limitada pela janela de rate limit (`AUTH_LOGIN_LIMIT` / `AUTH_RATE_WINDOW_SECONDS`).
 4. **Operação do piloto controlado (F04 / F07 / F09):**
    - **SMTP:** manter Yahoo (`smtp.mail.yahoo.com:465`, SSL, senha de aplicativo) durante o piloto controlado, ciente da latência de entrega (~alguns minutos) e dos limites de contas consumer; reavaliar provedor transacional (Resend/Brevo/Postmark) antes de escalar para usuários reais.
    - **Confirm email no Supabase:** mantido ativo durante esta etapa; desligamento só com autorização explícita após validação completa da confirmação opcional via Vercel/Nodemailer.
