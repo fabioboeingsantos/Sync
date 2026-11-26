@@ -19,7 +19,7 @@ O [plano de divulgação das soluções](portfolio-e-divulgacao-sync.md) reúne 
 
 No piloto, `public.membros_restaurante` usa os papéis de acesso `dono`, `gerente` e `funcionario`. `Gerente` é um funcionário chefe com os mesmos acessos operacionais do dono; somente o dono pode alterar vínculos de outros donos. Categorias profissionais continuam podendo ser modeladas em tabelas próprias quando forem definidas.
 
-## Integração de Notas Fiscais (NF-e / NFC-e) com a Assistente IA
+## Integração de Notas Fiscais (NF-e / NFC-e) com o Vision
 
 **Status** — Fase 1 e OCR local da Fase 3 implementados no estoque. A captura automática da Fase 2 continua opcional e depende de certificado A1 e homologação.
 

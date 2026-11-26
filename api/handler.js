@@ -582,6 +582,49 @@ export async function tratarApi(requisicao) {
       return resposta({ nome_usuario: perfil.dados }, 200, cookieAtualizado);
     }
 
+    if (caminho === 'auth/change-email' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 8192);
+      const emailNovo = typeof dados.email_novo === 'string' ? dados.email_novo.trim().toLowerCase() : '';
+      const senhaAtual = typeof dados.senha_atual === 'string' ? dados.senha_atual : '';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNovo) || emailNovo.length > 254) {
+        return resposta({ erro: 'Informe um endereço de e-mail válido.' }, 400, cookieAtualizado);
+      }
+      if (!senhaAtual || senhaAtual.length > 128) return resposta({ erro: 'Informe sua senha atual.' }, 400, cookieAtualizado);
+
+      // Revalida a identidade e a senha no Auth antes de permitir a alteração do endereço.
+      const identidade = await supabase(cfg, '/auth/v1/user', { token });
+      if (!identidade.ok || !identidade.dados?.email) return resposta({ erro: 'Entre novamente para continuar.' }, 401, cookieAtualizado);
+      if (identidade.dados.email.trim().toLowerCase() === emailNovo) {
+        return resposta({ erro: 'O novo e-mail deve ser diferente do endereço atual.' }, 400, cookieAtualizado);
+      }
+      const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
+      const chave = chaveLimite(ip, 'login', estado.sessao.sub);
+      const limite = await controlarLimite(cfg, 'login', chave);
+      if (!limite.permitido) return resposta({ erro: 'Muitas tentativas. Aguarde antes de confirmar sua senha atual.' }, 429, { ...cookieAtualizado, 'Retry-After': String(limite.retry_after ?? cfg.bloqueio) });
+      const validacao = await supabase(cfg, '/auth/v1/token?grant_type=password', {
+        metodo: 'POST', corpo: { email: identidade.dados.email, password: senhaAtual },
+      });
+      if (!validacao.ok || !validacao.dados?.access_token) {
+        return resposta({ erro: 'A senha atual não confere.' }, 401, cookieAtualizado);
+      }
+      await controlarLimite(cfg, 'login', chave, 'reset').catch(() => null);
+      const atualizacao = await supabase(cfg, '/auth/v1/user', {
+        metodo: 'PUT', token: validacao.dados.access_token, corpo: { email: emailNovo },
+      });
+      if (!atualizacao.ok) {
+        const codigo = codigoErroAuth(atualizacao.dados);
+        if (codigo === 'email_exists' || codigo === 'user_already_exists') {
+          return resposta({ erro: 'Esse e-mail já está vinculado a outra conta.' }, 409, cookieAtualizado);
+        }
+        if (atualizacao.status === 429 || codigo === 'over_email_send_rate_limit') {
+          return resposta({ erro: 'Muitos pedidos de troca de e-mail. Aguarde alguns minutos e tente novamente.' }, 429, cookieAtualizado);
+        }
+        return resposta({ erro: atualizacao.status >= 500 ? 'Serviço de autenticação indisponível. Tente novamente.' : 'Não foi possível solicitar a troca de e-mail.' }, atualizacao.status >= 500 ? 503 : 400, cookieAtualizado);
+      }
+      // A confirmação é controlada pelo Supabase; não registramos senha nem o novo endereço nos logs.
+      return resposta({ solicitada: true, mensagem: 'Solicitação aceita. Confira sua caixa de entrada e siga as instruções do Supabase para concluir a troca.' }, 200, cookieAtualizado);
+    }
+
     if (caminho === 'auth/change-password' && requisicao.method === 'POST') {
       const dados = await jsonEntrada(requisicao, 8192);
       const senhaAtual = typeof dados.senha_atual === 'string' ? dados.senha_atual : '';

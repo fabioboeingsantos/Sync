@@ -13,7 +13,7 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Abra diretamente a [tela de estoque](http://127.0.0.1:8080/estoque/) e use uma das contas de teste. A página inicial apresenta o VisionChef e as demonstrações do produto, sem botões de entrar ou criar conta. Depois do login, a página abre o estoque. A senha compartilhada para essas contas fictícias é `senha123`.
+Abra a [página inicial](http://127.0.0.1:8080/) (que apresenta o VisionChef, as demonstrações e os atalhos **Entrar** e **Criar conta**) ou acesse diretamente a [tela de estoque](http://127.0.0.1:8080/estoque/) e use uma das contas de teste. Depois do login, a página abre o estoque. A senha compartilhada para essas contas fictícias é `senha123`.
 
 | Usuário | E-mail | O que permite verificar |
 | --- | --- | --- |
@@ -32,11 +32,11 @@ O servidor local usa PostgreSQL embarcado via PGlite e aplica as migrações em 
 
 ## Verificações e integração
 
-- `npm.cmd test` roda os testes de cadastro, correção, abertura, ordenação por validade, repetição de envio, validação de quantidade e isolamento entre restaurantes. Os testes usam um banco descartável em memória.
+- `npm.cmd test` roda os **31 testes automatizados** (API/roteamento/health/CI, sessão persistente, estoque, abertura, baixas, equipe/gerente/revogação imediata, fornecedores, Argon2id, Vision, XML NF-e Fase 1 e build local). Os testes usam um banco descartável em memória.
 - `npm.cmd run build` gera a interface integrada em `dist/`. As funções Node da Vercel leem as variáveis privadas em runtime; o build não incorpora URL, chave Supabase ou segredo JWT ao JavaScript do navegador.
 - O acesso integrado passa por `/api`, que mantém a sessão em cookie HttpOnly e encaminha as operações ao Supabase com o token individual do usuário. Login por nome e limitação de tentativas usam funções Edge assinadas e migrações PostgreSQL. Consulte a lista de configuração no [guia de implantação](docs/architecture/implantacao.md); publicar migrações e funções continua sendo uma etapa separada do build.
-- Use **Registrar uso** ou **Registrar descarte** na linha do lote. A quantidade sai do saldo e o dono consulta o relatório mensal de desperdício, com baixas reais, quantidades e descartes de lotes vencidos.
-- Em **Cadastrar lote**, abra **Preencher com assistente**, descreva o insumo e confira os campos sugeridos antes de salvar. Datas ambíguas exigem confirmação manual. No modo Vision, **Fotografar ou escolher imagem** executa OCR local em português para sugerir lote e validade; a foto não é enviada e a pessoa precisa conferir as sugestões.
+- Use **Registrar uso** ou **Registrar descarte** na linha do lote. A quantidade sai do saldo e dono/gerente consultam o relatório mensal de desperdício, com baixas reais, quantidades e descartes de lotes vencidos.
+- Em **Cadastrar lote**, abra o modo **Vision**, descreva o insumo por texto/voz (**VoicePill**), importe um XML de NF-e (Fase 1) ou use **Fotografar ou escolher imagem** para executar OCR local em português e sugerir lote e validade; a foto não é enviada a nenhum servidor, datas ambíguas exigem confirmação manual e a pessoa sempre revisa antes de salvar.
 - A configuração da prévia protegida está no [guia de implantação](docs/architecture/implantacao.md). Use um projeto Supabase de teste antes de convidar a equipe.
 
 Veja os [requisitos do piloto](docs/product/requirements.md), o [desenho técnico](docs/architecture/piloto.md) e as [futuras implantações](docs/futuras-implantacoes/README.md).

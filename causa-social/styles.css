@@ -48,14 +48,15 @@ html[data-theme="dark"] .brand,html[data-theme="dark"] .brand-strong,html[data-t
 
 /* Agrupa CTA e tema no fluxo do cabeçalho para o seletor nunca cobrir o link de cadastro. */
 .site-header{gap:16px}
-.site-header .header-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.site-header .header-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto;margin-left:auto}
+.site-header .header-home,.site-header .header-login{white-space:nowrap;padding:10px 12px;font-size:13px}
 .site-header .theme-toggle{position:relative;inset:auto;transform:none;flex:0 0 auto;min-height:44px}
 .institution-only-header .theme-toggle{position:relative;inset:auto;transform:none;flex:0 0 auto;min-height:44px}
 .site-header .header-cta{margin:0;white-space:nowrap}
-@media(max-width:720px){.site-header .header-actions{gap:7px}.site-header .header-cta{font-size:11px;padding:8px 9px}.site-header .theme-toggle{width:5.25rem;height:2.6rem}.mobile-menu{flex:0 0 auto}}
+@media(max-width:720px){.site-header .header-actions{gap:7px}.site-header .header-home,.site-header .header-login{font-size:11px;padding:8px 9px}.site-header .header-cta{font-size:11px;padding:8px 9px}.site-header .theme-toggle{width:5.25rem;height:2.6rem}.mobile-menu{flex:0 0 auto}}
 
-/* A borda do cabeçalho acompanha toda a janela; o conteúdo interno mantém alinhamento com a campanha. */
-.site-header{width:100%;margin:0;padding-inline:max(28px,calc((100vw - 1324px)/2));border-bottom:1px solid var(--line)}
+/* Mantém a marca na margem do conteúdo e leva as ações até o lado direito como na landing. */
+.site-header{width:100%;margin:0;padding-left:max(28px,calc((100vw - 1324px)/2));padding-right:28px;border-bottom:1px solid var(--line)}
 .site-header .brand-logo{display:block;width:150px;height:72px;object-fit:contain;flex:0 0 auto}
 .institution-only-header .brand-logo{width:150px;height:72px}
 .footer-inner .brand-logo{width:126px;height:66px}
@@ -128,6 +129,8 @@ html body .eyebrow,html body .demo-tag,html body .guide-stamp,html body .top-dat
   .site-header .brand .vc-pictorica-sm{width:2.8rem}
   .site-header .brand-name{font-size:16px}
   .site-header .theme-toggle{width:3.9rem;height:2.25rem}
+  .site-header .header-actions{gap:4px}
+  .site-header .header-home,.site-header .header-login{font-size:10px;padding:7px 6px}
   .site-header .mobile-menu.botao{min-width:40px;min-height:40px}
 }
 /* Exibe o arquivo transparente oficial da cesta, sem forçar corte do cabo nem das folhas. */

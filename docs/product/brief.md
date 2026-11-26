@@ -19,14 +19,14 @@ Donos e funcionários de restaurantes pequenos precisam identificar os lotes que
   - Nenhum dado sensível (CPF, cartão, biometria) é coletado.
   - Retenção: registros de movimentação de estoque mantidos enquanto o restaurante estiver ativo no piloto; tokens de verificação expiram em 24 horas e registros de limite de tentativas expiram automaticamente por janela.
   - Exclusão: a revogação de acesso em `/equipe/` bloqueia o acesso imediatamente; a exclusão definitiva de conta de usuário (`auth.users`) remove em cascata tokens temporários e é atendida sob solicitação ao responsável em até 15 dias úteis.
-- **Inteligência Artificial no piloto:** `llm_required: false`. O preenchimento assistido em `piloto/interpretar-lote.js` é determinístico local, sem envio de dados para provedores externos de IA.
+- **Inteligência Artificial no piloto:** `llm_required: false`. O assistente **Vision** (`piloto/interpretar-lote.js`, `piloto/interpretar-nfe.js` e OCR local via `tesseract.js`) opera localmente no navegador, sem envio de fotos ou dados para provedores externos de IA.
 - **Gate comercial:** antes de abrir a clientes pagantes externos, provisionar projeto Supabase dedicado de Preview, validar ensaio de backup/restore e contratar planos comerciais da Vercel e do Supabase.
 
 ## Decisões do piloto
 
-- Começar com um restaurante. Cada lote pertence a um restaurante, de modo que outros estabelecimentos possam ter estoques separados no futuro.
+- Começar com isolamento multi-restaurante desde o primeiro dia: cada conta autenticada sem vínculo pode criar seu primeiro restaurante como `dono` (`POST /api/restaurantes`), e cada lote, fornecedor e membro pertence exclusivamente ao seu restaurante via RLS.
 - Hospedar o site na Vercel e armazenar os registros no Supabase.
-- Usar contas individuais. Dono e funcionário podem consultar, cadastrar e corrigir lotes. O dono pode convidar pessoas e remover acessos.
+- Usar contas individuais com três papéis (`dono`, `gerente` e `funcionario`). Todos consultam, cadastram e corrigem lotes; `dono` e `gerente` acompanham o relatório mensal de desperdício, administram fornecedores e gerenciam acessos da equipe (somente o `dono` pode alterar vínculos de outros donos).
 - Registrar uso e descarte de lotes, inclusive parciais. O lote permanece na lista de estoque ativo enquanto houver saldo.
 - Manter a validade original informada na embalagem. Quando houver abertura ou fracionamento, a equipe registra a data da operação e a validade aplicável. A lista considera a mais próxima entre a validade original e a informada após a abertura ou o fracionamento.
 - Quando apenas parte do lote for aberta ou fracionada, mostrar as quantidades abertas e fechadas separadamente. Ambas ficam vinculadas ao mesmo lote de origem e mantêm o código do fabricante quando informado.

@@ -11,6 +11,7 @@ erDiagram
   AUTH_USERS ||--o| NOMES_USUARIO : "possui perfil"
   AUTH_USERS ||--o{ MEMBROS_RESTAURANTE : "vincula-se"
   RESTAURANTES ||--o{ MEMBROS_RESTAURANTE : "possui equipe"
+  RESTAURANTES ||--o{ FORNECEDORES : "cadastra"
   RESTAURANTES ||--o{ LOTES : "armazena"
   LOTES ||--|{ PARTES_LOTE : "divide-se em"
   PARTES_LOTE ||--o{ SAIDAS_ESTOQUE : "registra baixas"
@@ -20,6 +21,15 @@ erDiagram
     uuid id PK
     text nome
     text fuso_horario
+  }
+  FORNECEDORES {
+    uuid id PK
+    uuid restaurante_id FK
+    text nome
+    text categoria
+    text contato
+    text email
+    boolean ativo
   }
   MEMBROS_RESTAURANTE {
     uuid restaurante_id PK,FK
@@ -74,7 +84,8 @@ erDiagram
 | `membros_restaurante` | Tabela | `SELECT` apenas da própria linha ativa (`usuario_id = auth.uid() and ativo`). Escritas diretas negadas (`REVOKE`). | Autorização por restaurante e papel (`dono`, `gerente` ou `funcionario`). |
 | `lotes` | Tabela | `SELECT` por vínculo ativo no restaurante. Escritas somente via RPCs `SECURITY DEFINER`. | Dados de origem do lote, validade da embalagem, trava otimista (`revisao_validade`) e idempotência (`operacao_id`). |
 | `partes_lote` | Tabela | `SELECT` via visibilidade do lote. Escritas somente via RPCs. | Saldo independente de partes fechadas e abertas/fracionadas. |
-| `saidas_estoque` | Tabela | `SELECT` restrito ao restaurante (visão de descartes disponível ao `dono` e `gerente`). | Histórico imutável de uso e descarte, com motivo, validade aplicável e horário; o dono usa as baixas do mês no relatório de perdas. |
+| `saidas_estoque` | Tabela | `SELECT` restrito ao restaurante (visão de descartes disponível ao `dono` e `gerente`). | Histórico imutável de uso e descarte, com motivo, validade aplicável e horário; dono e gerente usam as baixas do mês no relatório de perdas. |
+| `fornecedores` | Tabela | `SELECT` por vínculo ativo (`dono`/`gerente` veem todos; `funcionario` vê apenas `ativo = true`). Escritas somente via RPCs. | Cadastro de fornecedores por restaurante com categoria, contato, e-mail, observações e status ativo/inativo. |
 | `estoque` | View (`security_invoker = true`) | Herda exatamente a RLS do usuário autenticado | Projeção ordenada por `validade_aplicavel`, calculando `situacao` (`vencido`, `hoje`, `breve`, `em_dia`) no fuso do restaurante. |
 | `nomes_usuario` | Tabela | Acesso direto negado a `authenticated` (`42501`); leitura/escrita apenas via funções protegidas | Nome de usuário único case-insensitive entre todos os restaurantes e carimbo opcional `email_verificado_em`. |
 
@@ -101,15 +112,17 @@ erDiagram
 | `listar_equipe_restaurante` | `authenticated` | Exige `dono` ou `gerente` ativo no restaurante alvo (`42501` caso contrário). |
 | `vincular_membro_restaurante` | `authenticated` | Exige `dono` ou `gerente` ativo; gerente só atribui `funcionario` ou `gerente`; dono pode atribuir qualquer perfil; protege o último dono (`PT409`). |
 | `remover_membro_restaurante` | `authenticated` | Exige `dono` ou `gerente` ativo; gerente não remove dono; define `ativo = false` imediatamente e protege o último dono (`PT409`). |
+| `listar_fornecedores_restaurante`, `salvar_fornecedor_restaurante`, `alterar_status_fornecedor` | `authenticated` | Leitura respeita vínculo ativo (`funcionario` só vê ativos); criação, edição e status exigem `dono` ou `gerente` ativo (`42501` caso contrário). |
+| `criar_restaurante_inicial` | `authenticated` | Permite que uma conta autenticada sem vínculo crie seu primeiro restaurante e receba `papel = 'dono'` atomicamente (idempotente para reenvios). |
 | `nome_usuario_proprio`, `definir_nome_usuario_proprio` | `authenticated` | Consultam ou definem apenas o nome da própria conta via `auth.uid()`; permitem substituir nomes técnicos de legado uma única vez e mantêm a unicidade case-insensitive. |
-| `email_para_nome_usuario`, `controle_limite_autenticacao`, `emitir_verificacao_email`, `consumir_verificacao_email`, `estado_verificacao_email`, `email_cadastrado` | `service_role` | Chamadas apenas por Edge Functions assinadas com HMAC pelo backend. |
+| `email_para_nome_usuario`, `controle_limite_autenticacao`, `emitir_verificacao_email`, `consumir_verificacao_email`, `estado_verificacao_email`, `email_cadastrado` | `service_role` | Chamadas apenas por Edge Functions assinadas com HMAC pelo backend (`email_cadastrado` mantida no banco, porém não chamada no fluxo de recuperação desde 26/11). |
 
 ## 4. Histórico de migrações (`supabase/migrations/`)
 
 - `20261124000100` a `20261124000700`: schema inicial, correção de validade com revisão, abertura/fracionamento, baixas/descartes, local de armazenamento, papel `funcionario` e `nomes_usuario`.
 - `20261124000800`: rate limit persistente em `private.limites_autenticacao`.
 - `20261124000900`: confirmação opcional de e-mail (`private.tokens_verificacao_email` e RPCs).
-- `20261124001000` / `20261124001100`: `public.email_cadastrado` (verificação prévia na recuperação de senha, restrita a `service_role`).
+- `20261124001000` / `20261124001100`: `public.email_cadastrado` (restrita a `service_role`; uso prévio na recuperação revogado em 26/11 para evitar enumeração).
 - `20261124001200`: backfill e autoprovisionamento de `public.nomes_usuario` para contas criadas direto no Auth.
 - `20261124001300`: RPCs de gestão de equipe (`listar_equipe_restaurante`, `vincular_membro_restaurante`, `remover_membro_restaurante`).
 - `20261124001400`: tabela `public.fornecedores` com RLS e RPCs (`listar_fornecedores_restaurante`, `salvar_fornecedor_restaurante`, `alterar_status_fornecedor`).

@@ -72,21 +72,32 @@
             <button id="solicitar-confirmacao-email" class="botao botao-primario" type="button" hidden>Enviar link de confirmação</button>
             <p class="conta-ajuda">O link enviado por e-mail é válido por 24 horas. Confira também Spam, Promoções e Atualizações.</p>
           </section>
+          <!-- Exige a senha atual antes de pedir ao Supabase a alteração do endereço de acesso. -->
+          <section class="painel conta-cartao" aria-labelledby="titulo-trocar-email">
+            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">03</span><div><p class="conta-chapeu">Acesso</p><h2 id="titulo-trocar-email">Trocar e-mail</h2></div></div>
+            <p>Confirme sua senha atual para solicitar a alteração. A confirmação do novo endereço segue a política configurada no Supabase.</p>
+            <form id="form-alterar-email" class="formulario conta-formulario">
+              <label for="email-novo">Novo e-mail<input id="email-novo" name="email_novo" type="email" autocomplete="email" maxlength="254" required></label>
+              <label for="senha-atual-email">Senha atual<input id="senha-atual-email" name="senha_atual" type="password" autocomplete="current-password" minlength="1" maxlength="128" required></label>
+              <small>Confira o endereço informado. Se a confirmação estiver habilitada no Supabase, siga o link enviado para concluir a troca.</small>
+              <button class="botao botao-primario" type="submit">Solicitar troca de e-mail</button>
+            </form>
+          </section>
           <section class="painel conta-cartao conta-sessao" aria-labelledby="titulo-sessao">
-            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">03</span><div><p class="conta-chapeu">Sessão</p><h2 id="titulo-sessao">Acesso à conta</h2></div></div>
+            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">04</span><div><p class="conta-chapeu">Sessão</p><h2 id="titulo-sessao">Acesso à conta</h2></div></div>
             <p>Encerre sua sessão nos dispositivos em que sua conta está conectada.</p>
             <button id="sair-todos-dispositivos" class="botao botao-secundario danger" type="button">Sair de todos os dispositivos</button>
           </section>
         </div>
         <div class="conta-coluna">
           <section class="painel conta-cartao conta-seguranca" aria-labelledby="titulo-seguranca">
-            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">04</span><div><p class="conta-chapeu">Segurança</p><h2 id="titulo-seguranca">Alterar senha</h2></div></div>
+            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">05</span><div><p class="conta-chapeu">Segurança</p><h2 id="titulo-seguranca">Alterar senha</h2></div></div>
             <p class="conta-intro-seguranca">Sua senha atual nunca é exibida. Confirme sua identidade e escolha uma senha nova.</p>
             <form id="form-alterar-senha" class="formulario conta-formulario">
-              <label for="senha-atual">Senha atual<input id="senha-atual" name="senha_atual" type="password" autocomplete="current-password" minlength="6" maxlength="128" required></label>
-              <label for="senha-nova">Nova senha<input id="senha-nova" name="senha_nova" type="password" autocomplete="new-password" minlength="6" maxlength="128" required></label>
-              <label for="confirmar-senha-nova">Confirme a nova senha<input id="confirmar-senha-nova" name="confirmar_senha" type="password" autocomplete="new-password" minlength="6" maxlength="128" required></label>
-              <small>Use de 6 a 128 caracteres. Evite reutilizar senhas de outros serviços.</small>
+              <label for="senha-atual">Senha atual<input id="senha-atual" name="senha_atual" type="password" autocomplete="current-password" minlength="1" maxlength="128" required></label>
+              <label for="senha-nova">Nova senha<input id="senha-nova" name="senha_nova" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+              <label for="confirmar-senha-nova">Confirme a nova senha<input id="confirmar-senha-nova" name="confirmar_senha" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+              <small>Use de 8 a 128 caracteres. Evite reutilizar senhas de outros serviços.</small>
               <button class="botao botao-primario" type="submit">Atualizar senha</button>
             </form>
             <div class="conta-esqueci-senha"><span>Não lembra sua senha atual?</span><a href="../#recuperar">Esqueci minha senha</a></div>

@@ -126,6 +126,11 @@
     <section class="section-band" id="assistente" aria-labelledby="titulo-assistente">
       <div class="frame section section-split">
         <div>
+          <!-- Apresenta a marca VisionChef dentro da seção que explica e abre o teste do assistente. -->
+          <div class="vision-brand" id="prototipos">
+            <span class="vc-pictorica vc-pictorica-sm vision-brand-logo" aria-hidden="true"><img src="Insumo%20vencendo%20na%20cozinha/imagens/visionchef-logo.jpg" width="1356" height="759" alt=""></span>
+            <span>VisionChef</span>
+          </div>
           <h2 id="titulo-assistente">Conheça o Vision</h2>
           <p>Experimente descrever um lote por texto, falar no microfone ou importar o XML da NF-e — e confira os campos sugeridos pelo <strong>Vision</strong> antes de salvar.</p>
           <a class="botao botao-primario" href="Insumo%20vencendo%20na%20cozinha/htmls/agente-ia-cadastro.html">Testar o Vision</a>
@@ -142,43 +147,23 @@
         </figure>
       </div>
     </section>
-    <section class="frame section section-split" id="duvidas" aria-labelledby="titulo-duvidas">
-      <div class="faq-intro">
-        <h2 id="titulo-duvidas">Dúvidas frequentes</h2>
-        <p>Respostas rápidas sobre uso, privacidade e funcionamento do VisionChef no dia a dia da cozinha.</p>
-        <a class="text-link" href="informacoes.html">Ver privacidade e termos de uso →</a>
-      </div>
-      <div class="questions">
-        <details name="duvidas"><summary aria-expanded="false">As demonstrações são gratuitas?</summary><p>Sim. Você pode experimentar os dois protótipos sem cobrança ou cartão.</p></details>
-        <details name="duvidas"><summary aria-expanded="false">Onde ficam os lotes cadastrados?</summary><p>No piloto, os lotes ficam no banco de dados do restaurante. Cada demonstração guarda seus próprios lotes neste navegador.</p></details>
-        <details name="duvidas"><summary aria-expanded="false">O que acontece se eu limpar os dados do navegador?</summary><p>Os lotes das demonstrações são removidos desse navegador. Os registros do piloto continuam no banco do restaurante.</p></details>
-        <details name="duvidas"><summary aria-expanded="false">Posso usar o Vision sem microfone?</summary><p>Sim. Digite os dados do lote para o Vision e confira a sugestão preenchida antes de salvar.</p></details>
-        <details name="duvidas"><summary aria-expanded="false">Funciona no celular e no tablet?</summary><p>A interface se adapta a telas menores para a equipe consultar os produtos e os vencimentos durante o trabalho.</p></details>
-        <!-- Responde sobre a causa e direciona para a página completa. -->
-        <details name="duvidas"><summary aria-expanded="false">O VisionChef também tem uma causa social?</summary><p>Sim. A Causa que Alimenta aproxima alimentos seguros e dentro da validade de instituições sociais que podem recebê-los a tempo. <a href="/causa-social/">Conheça a causa social</a>.</p></details>
-      </div>
-    </section>
-    <section class="prototypes frame section" id="prototipos" aria-labelledby="titulo-prototipos">
-      <div>
-        <h2 id="titulo-prototipos">Demonstrações do VisionChef</h2>
-        <p>Experimente o cadastro assistido ou confira o formulário manual de controle de validade.</p>
-      </div>
-      <div class="demonstracoes">
-        <h3>Escolha uma demonstração</h3>
-        <div class="prototype-grid">
-          <div class="prototype-card">
-            <h4>Cadastro com Vision</h4>
-            <p>Descreva o lote por texto ou voz e confira os campos sugeridos antes de salvar.</p>
-            <a class="botao botao-secundario" href="Insumo%20vencendo%20na%20cozinha/htmls/agente-ia-cadastro.html">Abrir Vision</a>
-          </div>
-          <div class="prototype-card">
-            <h4>Cadastro manual</h4>
-            <p>Preencha diretamente o formulário com controle de cada campo do lote.</p>
-            <a class="botao botao-secundario" href="Insumo%20vencendo%20na%20cozinha/htmls/E3-mvp-validade.html">Abrir cadastro manual</a>
-          </div>
+      <!-- Mantém dúvidas, privacidade e causa social como fechamento das informações da landing. -->
+      <section class="frame section section-split" id="duvidas" aria-labelledby="titulo-duvidas">
+        <div class="faq-intro">
+          <h2 id="titulo-duvidas">Dúvidas frequentes</h2>
+          <p>Respostas rápidas sobre uso, privacidade e funcionamento do VisionChef no dia a dia da cozinha.</p>
+          <a class="text-link" href="informacoes.html">Ver privacidade e termos de uso →</a>
         </div>
-      </div>
-    </section>
+        <div class="questions">
+          <details name="duvidas"><summary aria-expanded="false">Posso testar o Vision gratuitamente?</summary><p>Sim. Você pode experimentar o cadastro assistido sem cobrança ou cartão.</p></details>
+          <details name="duvidas"><summary aria-expanded="false">Onde ficam os lotes cadastrados?</summary><p>No piloto, os lotes ficam no banco de dados do restaurante. No teste do Vision, os dados ficam neste navegador.</p></details>
+          <details name="duvidas"><summary aria-expanded="false">O que acontece se eu limpar os dados do navegador?</summary><p>Os dados de teste do Vision são removidos deste navegador. Os registros do piloto continuam no banco do restaurante.</p></details>
+          <details name="duvidas"><summary aria-expanded="false">Posso usar o Vision sem microfone?</summary><p>Sim. Digite os dados do lote para o Vision e confira a sugestão preenchida antes de salvar.</p></details>
+          <details name="duvidas"><summary aria-expanded="false">Funciona no celular e no tablet?</summary><p>A interface se adapta a telas menores para a equipe consultar os produtos e os vencimentos durante o trabalho.</p></details>
+          <!-- Apresenta a causa social como informação final e leva à página correspondente. -->
+          <details name="duvidas"><summary aria-expanded="false">O VisionChef também tem uma causa social?</summary><p>Sim. A Causa que Alimenta aproxima alimentos seguros e dentro da validade de instituições sociais que podem recebê-los a tempo. <a href="/causa-social/">Conheça a causa social</a>.</p></details>
+        </div>
+      </section>
   </main>
   <!-- Mantém confirmação e recuperação por links diretos sem exibir acesso ou cadastro na página pública. -->
   <div id="acesso-visionchef" data-somente-fluxos-diretos></div>

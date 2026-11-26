@@ -1,7 +1,7 @@
 # VisionChef — modelo de ameaças (F05 / STRIDE)
 
-**Atualizado em:** 25/11/2026  
-**Escopo:** Landing Sync (`/`), `/estoque/`, `/equipe/`, API Node da Vercel (`api/handler.js`), PostgreSQL/RLS + Edge Functions Supabase e integração SMTP.
+**Atualizado em:** 26/11/2026  
+**Escopo:** Landing Sync (`/`), `/estoque/` (incluindo Vision, NF-e XML Fase 1, OCR local Fase 3, relatório de desperdício e fornecedores), `/equipe/`, `/conta/`, `/causa-social/`, API Node da Vercel (`api/handler.js`), PostgreSQL/RLS + Edge Functions Supabase e integração SMTP.
 
 ## 1. Ativos protegidos
 

@@ -74,14 +74,16 @@ test('cadastro exige pelo menos oito caracteres e domínio com MX de recebimento
   });
 });
 
-test('vercel.json reescreve /api/* para /api/index e redireciona /estoque e /equipe', async () => {
-  // Evita trailingSlash global, que gera 308 em POST /api/*, mantendo /estoque/ e /equipe/ consistentes.
+test('vercel.json reescreve /api/* para /api/index e redireciona /estoque, /equipe, /conta e /causa-social', async () => {
+  // Evita trailingSlash global, que gera 308 em POST /api/*, mantendo as rotas com barra final consistentes.
   const bruto = await readFile(new URL('../vercel.json', import.meta.url), 'utf8');
   const config = JSON.parse(bruto);
   assert.equal(config.trailingSlash, undefined);
   assert.deepEqual(config.redirects, [
     { source: '/estoque', destination: '/estoque/', permanent: true },
     { source: '/equipe', destination: '/equipe/', permanent: true },
+    { source: '/conta', destination: '/conta/', permanent: true },
+    { source: '/causa-social', destination: '/causa-social/', permanent: true },
   ]);
   assert.deepEqual(config.rewrites, [
     { source: '/api/:rota*', destination: '/api/index?__rota=:rota*' },

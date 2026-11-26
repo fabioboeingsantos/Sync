@@ -8,6 +8,7 @@ const indisponivel = porId('conta-indisponivel');
 const feedback = porId('feedback-conta');
 const formUsuario = porId('form-nome-usuario');
 const formSenha = porId('form-alterar-senha');
+const formEmail = porId('form-alterar-email');
 const botaoConfirmacao = porId('solicitar-confirmacao-email');
 const botaoSair = porId('sair-todos-dispositivos');
 let sessaoAtual = null;
@@ -42,6 +43,15 @@ function carregarPerfil(sessao) {
       ? 'A confirmação real é enviada apenas na versão online. Aqui você usa contas fictícias de demonstração.'
       : 'Confirme este endereço para mantê-lo validado na sua conta.';
   botaoConfirmacao.hidden = confirmado || api.modoLocal;
+}
+
+// A troca atualiza o perfil exibido apenas depois que o Supabase refletir o endereço novo.
+async function atualizarPerfilDaSessao() {
+  const sessao = await api.sessao();
+  if (sessao?.user) {
+    sessaoAtual = sessao;
+    carregarPerfil(sessaoAtual);
+  }
 }
 
 function ocupar(botao, ocupada) {
@@ -81,6 +91,29 @@ formUsuario.addEventListener('submit', async (evento) => {
     exibirFeedback('Nome de usuário salvo. Agora você também pode entrar com ele.');
   } catch (erro) {
     exibirFeedback(erro.message || 'Não foi possível salvar seu nome de usuário.', true);
+  } finally {
+    ocupar(botao, false);
+  }
+});
+
+// Encaminha somente o novo e-mail e a senha atual; a senha é validada pelo backend e descartada.
+formEmail.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  if (!formEmail.reportValidity()) return;
+  const dados = new FormData(formEmail);
+  const botao = formEmail.querySelector('[type="submit"]');
+  ocupar(botao, true);
+  exibirFeedback('');
+  try {
+    const resultado = await api.alterarEmail({
+      email_novo: String(dados.get('email_novo')).trim(),
+      senha_atual: String(dados.get('senha_atual')),
+    });
+    formEmail.reset();
+    await atualizarPerfilDaSessao();
+    exibirFeedback(resultado?.mensagem || 'Solicitação de troca de e-mail concluída. Confira sua caixa de entrada.');
+  } catch (erro) {
+    exibirFeedback(erro.message || 'Não foi possível solicitar a troca de e-mail.', true);
   } finally {
     ocupar(botao, false);
   }

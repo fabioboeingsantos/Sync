@@ -1,4 +1,4 @@
-# Integração de Notas Fiscais (NF-e / NFC-e) com a Assistente do VisionChef
+# Integração de Notas Fiscais (NF-e / NFC-e) com o Vision (VisionChef)
 
 **Status:** Fase 1 e leitura local por câmera da Fase 3 implementadas no estoque. A captura automática SEFAZ da Fase 2 continua opcional e depende do certificado A1 do restaurante.
 

@@ -33,6 +33,7 @@ components:
       properties:
         id: { type: string, format: uuid }
         nome: { type: string }
+        papel: { type: string, enum: [dono, gerente, funcionario], nullable: true }
     LoteEstoque:
       type: object
       properties:
@@ -138,7 +139,7 @@ paths:
   /api/auth/recover:
     post:
       summary: Solicitar link de recuperação de senha
-      description: Protegido por rate limit compartilhado. Respostas e mensagens não revelam se existe uma conta para o e-mail informado.
+      description: Protegido por rate limit compartilhado. Retorna resposta genérica constante (HTTP 200) para qualquer e-mail válido, inclusive sob limite de tentativas ou limite do provedor, sem revelar se existe conta.
       requestBody:
         required: true
         content:
@@ -150,11 +151,9 @@ paths:
                 email: { type: string, format: email }
       responses:
         "200":
-          description: Link de recuperação solicitado via Supabase Auth
+          description: Resposta genérica constante (e-mail cadastrado ou não)
         "400":
           description: E-mail inválido
-        "429":
-          description: Limite de solicitações excedido
 
   /api/auth/update-password:
     post:
@@ -201,6 +200,36 @@ paths:
           description: Sessão necessária
         "409":
           description: Nome em uso ou conta já configurada
+
+  /api/auth/change-email:
+    post:
+      summary: Solicitar troca de e-mail da conta autenticada após confirmar a senha atual
+      description: Revalida a senha atual no servidor sob rate limit compartilhado e encaminha a solicitação ao Supabase Auth.
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email_novo, senha_atual]
+              properties:
+                email_novo: { type: string, format: email, maxLength: 254 }
+                senha_atual: { type: string, minLength: 1, maxLength: 128 }
+      responses:
+        "200":
+          description: Solicitação de troca de e-mail aceita
+        "400":
+          description: E-mail inválido ou igual ao endereço atual
+        "401":
+          description: Sessão necessária ou senha atual incorreta
+        "409":
+          description: Novo e-mail já vinculado a outra conta
+        "429":
+          description: Muitas tentativas ou limite de envio atingido
+        "503":
+          description: Serviço de autenticação indisponível
 
   /api/auth/change-password:
     post:
@@ -397,7 +426,8 @@ paths:
 
   /api/descartes:
     get:
-      summary: Consultar últimos 50 descartes (dono ou gerente; retorna null para funcionário)
+      summary: Consultar descartes do mês informado (dono ou gerente; retorna null para funcionário)
+      description: Pagina todos os descartes do mês no fuso America/Sao_Paulo (UTC-3) para compor o relatório mensal de desperdício.
       security:
         - sessionCookie: []
       parameters:
@@ -405,8 +435,13 @@ paths:
           in: query
           required: true
           schema: { type: string, format: uuid }
+        - name: mes
+          in: query
+          required: true
+          schema: { type: string, pattern: "^20\\d{2}-(0[1-9]|1[0-2])$" }
       responses:
-        "200": { description: Lista de descartes ou null para perfil sem permissão gerencial }
+        "200": { description: Lista de descartes do mês ou null para perfil sem permissão gerencial }
+        "400": { description: Restaurante ou mês inválido }
 
   /api/equipe:
     get:

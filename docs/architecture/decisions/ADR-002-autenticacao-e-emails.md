@@ -29,10 +29,10 @@ O piloto do VisionChef (`C:\Users\fabio\Desktop\Sync`) evoluiu de chamadas diret
    - **LLM:** `llm_required: false` no piloto (o assistente de lote em `piloto/interpretar-lote.js` permanece determinístico local).
    - **Banco Preview:** planejar projeto Supabase isolado para Preview antes de abrir o piloto a usuários reais.
 
-## Consequências e próximas etapas pendentes
+## Consequências e situação atual (26/11/2026)
 
-- Publicar e validar em produção as melhorias já prontas (diálogo *Minha conta* em `/estoque/`, ícone de olho na senha, migração `010`, `verificacao-email` com `acao: 'existe'` e templates PT-BR).
-- Etapas seguintes do roadmap do manual: implementar `/equipe` (`REQ-F-004`), implementar Argon2id no servidor local (`scripts/senhas.mjs`), criar CI (`.github/workflows/ci.yml`), `/api/health`, `threat-model.md`, `api-contract.yaml`, `runbook.md` e completar campos `DECIDIR` de LGPD/RPO/RTO antes do lançamento comercial.
+- **Concluído e validado:** todas as 17 migrações aplicadas no Supabase `visionchef`, `/equipe/`, `/conta/`, fornecedores, perfil `gerente`, criação inicial de restaurante, Argon2id no servidor local (`scripts/senhas.mjs`), CI `.github/workflows/ci.yml`, `/api/health`, `/api/health/ready`, `threat-model.md`, `api-contract.yaml`, `runbook.md`, OCR local (Tesseract.js), resposta genérica anti-enumeração na recuperação e 31/31 testes automatizados passando.
+- **Pendente para abertura comercial (Bloco 5):** separar projeto Supabase para Preview, executar ensaio documentado de backup/restore e migrar SMTP consumer (Yahoo) para provedor transacional dedicado com SPF/DKIM/DMARC.
 
 ## Referências consultadas (24/11/2026)
 

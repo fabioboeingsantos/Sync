@@ -34,6 +34,8 @@ export const api = {
   sessao,
   solicitarConfirmacaoEmail: () => solicitar('auth/request-email-verification', { metodo: 'POST', corpo: {} }),
   definirNomeUsuario: (nomeUsuario) => solicitar('auth/username', { metodo: 'POST', corpo: { nome_usuario: nomeUsuario } }),
+  // O servidor valida a senha atual antes de solicitar ao Supabase a alteração do e-mail.
+  alterarEmail: (dados) => solicitar('auth/change-email', { metodo: 'POST', corpo: dados }),
   alterarSenha: (dados) => solicitar('auth/change-password', { metodo: 'POST', corpo: dados }),
   confirmarEmail: (token) => solicitar('auth/verify-email', { metodo: 'POST', corpo: { token } }),
   atualizarSenha: (senha) => {

@@ -35,18 +35,18 @@
     <p>O VisionChef é o sistema de controle de estoque para cozinhas desenvolvido pela SYNC.</p>
     <section id="privacidade" aria-labelledby="titulo-privacidade">
       <h2 id="titulo-privacidade">Privacidade</h2>
-      <p>No piloto, você pode acessar a conta do restaurante com o nome de usuário ou o e-mail. Os registros do estoque ficam no banco da aplicação, com acesso limitado à equipe autorizada. Use os campos livres apenas para informações do estoque.</p>
-      <p>As demonstrações guardam os lotes, os descartes e as chaves de notas fiscais (XML) importadas apenas no navegador (<code>localStorage</code>). A descrição digitada no assistente e os arquivos XML de NF-e selecionados na demonstração são interpretados localmente na própria página, sem envio a servidores externos. A demonstração salva apenas os campos do lote que você confirma.</p>
+      <p>No piloto, você pode acessar a conta do restaurante com o nome de usuário ou o e-mail e gerenciar seus dados pessoais em <strong>Minha conta</strong> (<code>/conta/</code>). Os registros do estoque, equipe e fornecedores ficam no banco da aplicação, com acesso limitado à equipe autorizada. Use os campos livres apenas para informações da operação.</p>
+      <p>As demonstrações guardam os lotes, os descartes e as chaves de notas fiscais (XML) importadas apenas no navegador (<code>localStorage</code>). As descrições enviadas ao <strong>Vision</strong>, os arquivos XML de NF-e e as fotos selecionadas para leitura local de rótulos (OCR via <em>Tesseract.js</em> em memória) são processados localmente na própria página, sem envio de fotos ou textos a servidores externos de IA. O sistema salva apenas os campos do lote que você confirma.</p>
       <p>O ditado é opcional. Ao tocar ou segurar o botão de microfone (<strong>VoicePill</strong>), o navegador pode pedir acesso ao microfone. Dependendo do navegador, o reconhecimento pode enviar áudio ao serviço de voz do fornecedor. Você pode arrastar para cancelar, usar o campo de texto e gerenciar a permissão do microfone nas configurações do navegador.</p>
     </section>
     <section id="armazenamento" aria-labelledby="titulo-armazenamento">
       <h2 id="titulo-armazenamento">Cookies e armazenamento</h2>
       <p>No piloto online, um cookie de sessão estritamente necessário (<code>HttpOnly</code>, <code>SameSite=Strict</code> e <code>Secure</code> em HTTPS) mantém a conta conectada automaticamente por até 7 dias de inatividade, com renovação automática durante o uso até o limite de 30 dias. A senha nunca é salva pelo site. Você pode encerrar a sessão a qualquer momento em <strong>Sair</strong> ou encerrar todos os aparelhos em <strong>Minha conta → Sair de todos os dispositivos</strong>.</p>
-      <p>No ambiente local de teste, um cookie equivalente mantém a sessão das contas fictícias. As demonstrações de cadastro manual e com assistente guardam estoques separados no armazenamento local do navegador (<code>localStorage</code>); limpar os dados do site remove os registros dessas demonstrações.</p>
+      <p>No ambiente local de teste, um cookie equivalente mantém a sessão das contas fictícias. As demonstrações de cadastro manual e com o <strong>Vision</strong> guardam estoques separados no armazenamento local do navegador (<code>localStorage</code>); limpar os dados do site remove os registros dessas demonstrações.</p>
     </section>
     <section id="termos" aria-labelledby="titulo-termos">
       <h2 id="titulo-termos">Termos de uso</h2>
-      <p>As demonstrações são gratuitas e mostram como cadastrar, consultar e organizar lotes. Confira a validade na embalagem e siga as orientações de conservação do fabricante.</p>
+      <p>As demonstrações são gratuitas e mostram como cadastrar, consultar e organizar lotes. Confira sempre a validade na embalagem e siga as orientações de conservação do fabricante e da Vigilância Sanitária (inclusive para excedentes encaminhados via <a href="causa-social/">Causa que Alimenta</a>, que exige alimentos seguros e dentro do prazo de validade).</p>
       <p>O VisionChef não realiza vendas, pagamentos ou cobranças nesta versão.</p>
     </section>
   </main>

@@ -1,8 +1,8 @@
-# Pauta experimental — Assistente de registro de insumos
+# Pauta experimental — Vision (assistente de registro de insumos)
 
 **Time:** SYNC  
-**Status:** protótipo implementado e validado em testes automatizados — pendente apenas comparação cronometrada em teste presencial com usuários  
-**Nome na interface:** Assistente de estoque — preenchimento de cadastro  
+**Status:** protótipo implementado, integrado ao `/estoque/` (incluindo OCR local) e validado em testes automatizados — pendente apenas comparação cronometrada em teste presencial com usuários  
+**Nome na interface:** **Vision** — preenchimento assistido de cadastro  
 **Onde testar (versão separada de demonstração):** [htmls/agente-ia-cadastro.html](../htmls/agente-ia-cadastro.html) (também publicado em `https://sync-solucoes.vercel.app/Insumo%20vencendo%20na%20cozinha/htmls/agente-ia-cadastro.html`)  
 **Arquitetura completa passo a passo:** [arquitetura-passo-a-passo.md](arquitetura-passo-a-passo.md)  
 **Roadmap fiscal (NF-e / NFC-e — Fases 1, 2 e 3):** [integracao-notas-fiscais.md](../../docs/futuras-implantacoes/integracao-notas-fiscais.md)
@@ -28,6 +28,6 @@ Investigar se interpretar uma descrição do lote em linguagem natural (texto, v
 | **Importação de XML NF-e (Fase 1)** | Botão **Simular NF-e (4 itens)** ou envio de `.xml` padrão SEFAZ 4.00. | Ler `<det>` e `<rastro>`, normalizar nomes fiscais, avisar se a nota já foi importada e montar fila de conferência por voz/texto. | **Aprovado.** Funciona 100% no navegador via `DOMParser` + módulo reutilizável `piloto/interpretar-nfe.js`. |
 | **Erro de interpretação ou falha do serviço** | Serviço indisponível durante a interpretação (`agente-ia-cadastro.html?teste=1`). | Permitir o preenchimento manual e preservar o texto digitado. | **Aprovado.** Texto preservado e formulário manual funcional. |
 
-**Evolução planejada (Fases 2 e 3):** Fase 2 com captura automática via **SEFAZ Distribuição DF-e** (Certificado A1), leitura de **QR Code da NFC-e** e De/Para de fornecedores; Fase 3 com **câmera/OCR** na embalagem e foto de romaneio para hortifrúti sem XML.
+**Evolução e status das fases (1, 2 e 3):** Fase 1 (XML NF-e local) ativa na demonstração e no estoque; **Fase 3 (OCR local de lote e validade via Tesseract.js)** já implementada no estoque (`/estoque/`, rodando 100% no navegador sem API externa); **Fase 2** (captura automática via SEFAZ Distribuição DF-e com Certificado A1, QR Code NFC-e e De/Para) e leitura de romaneios permanecem planejadas para pós-piloto.
 
 **Próximo passo (teste com pessoas):** comparar tempo de preenchimento, taxa de acerto e correções manuais entre o fluxo manual e o assistente durante a rodada presencial com outro grupo/cozinha.

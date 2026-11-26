@@ -8,13 +8,26 @@ fases:
   F00_escopo_requisitos:
     status: "PASS"
     artefatos: ["docs/product/brief.md", "docs/product/requirements.md"]
-    evidencia_atual: "Escopo, owner, métrica do piloto, LGPD (retenção/exclusão), metas SLO/RPO/RTO e REQ-NF-001..008 consolidados"
+    evidencia_atual: "Escopo, owner, métrica do piloto, LGPD (retenção/exclusão), metas SLO/RPO/RTO, REQ-F-001..012 (incluindo relatório mensal, fornecedores, gerente, NF-e Fase 1 e OCR local) e REQ-NF-001..008 consolidados"
     pendencias: []
   F01_ux_rotas:
-    status: "READY_FOR_RELEASE"
-    artefatos: ["docs/product/user-flows.md", "frontend/entrada.jsx", "frontend/components/VoicePill.jsx", "piloto/index.html", "piloto/estoque.css", "piloto/equipe.html", "piloto/equipe.js", "Insumo vencendo na cozinha/abertura/sync.css"]
-    evidencia_atual: "Landing, /estoque/ e /equipe/ com temas claro/escuro sincronizados, 4 cores semânticas (Vence hoje pulsando), filtros coloridos, VoicePill, 5 simulações e Fase 1 NF-e XML implementados"
-    pendencias: ["Publicar alterações no próximo deploy Vercel após autorização"]
+    status: "PASS"
+    artefatos:
+      - "docs/product/user-flows.md"
+      - "index.html"
+      - "frontend/entrada.jsx"
+      - "frontend/menu-estoque.jsx"
+      - "frontend/components/VoicePill.jsx"
+      - "piloto/index.html"
+      - "piloto/estoque.css"
+      - "piloto/equipe.html"
+      - "piloto/equipe.js"
+      - "piloto/conta.html"
+      - "piloto/conta.js"
+      - "causa-social/index.html"
+      - "Insumo vencendo na cozinha/abertura/sync.css"
+    evidencia_atual: "Landing (/), /estoque/ (Dock React, BellToggle, catálogo com 20 fotos, PVPS 4 cores, Vision por texto/voz/XML/OCR local), /equipe/, /conta/ e /causa-social/ com temas claro/escuro sincronizados e padrão GlassSurface + Aço Inox"
+    pendencias: []
   F02_adrs_ameacas_contratos:
     status: "PASS"
     artefatos:
@@ -25,22 +38,24 @@ fases:
       - "docs/architecture/threat-model.md"
       - "docs/api/api-contract.yaml"
       - "docs/architecture/seguranca-contas.md"
-    evidencia_atual: "Contexto, modelo de dados, STRIDE, OpenAPI 3.1 e ADRs completos e alinhados à implementação"
+    evidencia_atual: "Contexto, modelo de dados (17 migrações), STRIDE, OpenAPI 3.1 (22 endpoints) e ADRs completos e alinhados à implementação (incluindo revogação da exceção de enumeração na recuperação em 26/11)"
     pendencias: []
   F03_fundacoes_ci:
-    status: "READY_FOR_RELEASE"
-    artefatos: ["package.json", "package-lock.json", ".env.example", "AGENTS.md", "README.md", ".github/workflows/ci.yml"]
-    pendencias: ["Validar primeira execução verde do workflow CI VisionChef no GitHub após o push"]
+    status: "PASS"
+    artefatos: ["package.json", "package-lock.json", "requirements.txt", ".env.example", "AGENTS.md", "README.md", ".github/workflows/ci.yml"]
+    evidencia_atual: "Workflow CI VisionChef validado em verde no GitHub Actions (npm ci, npm test, npm run build, varredura de segredos em dist/ e npm audit)"
+    pendencias: []
   F04_persistencia_migracoes:
-    status: "READY_FOR_RELEASE"
+    status: "PASS"
     artefatos:
       - "supabase/migrations/20261124000100_estoque_inicial.sql"
-      - "supabase/migrations/20261124001100_verificar_email_recuperacao.sql"
-      - "supabase/migrations/20261124001200_garantir_perfil_verificacao_email.sql"
       - "supabase/migrations/20261124001300_gestao_equipe.sql"
-    evidencia_atual: "Migrações 001..012 aplicadas em visionchef (dqztfllfillntrewutrr); migração 013 pronta para db push"
+      - "supabase/migrations/20261124001400_fornecedores.sql"
+      - "supabase/migrations/20261124001500_criar_restaurante_inicial.sql"
+      - "supabase/migrations/20261126000100_nome_usuario_proprio.sql"
+      - "supabase/migrations/20261126000200_perfil_gerente.sql"
+    evidencia_atual: "Todas as 17 migrações (20261124000100 até 20261126000200) aplicadas no projeto visionchef (dqztfllfillntrewutrr); npx supabase db push --dry-run --remote retorna Remote database is up to date"
     pendencias:
-      - "Aplicar migração 20261124001300_gestao_equipe.sql em visionchef (dqztfllfillntrewutrr)"
       - "Separar projeto Supabase Preview e ensaiar backup/restore antes de clientes comerciais (Bloco 5)"
   F05_identidade_autorizacao:
     status: "PASS"
@@ -51,49 +66,71 @@ fases:
       - "scripts/dev.mjs"
       - "tests/senhas.test.mjs"
       - "tests/equipe.test.mjs"
+      - "tests/fornecedores.test.mjs"
       - "supabase/functions/verificacao-email/index.js"
       - "supabase/functions/limitar-autenticacao/index.js"
       - "supabase/functions/login-usuario/handler.js"
-    evidencia_atual: "Recuperação genérica sem enumeração (inclusive no limite SMTP), confirmação opcional ponta a ponta em produção, Argon2id local e gestão/revogação imediata de equipe implementados"
+    evidencia_atual: "Sessão persistente 7d/30d, recuperação genérica sem enumeração, confirmação opcional ponta a ponta via SMTP, página /conta/ (troca de e-mail/senha, nome legado, logout global), Argon2id local, perfis dono/gerente/funcionário e revogação imediata via RLS"
     pendencias: []
   F06_jornada_vertical:
-    status: "READY_FOR_RELEASE"
-    artefatos: ["piloto/estoque.js", "piloto/interpretar-nfe.js", "piloto/equipe.js", "piloto/api.js", "api/index.js", "vercel.json"]
-    evidencia_atual: "Jornadas do piloto (auth, conta, estoque com filtros e proteção contra lote repetido, baixas/abertura, descartes, /equipe, módulo NF-e XML Fase 1, OCR local de lote/validade e relatório mensal real de descartes para o dono) implementadas"
-    pendencias: ["Executar suíte completa npm test e smoke test pós-deploy em /api/health e /equipe/"]
+    status: "PASS"
+    artefatos:
+      - "piloto/estoque.js"
+      - "piloto/catalogo-estoque.js"
+      - "piloto/interpretar-lote.js"
+      - "piloto/interpretar-nfe.js"
+      - "piloto/equipe.js"
+      - "piloto/conta.js"
+      - "piloto/api.js"
+      - "api/index.js"
+      - "vercel.json"
+    evidencia_atual: "Jornadas completas do piloto implementadas: auth, criação do primeiro restaurante, /conta/, estoque e controle de validade (PVPS), Vision (texto, VoicePill, NF-e XML Fase 1 e OCR local Fase 3), abertura/baixas, relatório mensal real de desperdício, /equipe/, fornecedores e /causa-social/"
+    pendencias: []
   F07_llm_agentes:
     status: "NOT_APPLICABLE"
-    justificativa: "Piloto aprovado com llm_required: false; assistente de lote e parser NF-e XML permanecem determinísticos locais em piloto/interpretar-lote.js, piloto/interpretar-nfe.js e agente-ia-cadastro.html"
+    justificativa: "Piloto aprovado com llm_required: false; o Vision (interpretar-lote.js, interpretar-nfe.js, OCR local Tesseract.js e agente-ia-cadastro.html) opera localmente sem envio de dados a provedores externos de IA"
   F08_verificacao_release:
     status: "PASS"
-    evidencia_atual: "30/30 testes passando (fail 0) incluindo estoque, roteamento/health/CI, Argon2id (senhas.test.mjs), equipe/revogação imediata (equipe.test.mjs) e landing/temas/VoicePill/NF-e/pitch (landing-e-assistente.test.mjs); npm run build concluído em dist/"
+    evidencia_atual: "31/31 testes passando (fail 0) em npm test, cobrindo roteamento/health/CI, sessão 7d/30d, estoque/abertura/baixas, equipe/gerente/revogação imediata, fornecedores, Argon2id (senhas.test.mjs), landing/temas/VoicePill/NF-e/pitch; npm run build concluído em dist/"
     pendencias: []
   F09_deploy_operacao:
     status: "READY_FOR_RELEASE"
     artefatos: ["vercel.json", "docs/architecture/implantacao.md", "docs/operations/runbook.md", "api/handler.js"]
-    evidencia_atual: "Healthchecks (/api/health, /api/health/ready), runbook operacional e remetente institucional implementados"
+    evidencia_atual: "17/17 migrações aplicadas em produção; healthchecks (/api/health, /api/health/ready), runbook operacional e redirects (/estoque, /equipe, /conta, /causa-social) prontos"
     pendencias:
-      - "Aplicar migração 013, enviar commit ao GitHub e publicar produção via npx vercel --prod --yes"
+      - "Publicar a última rodada de alterações via git push + npx vercel --prod --yes e revalidar /api/health/ready"
       - "Avaliar plano comercial Vercel/Supabase e provedor SMTP transacional antes do uso comercial (Bloco 5)"
 
 requisitos:
   - id: "REQ-F-001..003"
-    status: "PASS_LOCAL"
+    status: "PASS"
     teste: "tests/estoque.test.mjs"
   - id: "REQ-F-004"
-    status: "READY_FOR_TEST"
+    status: "PASS"
     teste: "tests/equipe.test.mjs"
-    nota: "Tela /equipe/, RPCs da migração 013, API /api/equipe* e revogação imediata com sessão aberta implementados"
+    nota: "Tela /equipe/, módulo Equipe no Dock, RPCs das migrações 013 e 20261126000200 (dono/gerente) e revogação imediata validados"
   - id: "REQ-F-005..011"
-    status: "PASS_LOCAL"
+    status: "PASS"
     teste: "tests/estoque.test.mjs, tests/equipe.test.mjs"
+  - id: "REQ-F-012"
+    status: "PASS"
+    teste: "tests/estoque.test.mjs, api/handler.js (GET /api/descartes?mes=YYYY-MM)"
+    nota: "Relatório mensal de desperdício acessível a dono e gerente; bloqueado para funcionário"
+  - id: "REQ-F-013"
+    status: "PASS"
+    teste: "tests/fornecedores.test.mjs"
+    nota: "Gestão de fornecedores com RLS (migração 014): dono/gerente administram e funcionário consulta apenas ativos"
+  - id: "REQ-F-014"
+    status: "PASS"
+    teste: "tests/interpretar-lote.test.mjs, tests/landing-e-assistente.test.mjs"
+    nota: "Vision integrado no estoque e na demonstração: texto, VoicePill, NF-e XML Fase 1 e OCR local Fase 3 (Tesseract.js)"
   - id: "REQ-A-001"
     status: "PASS"
     teste: "tests/api-roteamento.test.mjs"
-    nota: "Fluxo ponta a ponta validado em produção (SMTP aceitos:1, entrega na caixa de entrada e consumo único do link)"
+    nota: "Criação do primeiro restaurante como dono (migração 015) e confirmação opcional de e-mail validadas"
   - id: "REQ-A-002"
     status: "PASS"
-    teste: "frontend/entrada.jsx"
+    teste: "frontend/entrada.jsx, piloto/index.html, piloto/conta.html"
   - id: "REQ-NF-001..008"
-    status: "READY_FOR_TEST"
-    teste: "tests/api-roteamento.test.mjs, tests/senhas.test.mjs, tests/equipe.test.mjs, .github/workflows/ci.yml"
+    status: "PASS"
+    teste: "tests/api-roteamento.test.mjs, tests/senhas.test.mjs, tests/equipe.test.mjs, tests/fornecedores.test.mjs, tests/landing-e-assistente.test.mjs, .github/workflows/ci.yml"

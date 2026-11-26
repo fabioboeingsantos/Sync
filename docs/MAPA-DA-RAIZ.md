@@ -7,7 +7,7 @@ Sync/
 ├── .dados-local/                banco, arquivos servidos e cache do ambiente local
 ├── .git/                       metadados do Git
 ├── .github/workflows/ci.yml    pipeline de CI (testes, build, checagem de segredos e audit)
-├── api/                        funções Vercel Node para autenticação, sessão, health, estoque e equipe
+├── api/                        funções Vercel Node para autenticação, conta, sessão, health, restaurantes, estoque, relatório, equipe e fornecedores
 ├── causa-social/               página independente da iniciativa social do VisionChef
 ├── css/                        estilo de botões compartilhado pelo piloto e pelo simulado
 ├── dist/                       saída gerada da versão integrada
@@ -37,7 +37,7 @@ Sync/
 │   ├── functions/              funções de servidor para login, limites e confirmação facultativa
 │   ├── migrations/             alterações versionadas do banco em SQL
 │   └── config.toml             configuração local do Supabase CLI e da função
-├── tests/                      testes automatizados de estoque e migração local
+├── tests/                      31 testes automatizados (API/roteamento, estoque, equipe/gerente, fornecedores, senhas Argon2id, Vision, NF-e e build)
 ├── site.txt                    endereço público da landing da Sync
 ├── .env.example                modelo das variáveis de ambiente do piloto
 ├── .gitignore                  exclusões do Git

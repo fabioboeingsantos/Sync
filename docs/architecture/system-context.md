@@ -7,18 +7,18 @@
 
 | Ator | Perfil / Escopo | Capacidades principais |
 | --- | --- | --- |
-| Visitante | Sem sessão | Navega na landing Sync (`/`), cria conta individual (`/#cadastro`) ou solicita recuperação de senha (`/#recuperar`). |
-| Usuário autenticado sem vínculo | Sessão válida sem linha ativa em `membros_restaurante` | Acessa **Minha conta**, consulta status de vínculo e solicita/confirma e-mail opcional. Não acessa estoque nem equipe. |
-| Funcionário (`funcionario`) | Vínculo ativo em `membros_restaurante` | Consulta lotes do seu restaurante, cadastra, corrige validade, registra abertura/fracionamento e baixas (uso/descarte). Não acessa relatório gerencial nem `/equipe/`. |
-| Gerente (`gerente`) | Vínculo ativo com `papel = 'gerente'` | Ações operacionais do dono: estoque, controle de validade, relatório de desperdício, fornecedores e gestão de funcionários/gerentes. Não pode alterar o acesso de um dono. |
+| Visitante | Sem sessão | Navega na landing Sync (`/`) e em `/causa-social/`, acessa `/estoque/` para entrar, cria conta individual (`/#cadastro`) ou solicita recuperação de senha (`/#recuperar`). |
+| Usuário autenticado sem vínculo | Sessão válida sem linha ativa em `membros_restaurante` | Acessa **Minha conta** (`/conta/`), pode criar seu **primeiro restaurante** como `dono` (`POST /api/restaurantes`) ou aguardar liberação pelo dono/gerente de um restaurante existente. Não acessa estoques de terceiros. |
+| Funcionário (`funcionario`) | Vínculo ativo em `membros_restaurante` | Consulta lotes do seu restaurante, cadastra (manual ou via **Vision** por texto/voz/XML/OCR local), corrige validade, registra abertura/fracionamento, baixas e consulta fornecedores ativos. Não acessa relatório gerencial nem `/equipe/`. |
+| Gerente (`gerente`) | Vínculo ativo com `papel = 'gerente'` | Ações operacionais do dono: estoque, controle de validade, relatório mensal de desperdício, fornecedores e gestão de funcionários/gerentes. Não pode alterar o acesso de um dono. |
 | Dono (`dono`) | Vínculo ativo com `papel = 'dono'` | Acesso completo, incluindo gestão de todos os perfis e dos vínculos de propriedade do restaurante. |
 
 ## 2. Fronteiras de confiança e fluxo de dados
 
 ```mermaid
 flowchart LR
-  Browser["Navegador do usuário (HTML/CSS/JS + React 19)"]
-  VercelStatic["Vercel CDN (dist/: /, /estoque/, /equipe/)"]
+  Browser["Navegador do usuário (HTML/CSS/JS + React 19 + OCR local Tesseract.js)"]
+  VercelStatic["Vercel CDN (dist/: /, /estoque/, /equipe/, /conta/, /causa-social/, /ocr/*)"]
   VercelAPI["Vercel Node Function (/api/index.js -> api/handler.js)"]
   SupaAuth["Supabase Auth (bcrypt + JWT + recuperação)"]
   SupaDB["Supabase PostgreSQL (PostgREST + RLS + RPCs)"]
@@ -39,7 +39,7 @@ flowchart LR
 
 1. **Zero segredo no navegador:** `dist/` não contém chaves privadas, `JWT_SECRET_KEY`, `service_role`, credenciais SMTP nem tokens Supabase. O cookie de sessão é `HttpOnly`, `SameSite=Strict` e `Secure` em HTTPS, com `Path=/api`.
 2. **Defesa em profundidade no banco:** o backend sempre encaminha o JWT individual do usuário para PostgREST/RPCs; a autorização por restaurante, papel e vínculo ativo (`ativo = true`) é garantida no PostgreSQL mesmo contra requisições manipuladas.
-3. **Funções privilegiadas isoladas por HMAC:** consultas que cruzam contas (resolver e-mail pelo nome de usuário, verificar existência na recuperação, rate limit compartilhado e tokens de confirmação) passam por Edge Functions que validam assinatura HMAC-SHA256 + janela de tempo.
+3. **Funções privilegiadas isoladas por HMAC:** consultas que cruzam contas (resolver e-mail pelo nome de usuário, rate limit compartilhado e tokens de confirmação opcional) passam por Edge Functions que validam assinatura HMAC-SHA256 + janela de tempo. A recuperação de senha não consulta existência de conta (resposta genérica constante).
 4. **Dois caminhos explícitos de e-mail:**
    - **Recuperação de senha:** Supabase Auth → Custom SMTP.
    - **Confirmação opcional de e-mail:** API Node da Vercel (`nodemailer`) → SMTP privado (com verificação `accepted >= 1 && rejected === 0`).

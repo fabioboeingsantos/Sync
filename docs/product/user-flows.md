@@ -4,7 +4,7 @@
 
 | Tela ou ação | Quem usa | Caminho principal e estados a revisar |
 | --- | --- | --- |
-| Página pública | Pessoa interessada | Conhecer o VisionChef por meio da apresentação do produto e da demonstração de lotes; não oferece botões de entrar ou criar conta. Links diretos de confirmação e recuperação continuam sendo atendidos. |
+| Página pública | Pessoa interessada | Conhecer o VisionChef por meio da apresentação do produto, demonstração de lotes, seção do **Vision** e link para a **Causa que Alimenta** (`/causa-social/`). O cabeçalho oferece **Entrar** (`/estoque/`) e **Criar conta** (`/#cadastro`); links diretos de confirmação e recuperação também são atendidos. |
 | Primeiro acesso | Dono e funcionário | O dono informa o nome do novo restaurante e vai ao estoque com o vínculo criado. Para entrar em equipe existente, pedir ao dono que use **Equipe → Liberar acesso** com o e-mail da conta. Depois, selecionar **Verificar meu acesso** para consultar a liberação e abrir o estoque. |
 | Entrar | Dono e funcionário | Entrar com usuário ou e-mail e senha. Contas com vínculo ativo vão ao estoque. Contas que aguardam vínculo voltam à configuração de acesso. A tela oferece recuperação de senha como ação secundária. |
 | Minha conta | Pessoa autenticada | Abrir uma página própria. Consultar e-mail, usuário e acesso ao estoque; completar o usuário quando a conta legada ainda não tem um nome personalizado; ver claramente e-mail confirmado ou pendente; solicitar confirmação nesta área; trocar senha após confirmar a senha atual (sem exibi-la); recuperar a senha por link; encerrar todas as sessões. |
@@ -33,11 +33,12 @@
 
 ## Endereços do piloto
 
-- `/` para a apresentação do VisionChef e a demonstração ilustrativa de validade.
-- `/estoque/` para entrar na área do produto.
+- `/` para a apresentação do VisionChef, demonstração ilustrativa de validade, seção do **Vision** e atalhos de **Entrar** (`/estoque/`) e **Criar conta** (`/#cadastro`).
+- `/estoque/` (com redirecionamento de `/estoque` para `/estoque/`) para entrar e operar a área do produto.
 - `/estoque/` começa no módulo **Estoque**, com grade/lista e filtros por produto e categoria. O Dock inferior organiza **Estoque**, **Controle de validade**, **Relatório de desperdício**, **Equipe** e **Fornecedores** conforme o perfil; os módulos gerenciais são acessíveis ao Dono e ao Gerente. **Estoque** é a visão e o gerenciador por produto, com busca pelo nome e atualização que sugere unidade e local; entradas permanecem registradas como novos lotes. A consulta e as ações de validade ficam no módulo **Controle de validade**. O sino BellToggle mostra somente itens que vencem hoje ou em breve e exibe a contagem desses alertas. Os saldos do estoque são calculados dos mesmos lotes e o tema claro/escuro acompanha o Dock.
 - `/equipe/` (com redirecionamento de `/equipe` para `/equipe/`) para o dono ou gerente ativo administrar funcionários e gerentes; operações sobre donos permanecem exclusivas do dono.
-- `/conta/` para consultar dados pessoais, confirmação do e-mail e segurança da senha numa página independente, responsiva e compatível com tema claro ou escuro.
+- `/conta/` (com redirecionamento de `/conta` para `/conta/`) para consultar dados pessoais, confirmação do e-mail, troca de e-mail/senha e encerramento global de sessões numa página independente, responsiva e compatível com tema claro ou escuro.
+- `/causa-social/` (com redirecionamento de `/causa-social` para `/causa-social/`) para apresentar a iniciativa **Causa que Alimenta** e a área institucional isolada.
 
 ## Demonstração local do estoque
 

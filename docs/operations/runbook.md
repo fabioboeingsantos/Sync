@@ -1,6 +1,6 @@
 # VisionChef — Runbook operacional (F07 / F09)
 
-**Atualizado em:** 25/11/2026  
+**Atualizado em:** 26/11/2026  
 **Produção:** `https://sync-solucoes.vercel.app` (Vercel `cesta-do-vale/sync`)  
 **Banco / Auth:** Supabase projeto `visionchef` (`dqztfllfillntrewutrr`)
 
@@ -15,9 +15,11 @@
    - Se `503` com `configuracao: "erro"`, conferir variáveis de ambiente na Vercel.
    - Se `503` com `auth: "indisponivel"`, verificar status do projeto Supabase `visionchef`.
 3. **Rotas de interface:**
-   - `/` (landing Sync + login) → `200`
+   - `/` (landing Sync + acesso) → `200`
    - `/estoque` → `308` para `/estoque/` (`200`)
    - `/equipe` → `308` para `/equipe/` (`200`)
+   - `/conta` → `308` para `/conta/` (`200`)
+   - `/causa-social` → `308` para `/causa-social/` (`200`)
 4. **Logs em tempo real na Vercel:**
    ```powershell
    npx vercel logs --deployment sync-solucoes.vercel.app --since 15m
@@ -98,8 +100,8 @@ npx vercel --prod --yes
 
 | Sintoma | Onde olhar | Causa provável e ação |
 | --- | --- | --- |
-| Recuperação retorna `404` | Tela de login / `api/handler.js` | Comportamento esperado (ADR-002): não existe conta em `auth.users` para o e-mail digitado. |
-| Recuperação retorna `200`, mas e-mail não chega | Supabase Dashboard → Logs → Auth | Verificar senha de aplicativo SMTP, caixa de Spam/Lixo Eletrônico ou fila do provedor (Yahoo pode levar 1–5 min). |
+| Recuperação retorna `200` genérico mesmo para e-mail não cadastrado | `api/handler.js` (`/api/auth/recover`) | Comportamento esperado (exceção da ADR-002 revogada em 26/11/2026): resposta constante anti-enumeração para qualquer e-mail válido, inclusive sob rate limit. |
+| Recuperação retorna `200`, mas e-mail não chega | Supabase Dashboard → Logs → Auth | Verificar se a conta existe, conferir senha de aplicativo SMTP, caixa de Spam/Lixo Eletrônico ou fila do provedor (Yahoo pode levar 1–5 min). |
 | Confirmação opcional retorna `503` | `npx vercel logs --deployment sync-solucoes.vercel.app --since 10m` | Verificar o campo `etapa` ou `code`/`responseCode` no log (ex.: `EAUTH` = senha SMTP incorreta, `ETIMEDOUT` = porta/SSL incorretos, `verificacao-email` = secret HMAC divergente). |
 | Confirmação retorna `429` | Cabeçalho `Retry-After` | Rate limit atingido (`AUTH_CONFIRMATION_LIMIT`). Aguardar o término da janela configurada. |
 
@@ -107,7 +109,7 @@ npx vercel --prod --yes
 
 ## 6. Pré-requisitos antes de abrir para clientes externos (Bloco 5)
 
-1. **Projeto Supabase Preview separado:** criar um segundo projeto Supabase exclusivo para o ambiente `Preview` da Vercel, aplicar as migrações (`001`–`013`), configurar secrets HMAC separados e apontar as variáveis de `Preview` na Vercel para esse projeto.
+1. **Projeto Supabase Preview separado:** criar um segundo projeto Supabase exclusivo para o ambiente `Preview` da Vercel, aplicar todas as 17 migrações (`20261124000100` até `20261126000200`), configurar secrets HMAC separados e apontar as variáveis de `Preview` na Vercel para esse projeto.
 2. **Ensaio de backup e restore (RPO ≤ 24h / RTO ≤ 4h):**
    - Exportar dump lógico ou snapshot do projeto de teste (`npx supabase db dump --linked -f backup-teste.sql` ou backup gerenciado no plano Pro).
    - Restaurar em banco limpo/staging e verificar contagem de `restaurantes`, `membros_restaurante`, `lotes`, `partes_lote` e `saidas_estoque`, além de rodar uma consulta autenticada por RLS.

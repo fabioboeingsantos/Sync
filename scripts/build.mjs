@@ -72,6 +72,11 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
     mkdir(resolve(destino, 'equipe'), { recursive: true }),
     mkdir(resolve(destino, 'conta'), { recursive: true }),
   ]);
+  // Ignora avisos cosméticos da diretiva "use client" do framer-motion em bundles exclusivamente de navegador.
+  const ignorarAvisoUseClient = (aviso, padrao) => {
+    if (aviso.code === 'MODULE_LEVEL_DIRECTIVE' && String(aviso.message ?? '').includes('use client')) return;
+    padrao(aviso);
+  };
   await Promise.all([
     writeFile(resolve(destino, 'index.html'), paginaInicial),
     writeFile(resolve(destino, 'estoque/index.html'), paginaEstoque),
@@ -88,7 +93,7 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
         copyPublicDir: false,
         lib: { entry: resolve(raiz, 'frontend/entrada.jsx'), formats: ['es'], fileName: () => 'entrada.js' },
         // O adaptador continua externo ao bundle para usar o banco local ou o Supabase conforme o build.
-        rolldownOptions: { external: ['./api.js'] },
+        rolldownOptions: { external: ['./api.js'], onwarn: ignorarAvisoUseClient },
       },
     }),
     compilarReact({
@@ -101,6 +106,7 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
         emptyOutDir: false,
         copyPublicDir: false,
         lib: { entry: resolve(raiz, 'frontend/menu-estoque.jsx'), formats: ['es'], fileName: () => 'menu-estoque.js', cssFileName: 'menu-estoque' },
+        rolldownOptions: { onwarn: ignorarAvisoUseClient },
       },
     }),
     cp(resolve(raiz, 'piloto/estoque.js'), resolve(destino, 'estoque.js')),

@@ -607,7 +607,7 @@ html[data-theme="light"] .scene {
 @media (max-width: 34rem) {
   .stock-grid { grid-template-columns: 1fr; }
 }
-.stock-grid li, .assistant-example, .prototype-card {
+.stock-grid li, .assistant-example {
   padding: 1.25rem;
   border: 1px solid var(--line);
   border-radius: .75rem;
@@ -615,8 +615,7 @@ html[data-theme="light"] .scene {
   transition: background-color 360ms ease, border-color 360ms ease, box-shadow 360ms ease, transform 220ms ease;
 }
 html[data-theme="light"] .stock-grid li,
-html[data-theme="light"] .assistant-example,
-html[data-theme="light"] .prototype-card {
+html[data-theme="light"] .assistant-example {
   box-shadow: 0 2px 10px rgba(15, 76, 92, 0.08);
 }
 .stock-grid li {
@@ -774,14 +773,16 @@ html[data-theme="light"] .stock-grid li[data-status="prazo"] {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
 }
-.section-split, .prototypes {
+.section-split {
   display: grid;
   grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr);
   align-items: start;
   gap: clamp(1.25rem, 5vw, 5rem);
 }
-.prototypes { align-items: center; }
-.prototypes, .site-footer { border-top: 1px solid var(--line); }
+.site-footer { border-top: 1px solid var(--line); }
+/* Mantém o símbolo em cartão branco arredondado, como no cabeçalho da VisionChef. */
+.vision-brand { display: flex; width: max-content; flex-direction: column; align-items: center; gap: .4rem; margin: 0 0 1rem; color: var(--cyan); font: 700 1rem var(--mono); text-align: center; }
+.vision-brand-logo { align-self: center; }
 .section-split .botao { margin-top: .5rem; }
 .steps { margin: 0; padding-left: 1.5rem; }
 .steps li { padding: .75rem 0 .75rem .5rem; border-top: 1px solid var(--line); }
@@ -854,17 +855,6 @@ html[data-theme="light"] .section .login-feedback { color: #9d211a; }
 .login-feedback:empty { display: none; }
 .login-card details { margin-top: 1rem; overflow-wrap: anywhere; }
 .login-card summary { cursor: pointer; }
-.demonstracoes { grid-column: 1 / -1; padding-top: 1.25rem; border-top: 1px solid var(--line); }
-.demonstracoes h3 { margin: 0 0 1rem; font-size: 1.15rem; }
-.prototype-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-  gap: 1rem;
-}
-.prototype-card { display: flex; flex-direction: column; gap: .65rem; }
-.prototype-card h4 { margin: 0; font-size: 1.05rem; }
-.prototype-card p { margin: 0 0 .5rem; font-size: .95rem; }
-.prototype-card .botao { margin-top: auto; align-self: flex-start; }
 .site-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; padding-block: 1.35rem; color: var(--muted); }
 .footer-brand { display: inline-flex; align-items: center; gap: .55rem; font-weight: 700; color: var(--foreground); }
 .footer-logo { width: 1.75rem; height: 1.75rem; object-fit: contain; display: block; }
@@ -888,7 +878,7 @@ html[data-theme="light"] .section .login-feedback { color: #9d211a; }
   section[id] { scroll-margin-top: 7.5rem; }
   .brand-logo { height: 2.75rem; }
   .site-nav { order: 1; width: 100%; }
-  .hero, .section-split, .prototypes { grid-template-columns: 1fr; }
+  .hero, .section-split { grid-template-columns: 1fr; }
   .hero { min-height: 0; }
   .hero-copy { padding-block: 2.6rem 0; }
   .hero h1 { font-size: clamp(2.75rem, 11vw, 5rem); }
