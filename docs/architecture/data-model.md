@@ -1,7 +1,7 @@
 # VisionChef — modelo de dados e migrações (F03)
 
-**Atualizado em:** 26/11/2026  
-**Banco de produção:** PostgreSQL (Supabase, projeto `visionchef`)  
+**Atualizado em:** 26/11/2026
+**Banco de produção:** PostgreSQL (Supabase, projeto `visionchef`)
 **Banco local / testes:** PostgreSQL embarcado via PGlite (`scripts/banco-local.mjs`)
 
 ## 1. Diagrama entidade-relacionamento

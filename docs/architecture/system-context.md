@@ -1,6 +1,6 @@
 # VisionChef — contexto do sistema (F02)
 
-**Atualizado em:** 26/11/2026  
+**Atualizado em:** 26/11/2026
 **Referências:** [ADR-001](decisions/ADR-001-arquitetura-do-piloto.md) · [ADR-002](decisions/ADR-002-autenticacao-e-emails.md) · [Contrato da API](../api/api-contract.yaml)
 
 ## 1. Atores

@@ -1,6 +1,6 @@
 # ADR-002 — Backend Node na Vercel, autenticação, recuperação e operação do piloto
 
-**Status:** Aprovada em 24/11/2026; a exceção de enumeração foi revogada em 26/11/2026  
+**Status:** Aprovada em 24/11/2026; a exceção de enumeração foi revogada em 26/11/2026
 **Substitui parcialmente:** seção de integração direta do navegador em [ADR-001](ADR-001-arquitetura-do-piloto.md)
 
 ## Contexto
