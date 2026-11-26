@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pitch E4 — VisionChef · Time SYNC</title>
-  <link rel="icon" type="image/png" href="../abertura/imagens/LogoOficial.png" />
+  <link rel="icon" type="image/png" href="../abertura/imagens/coruja-sync-icone.png" />
   <style>
     /* =========================================================================
        SLIDES DO PITCH (E4) — TIME SYNC · VISIONCHEF
@@ -492,7 +492,7 @@
   <div class="deck-shell" id="deckRoot">
     <div class="top-bar">
       <span class="deck-brand">
-        <img src="../abertura/imagens/LogoOficial.png" width="44" height="44" alt="Logo oficial SYNC" />
+        <img src="../abertura/imagens/LogoOficial.webp" width="44" height="44" alt="Logo oficial SYNC" />
         <span>Time SYNC · VisionChef — Insumo vencendo na cozinha</span>
       </span>
       <div class="top-actions">
@@ -753,7 +753,7 @@
     }
 
     function buildPrintDeck() {
-      const marcaTopo = `<div class="deck-brand" style="margin-bottom: 6px;"><img src="../abertura/imagens/LogoOficial.png" width="40" height="40" alt="" /><span>Time SYNC · VisionChef</span></div>`;
+      const marcaTopo = `<div class="deck-brand" style="margin-bottom: 6px;"><img src="../abertura/imagens/LogoOficial.webp" width="40" height="40" alt="" /><span>Time SYNC · VisionChef</span></div>`;
       document.getElementById('printDeck').innerHTML = slides
         .map((s) => `<section class="print-slide">${marcaTopo}${s.html}</section>`)
         .join('');
