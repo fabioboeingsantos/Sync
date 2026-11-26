@@ -2,8 +2,14 @@
 project_id = "visionchef"
 
 [auth]
-# O Auth local acompanha o mínimo exigido no cadastro e na redefinição pelo VisionChef.
+# O Auth acompanha o mínimo exigido no cadastro e na redefinição pelo VisionChef.
 minimum_password_length = 6
+# Garante redirecionamento autorizado da recuperação de senha na produção e no ambiente local.
+additional_redirect_urls = ["http://127.0.0.1:4173/**", "https://sync-solucoes.vercel.app", "https://sync-solucoes.vercel.app/**"]
+
+[auth.email]
+# Mantém o acesso imediato após o cadastro; a confirmação de e-mail do VisionChef é facultativa dentro da conta.
+enable_confirmations = false
 
 [functions.login-usuario]
 # O endpoint recebe a senha antes que exista uma sessão. O Supabase Auth valida a credencial.

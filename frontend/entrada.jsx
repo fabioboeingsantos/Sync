@@ -202,9 +202,11 @@ function AcessoVisionChef({ destino }) {
     } catch (erro) {
       definirMensagem(erro.status === 429
         ? 'Muitas tentativas. Aguarde e tente novamente.'
-        : erro.status === 401 || erro.code === 'invalid_credentials'
-          ? 'Confira o usuário ou e-mail e a senha e tente novamente.'
-          : 'Não foi possível entrar agora. Tente novamente.');
+        : erro.code === 'email_not_confirmed'
+          ? erro.message
+          : erro.status === 401 || erro.code === 'invalid_credentials'
+            ? 'Confira o usuário ou e-mail e a senha e tente novamente.'
+            : 'Não foi possível entrar agora. Tente novamente.');
     } finally {
       envioEmCurso.current = false;
       definirEnvio(false);

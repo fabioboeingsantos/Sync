@@ -73,6 +73,12 @@ function resposta(dados, status = 200, cabecalhos = {}) {
   return Response.json(dados, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...cabecalhos } });
 }
 
+// Extrai apenas o código técnico de erro do Supabase Auth, sem registrar e-mail, senha ou token.
+function codigoErroAuth(dados) {
+  const codigo = dados?.error_code ?? dados?.code ?? null;
+  return typeof codigo === 'string' && codigo.trim() ? codigo.trim() : null;
+}
+
 // Assina o JWT da aplicação com HS256 e inclui a sessão Supabase para chamadas protegidas por RLS.
 function assinarSessao(
   sessao,
@@ -377,6 +383,12 @@ export async function tratarApi(requisicao) {
         remoto = { ok: respostaNome.ok, status: respostaNome.status, dados: await respostaNome.json().catch(() => null) };
       }
       if (!remoto.ok || !remoto.dados?.access_token || !remoto.dados?.refresh_token) {
+        const codigo = codigoErroAuth(remoto.dados);
+        // Registra apenas status e código técnico do Auth para diagnosticar falhas sem expor credenciais.
+        console.warn('Falha no login via Auth:', { status: remoto.status, codigo });
+        if (codigo === 'email_not_confirmed') {
+          return resposta({ erro: 'Confirme seu e-mail para entrar ou solicite um novo link.', codigo }, 403);
+        }
         return resposta({ erro: remoto.status === 429 ? 'Muitas tentativas. Aguarde e tente novamente.' : 'Confira o usuário ou e-mail e a senha.' }, remoto.status === 429 ? 429 : remoto.status >= 500 ? 503 : 401);
       }
       await controlarLimite(cfg, 'login', chave, 'reset').catch(() => null);
@@ -412,7 +424,14 @@ export async function tratarApi(requisicao) {
       const cadastro = await supabase(cfg, `/auth/v1/signup?redirect_to=${encodeURIComponent(url.origin)}`, {
         metodo: 'POST', corpo: { email, password: senha, data: { nome_usuario: nome } },
       });
-      if (!cadastro.ok) return resposta({ erro: 'Não foi possível criar a conta. Confira os dados ou tente outro usuário e e-mail.' }, cadastro.status >= 500 ? 503 : cadastro.status);
+      if (!cadastro.ok) {
+        const codigo = codigoErroAuth(cadastro.dados);
+        console.warn('Falha no cadastro via Auth:', { status: cadastro.status, codigo });
+        if (cadastro.status === 429 || codigo === 'over_email_send_rate_limit') {
+          return resposta({ erro: 'Muitos envios de e-mail em sequência. Aguarde alguns minutos e tente novamente.', codigo: 'limite_envio_email' }, 429);
+        }
+        return resposta({ erro: 'Não foi possível criar a conta. Confira os dados ou tente outro usuário e e-mail.' }, cadastro.status >= 500 ? 503 : cadastro.status);
+      }
       // Com Confirm Email desligado no Supabase, o cadastro retorna sessão e abre a área da própria conta.
       if (cadastro.dados?.access_token && cadastro.dados?.refresh_token && cadastro.dados?.user?.id) {
         const token = assinarSessao(cadastro.dados, cfg);
@@ -442,7 +461,14 @@ export async function tratarApi(requisicao) {
         return resposta({ erro: 'Nenhuma conta foi encontrada para esse e-mail.' }, 404);
       }
       const remoto = await supabase(cfg, `/auth/v1/recover?redirect_to=${encodeURIComponent(url.origin)}`, { metodo: 'POST', corpo: { email } });
-      if (!remoto.ok) return resposta({ erro: 'Não foi possível solicitar a recuperação agora.' }, remoto.status >= 500 ? 503 : remoto.status);
+      if (!remoto.ok) {
+        const codigo = codigoErroAuth(remoto.dados);
+        console.warn('Falha na recuperação via Auth:', { status: remoto.status, codigo });
+        if (remoto.status === 429 || codigo === 'over_email_send_rate_limit') {
+          return resposta({ erro: 'Muitos envios de e-mail em sequência. Aguarde alguns minutos e tente novamente.', codigo: 'limite_envio_email' }, 429);
+        }
+        return resposta({ erro: 'Não foi possível solicitar a recuperação agora.' }, remoto.status >= 500 ? 503 : remoto.status);
+      }
       return resposta({
         enviada: true,
         mensagem: verificadoExiste === true
@@ -457,7 +483,10 @@ export async function tratarApi(requisicao) {
       if (!tokenRecuperacao) return resposta({ erro: 'O link expirou. Solicite uma nova recuperação.' }, 400);
       if (!senhaNovaValida(dados.senha)) return resposta({ erro: mensagemSenhaNova }, 400);
       const remoto = await supabase(cfg, '/auth/v1/user', { metodo: 'PUT', token: tokenRecuperacao, corpo: { password: dados.senha } });
-      if (!remoto.ok) return resposta({ erro: 'O link pode ter expirado. Solicite uma nova recuperação.' }, remoto.status === 401 ? 401 : 400);
+      if (!remoto.ok) {
+        console.warn('Falha na redefinição de senha via Auth:', { status: remoto.status, codigo: codigoErroAuth(remoto.dados) });
+        return resposta({ erro: 'O link pode ter expirado. Solicite uma nova recuperação.' }, remoto.status === 401 ? 401 : 400);
+      }
       return resposta({ atualizada: true }, 200, { 'Set-Cookie': cookieRemovido(cfg, requisicao) });
     }
 

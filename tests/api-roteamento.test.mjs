@@ -371,3 +371,40 @@ test('sessão persiste automaticamente por 7 dias com renovação deslizante e t
   assert.match(entradaJsx, /Sair de todos os dispositivos/);
   assert.match(estoqueHtml, /id="sair-todos-dispositivos"/);
 });
+
+test('auth diferencia conta não confirmada e limite de envio de e-mail do Supabase', async (t) => {
+  // Garante retorno específico para diagnóstico sem confundir bloqueio de e-mail com senha errada.
+  t.mock.method(globalThis, 'fetch', async (url) => {
+    const caminho = new URL(String(url)).pathname;
+    if (caminho === '/functions/v1/limitar-autenticacao') return Response.json({ permitido: true });
+    if (caminho === '/functions/v1/verificacao-email') return Response.json({ existe: true });
+    if (caminho === '/auth/v1/token') {
+      return Response.json({ error_code: 'email_not_confirmed', msg: 'Email not confirmed' }, { status: 400 });
+    }
+    if (caminho === '/auth/v1/recover') {
+      return Response.json({ error_code: 'over_email_send_rate_limit', msg: 'Email rate limit exceeded' }, { status: 429 });
+    }
+    return new Response(null, { status: 404 });
+  });
+
+  await comAmbienteApi({}, async () => {
+    const login = await tratarApi(new Request('https://sync.test/api/auth/login', {
+      method: 'POST',
+      headers: { Origin: 'https://sync.test', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identificador: 'conta@piloto.test', senha: 'senha-ficticia-valida' }),
+    }));
+    assert.equal(login.status, 403);
+    assert.deepEqual(await login.json(), {
+      erro: 'Confirme seu e-mail para entrar ou solicite um novo link.',
+      codigo: 'email_not_confirmed',
+    });
+
+    const recover = await tratarApi(new Request('https://sync.test/api/auth/recover', {
+      method: 'POST',
+      headers: { Origin: 'https://sync.test', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'conta@piloto.test' }),
+    }));
+    assert.equal(recover.status, 429);
+    assert.equal((await recover.json()).codigo, 'limite_envio_email');
+  });
+});
