@@ -389,7 +389,7 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
   const [titulo, subtitulo] = {
     entrar: ['Entre na sua conta', 'Acesse com seu usuário ou e-mail e sua senha.'],
     cadastro: ['Crie sua conta', api.modoLocal ? 'Use dados fictícios para testar o cadastro local.' : 'Depois do cadastro, escolha como acessar o estoque.'],
-    restaurante: ['Como você quer acessar o estoque?', 'Escolha entre cadastrar seu restaurante e participar de uma equipe existente.'],
+    restaurante: ['Como você quer acessar o estoque?', 'Escolha o caminho que corresponde à sua função no restaurante.'],
     'criar-restaurante': ['Criar meu restaurante', 'Você será o dono do novo restaurante e poderá liberar acesso à sua equipe.'],
     'entrar-equipe': ['Entrar em uma equipe', 'O dono do restaurante precisa liberar seu acesso usando o e-mail da sua conta.'],
     recuperar: ['Recupere sua senha', 'Informe o e-mail da sua conta para receber o link de redefinição.'],
@@ -442,10 +442,18 @@ function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Criando…' : 'Criar conta'}</BotaoGlass>
           </form>}
           {/* O primeiro acesso diferencia a criação de um restaurante da autorização de um funcionário. */}
-          {modo === 'restaurante' && <div className="acoes-acesso">
-            <BotaoGlass className="botao-primario" type="button" onClick={() => { definirMensagem(''); definirModo('criar-restaurante'); }}>Criar meu restaurante</BotaoGlass>
-            <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('entrar-equipe'); }}>Entrar em uma equipe</BotaoGlass>
-            <a className="botao botao-secundario" href="/conta/">Minha conta</a>
+          {modo === 'restaurante' && <div className="primeiro-acesso-opcoes">
+            <article className="primeiro-acesso-opcao">
+              <h3>Sou dono</h3>
+              <p>Crie o restaurante e gerencie o estoque e os acessos da equipe.</p>
+              <BotaoGlass className="botao-primario" type="button" onClick={() => { definirMensagem(''); definirModo('criar-restaurante'); }}>Criar meu restaurante</BotaoGlass>
+            </article>
+            <article className="primeiro-acesso-opcao">
+              <h3>Sou funcionário</h3>
+              <p>Peça ao dono para liberar seu e-mail. Depois, entre para acessar o estoque.</p>
+              <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('entrar-equipe'); }}>Entrar em uma equipe</BotaoGlass>
+            </article>
+            <a className="botao botao-secundario primeiro-acesso-conta" href="/conta/">Minha conta</a>
           </div>}
           {modo === 'criar-restaurante' && <form className="formulario-acesso" onSubmit={configurarRestaurante}>
             <label>Nome do restaurante<input name="nome" type="text" autoComplete="organization" minLength={2} maxLength={120} required /></label>

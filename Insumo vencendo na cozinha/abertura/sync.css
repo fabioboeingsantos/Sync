@@ -1093,6 +1093,23 @@ body:has(#inicio.hero) section[id] {
 .dialogo-acesso-sync .mensagem-acesso { margin: 0; padding: .8rem .95rem; color: #182327; font-weight: 600; background: #e6f3f6; border: 1px solid #2a7f8e; border-radius: 12px; font-size: .92rem; text-align: center; }
 .acoes-acesso { display: grid; gap: .75rem; }
 .acoes-acesso-dupla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Explica os dois perfis de primeiro acesso e empilha as escolhas em telas estreitas. */
+.primeiro-acesso-opcoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.primeiro-acesso-opcao {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: .5rem;
+  min-width: 0;
+  padding: .85rem;
+  background: #f2f8f9;
+  border: 1px solid #c5dfe4;
+  border-radius: 12px;
+  text-align: left;
+}
+.primeiro-acesso-opcao h3 { margin: 0; color: #0f4c5c; font-size: 1rem; }
+.primeiro-acesso-opcao p { flex: 1; margin: 0; color: #33484e; font-size: .9rem; line-height: 1.4; }
+.primeiro-acesso-conta { grid-column: 1 / -1; justify-self: center; max-width: 13rem; }
 /* Mantém login e cadastro visíveis por inteiro, reduzindo apenas os espaços desses dois fluxos. */
 .dialogo-acesso-sync.acesso-inicial {
   box-sizing: border-box;
@@ -1151,6 +1168,8 @@ body:has(#inicio.hero) section[id] {
 .acao-link-acesso { min-height: 42px; padding: 8px 10px; text-decoration: underline; text-underline-offset: 3px; font-size: .86rem; white-space: nowrap; }
 @media (max-width: 440px) {
   .acoes-acesso-dupla { grid-template-columns: 1fr; }
+  .primeiro-acesso-opcoes { grid-template-columns: 1fr; }
+  .primeiro-acesso-conta { grid-column: auto; justify-self: stretch; max-width: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .dialogo-acesso-sync, .dialogo-acesso-sync * { scroll-behavior: auto; transition: none !important; animation: none !important; }
