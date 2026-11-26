@@ -45,27 +45,30 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
   // Segredos e URL do Supabase são lidos pelas funções Node em runtime, nunca pelo build do navegador.
   // Apaga sobras do build anterior, que ainda continha o cliente Supabase no navegador.
   if (!local) await Promise.all(['config.js', 'supabase.js'].map((arquivo) => rm(resolve(destino, arquivo), { force: true })));
-  const [landing, estoque, equipe] = await Promise.all([
+  // Limpa apenas a pasta de imagens geradas da saída para não carregar PNGs grandes de builds anteriores.
+  await rm(resolve(destino, 'imagens/produtos'), { recursive: true, force: true });
+  // Cada módulo tem sua própria URL pública para manter navegação e sessão na mesma origem.
+  const [landing, estoque, equipe, conta] = await Promise.all([
     readFile(resolve(raiz, 'index.html'), 'utf8'),
     readFile(resolve(raiz, 'piloto/index.html'), 'utf8'),
     readFile(resolve(raiz, 'piloto/equipe.html'), 'utf8'),
+    readFile(resolve(raiz, 'piloto/conta.html'), 'utf8'),
   ]);
   const blocoContas = /\s*<!-- contas-ficticias-inicio -->([\s\S]*?)<!-- contas-ficticias-fim -->/;
-  const contasLocais = local ? (estoque.match(blocoContas)?.[1] ?? '').replace('id="contas-locais" hidden', 'id="contas-locais"') : '';
-  // O arquivo fonte aponta para o servidor local. Após o build, o fallback abre o estoque na própria origem.
+  // A landing apresenta o produto; o módulo de acesso só responde a links diretos de confirmação ou recuperação.
   const paginaInicial = landing
-    .replace('<!-- login-piloto-modulo -->', '<script type="module" src="entrada.js"></script>')
-    .replace('<!-- login-piloto-contas -->', contasLocais)
-    .replace('href="http://127.0.0.1:8080/#prototipos">Abrir login local', 'href="estoque/">Abrir tela de login');
+    .replace('<!-- login-piloto-modulo -->', '<script type="module" src="entrada.js"></script>');
   const paginaEstoque = local ? estoque : estoque.replace(blocoContas, '');
   await Promise.all([
     mkdir(resolve(destino, 'estoque'), { recursive: true }),
     mkdir(resolve(destino, 'equipe'), { recursive: true }),
+    mkdir(resolve(destino, 'conta'), { recursive: true }),
   ]);
   await Promise.all([
     writeFile(resolve(destino, 'index.html'), paginaInicial),
     writeFile(resolve(destino, 'estoque/index.html'), paginaEstoque),
     writeFile(resolve(destino, 'equipe/index.html'), equipe),
+    writeFile(resolve(destino, 'conta/index.html'), conta),
     compilarReact({
       root: raiz,
       configFile: false,
@@ -80,12 +83,27 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
         rolldownOptions: { external: ['./api.js'] },
       },
     }),
+    compilarReact({
+      root: raiz,
+      configFile: false,
+      logLevel: 'warn',
+      define: { 'process.env.NODE_ENV': JSON.stringify('production') },
+      build: {
+        outDir: resolve(destino),
+        emptyOutDir: false,
+        copyPublicDir: false,
+        lib: { entry: resolve(raiz, 'frontend/menu-estoque.jsx'), formats: ['es'], fileName: () => 'menu-estoque.js', cssFileName: 'menu-estoque' },
+      },
+    }),
     cp(resolve(raiz, 'piloto/estoque.js'), resolve(destino, 'estoque.js')),
+    cp(resolve(raiz, 'piloto/catalogo-estoque.js'), resolve(destino, 'catalogo-estoque.js')),
     cp(resolve(raiz, 'piloto/equipe.js'), resolve(destino, 'equipe.js')),
+    cp(resolve(raiz, 'piloto/conta.js'), resolve(destino, 'conta.js')),
     cp(resolve(raiz, 'piloto/interpretar-lote.js'), resolve(destino, 'interpretar-lote.js')),
     cp(resolve(raiz, 'piloto/interpretar-nfe.js'), resolve(destino, 'interpretar-nfe.js')),
     cp(resolve(raiz, local ? 'scripts/api-local.js' : 'piloto/api.js'), resolve(destino, 'api.js')),
     cp(resolve(raiz, 'piloto/estoque.css'), resolve(destino, 'css/estoque.css')),
+    cp(resolve(raiz, 'piloto/imagens/produtos'), resolve(destino, 'imagens/produtos'), { recursive: true }),
     ...arquivosOcr.map(async ([origem, saida]) => {
       const destinoArquivo = resolve(destino, saida);
       await mkdir(resolve(destinoArquivo, '..'), { recursive: true });
@@ -93,6 +111,9 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
     }),
     ...arquivosPublicos.map((arquivo) => cp(resolve(raiz, arquivo), resolve(destino, arquivo))),
   ]);
+  // A folha de estilo do menu é servida sob /css como os demais estilos do piloto.
+  await mkdir(resolve(destino, 'css'), { recursive: true });
+  await cp(resolve(destino, 'menu-estoque.css'), resolve(destino, 'css/menu-estoque.css'));
 
 }
 

@@ -60,7 +60,10 @@ test('baixas preservam histórico, respeitam o saldo e bloqueiam uso de vencidos
   await assert.rejects(registrar(saida(vencido, 'uso', '1')), { code: 'PT409' });
   await registrar(saida(vencido, 'descarte', '10', 'vencimento'));
   assert.equal((await listar()).length, 0);
-  const historico = (id) => comoUsuario(banco, id, (tx) => listarDescartes(tx, restaurantePiloto));
+  // O relatório lista saídas do mês civil atual, no fuso do restaurante.
+  const partesMes = Object.fromEntries(new Intl.DateTimeFormat('en', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit' }).formatToParts(new Date()).map(({ type, value }) => [type, value]));
+  const periodo = `${partesMes.year}-${partesMes.month}`;
+  const historico = (id) => comoUsuario(banco, id, (tx) => listarDescartes(tx, restaurantePiloto, periodo));
   assert.deepEqual((await historico(dono)).map(({ motivo, quantidade }) => [motivo, quantidade]), [
     ['vencimento', '10'], ['outro', '2'],
   ]);

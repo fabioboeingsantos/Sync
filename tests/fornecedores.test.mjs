@@ -119,11 +119,23 @@ test('dono gerencia fornecedores, funcionário consulta somente ativos e isolame
   assert.equal(listaDono[0].ativo, false);
   assert.deepEqual(await (await chamada(`fornecedores?restaurante=${restaurantePiloto}`, { cookie: cookieFuncionario })).json(), []);
 
-  // 5. Confere na interface do piloto a barra Estoque/Equipe/Fornecedores e o assistente Vision.
+  // 5. Confere que o Dock organiza os módulos, respeita o perfil e continua integrado ao sino.
   const htmlPiloto = await readFile(new URL('../piloto/index.html', import.meta.url), 'utf8');
-  assert.match(htmlPiloto, /id="aba-estoque"/);
-  assert.match(htmlPiloto, /id="aba-equipe"/);
-  assert.match(htmlPiloto, /id="aba-fornecedores"/);
+  const menuReact = await readFile(new URL('../frontend/menu-estoque.jsx', import.meta.url), 'utf8');
+  const dockReact = await readFile(new URL('../frontend/components/Dock.jsx', import.meta.url), 'utf8');
+  const sinoReact = await readFile(new URL('../frontend/components/BellToggle.jsx', import.meta.url), 'utf8');
+  assert.match(htmlPiloto, /id="dock-nav-root"/);
+  assert.match(menuReact, /from '\.\/components\/Dock\.jsx'/);
+  assert.match(menuReact, /label: 'Estoque'/);
+  assert.match(menuReact, /label: 'Controle de validade'/);
+  assert.match(menuReact, /label: 'Relatório de desperdício'/);
+  assert.match(menuReact, /label: 'Equipe'/);
+  assert.match(menuReact, /label: 'Fornecedores'/);
+  assert.match(dockReact, /aria-current=\{item\.active \? 'page' : undefined\}/);
+  assert.match(dockReact, /aria-label=\{ariaLabel\}/);
+  assert.match(htmlPiloto, /id="sino-notificacoes-root"/);
+  assert.match(sinoReact, /aria-expanded={on}/);
+  assert.match(sinoReact, /aria-controls={controls}/);
   assert.match(htmlPiloto, /id="abrir-vision"/);
   assert.match(htmlPiloto, /Preencher com Vision/);
 });

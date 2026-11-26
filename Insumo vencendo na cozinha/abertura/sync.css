@@ -244,10 +244,16 @@ section[id] { scroll-margin-top: 5.5rem; }
 .site-nav { display: flex; flex-wrap: wrap; gap: 0 clamp(.8rem, 2.5vw, 2rem); }
 .header-actions { display: inline-flex; align-items: center; gap: .75rem; }
 .header-cta { padding-inline: .9rem; border: 1px solid var(--control-line); border-radius: .35rem; color: var(--foreground); }
-/* Destaca a criação de conta na paleta Aço Inox com acabamento GlassSurface. */
-.header-signup { border-color: rgba(168, 213, 221, 0.55); background: linear-gradient(160deg, rgba(42, 127, 142, 0.88), rgba(15, 76, 92, 0.95)); color: #fff; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-.header-signup:hover { border-color: #a8d5dd; background: #0f4c5c; color: #fff; }
-.header-signup:focus-visible { outline: 3px solid var(--btn-foco, #a8d5dd); outline-offset: 3px; }
+
+/* Na landing, o seletor ocupa espaço no mesmo grupo das ações de acesso. */
+/* O recuo à direita segue a borda da tela mesmo quando a margem do conteúdo aumenta. */
+.site-header.cabecalho-landing.frame { padding-inline-end: clamp(1rem, 2vw, 1.5rem); }
+/* Centraliza o link na largura do cabeçalho, independentemente da largura das ações. */
+.cabecalho-landing .site-nav { position: absolute; inset-inline-start: 50%; transform: translateX(-50%); }
+.cabecalho-landing .header-actions { gap: .5rem; }
+.cabecalho-landing .header-actions .botao { white-space: nowrap; }
+.cabecalho-landing .theme-toggle { position: relative; inset: auto; transform: none; flex: none; min-height: 44px; }
+.cabecalho-landing .theme-toggle:focus-visible { outline: 3px solid var(--btn-foco); outline-offset: 2px; }
 
 /* Alternador compacto de tema claro/escuro com Sol e Lua ultra-realistas */
 .theme-toggle {
@@ -889,9 +895,25 @@ html[data-theme="light"] .section .login-feedback { color: #9d211a; }
   .hero-action > p { margin-bottom: 1rem; }
   .scene { max-width: 29rem; justify-self: center; }
 }
+
+@media (max-width: 49rem) {
+  /* Reserva uma segunda linha às ações quando elas poderiam encostar no link central. */
+  .site-header.cabecalho-landing.frame { padding-inline: clamp(1rem, 2vw, 1.5rem); }
+  .cabecalho-landing { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: .2rem .5rem; padding-block: .25rem .5rem; }
+  .cabecalho-landing .site-nav { position: static; transform: none; order: 0; grid-column: 2; }
+  .cabecalho-landing .site-nav .header-link { font-size: .8rem; }
+  .cabecalho-landing .header-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; flex-wrap: wrap; }
+  .cabecalho-landing .header-actions .botao { padding-inline: .8rem; }
+}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 23rem) {
+  /* Reduz apenas o espaçamento e o texto para manter as três ações na mesma linha. */
+  .cabecalho-landing .header-actions .botao { font-size: .875rem; padding-inline: .55rem; }
+  .cabecalho-landing .site-nav .header-link { font-size: .75rem; }
 }
 
 /* A abertura da Sync ocupa exatamente 100% da primeira tela (full-bleed) descontando o cabeçalho, sem exigir rolagem. */

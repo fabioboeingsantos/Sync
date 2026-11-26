@@ -8,8 +8,10 @@
   <link rel="stylesheet" href="../css/estoque.css">
   <!-- Reutiliza o padrão de botões definido para o projeto. -->
   <link rel="stylesheet" href="../css/botoes.css">
+  <link rel="stylesheet" href="../css/menu-estoque.css">
   <script src="../Insumo%20vencendo%20na%20cozinha/abertura/js/tema.js"></script>
   <script type="module" src="../estoque.js"></script>
+  <script type="module" src="../menu-estoque.js"></script>
 </head>
 <body>
   <a class="pular" href="#conteudo">Ir para o conteúdo</a>
@@ -27,7 +29,17 @@
         <a class="link-topo" href="../">Início Sync</a>
         <a class="botao botao-secundario" id="link-equipe" href="../equipe/" hidden>Equipe</a>
         <span class="conta-topo" id="conta-topo" hidden></span>
-        <button class="botao botao-secundario" id="minha-conta" type="button" hidden>Minha conta</button>
+        <!-- O sino lista somente lotes com validade próxima, sem incluir vencidos ou itens em dia. -->
+        <div class="notificacoes-topo" id="notificacoes-topo" hidden>
+          <div id="sino-notificacoes-root" class="sino-notificacoes-raiz"></div>
+          <section class="painel-notificacoes" id="painel-notificacoes-validade" aria-labelledby="titulo-notificacoes-validade" hidden>
+            <h2 id="titulo-notificacoes-validade">Validades próximas</h2>
+            <p class="notificacao-ajuda">Somente produtos que vencem hoje ou em breve.</p>
+            <p id="mensagem-notificacoes-validade" class="mensagem" role="status" aria-live="polite"></p>
+            <ul id="lista-notificacoes-validade" aria-label="Produtos com validade próxima"></ul>
+          </section>
+        </div>
+        <a class="botao botao-secundario" id="minha-conta" href="../conta/" aria-label="Minha conta" hidden><span class="rotulo-conta-topo">Minha conta</span></a>
         <button class="botao botao-secundario" id="sair" type="button" hidden>Sair</button>
         <button type="button" class="theme-toggle theme-toggle-inline" data-theme-toggle aria-pressed="false" aria-label="Modo escuro ativo (Lua). Clique para ativar modo claro (Sol).">
           <span class="sky-track" aria-hidden="true">
@@ -101,48 +113,57 @@
       <!-- A confirmação facultativa fica dentro da sessão, nunca na tela de login. -->
       <div class="acoes" style="margin-top: 1rem;">
         <a class="botao botao-primario" href="../#configurar-restaurante">Configurar acesso</a>
-        <button class="botao botao-secundario" id="abrir-conta-sem-restaurante" type="button">Abrir minha conta</button>
+        <a class="botao botao-secundario" href="../conta/">Abrir minha conta</a>
       </div>
     </section>
 
-    <!-- Diálogo de sessão do usuário e confirmação opcional de e-mail disponível com ou sem vínculo ao restaurante. -->
-    <dialog id="dialogo-conta" class="painel dialogo-validade" aria-labelledby="titulo-conta">
-      <h2 id="titulo-conta">Minha conta</h2>
-      <div class="dados-conta">
-        <p><strong>E-mail:</strong> <span id="conta-email">Não disponível</span></p>
-        <p><strong>Acesso ao estoque:</strong> <span id="conta-acesso">Sem vínculo ativo</span></p>
-        <p><strong>Confirmação de e-mail:</strong> <span id="conta-confirmacao">Opcional · pendente</span></p>
-      </div>
-      <p id="feedback-conta" class="mensagem" role="status"></p>
-      <div class="acoes">
-        <button class="botao botao-primario" id="solicitar-confirmacao-email" type="button" hidden>Solicitar confirmação de e-mail</button>
-        <button class="botao botao-secundario danger" id="sair-todos-dispositivos" type="button">Sair de todos os dispositivos</button>
-        <button class="botao botao-secundario" id="fechar-conta" type="button">Fechar</button>
-      </div>
-    </dialog>
-
-    <section id="aplicacao" aria-labelledby="titulo-estoque" hidden>
-      <!-- Cabeçalho do restaurante e navegação administrativa por perfil (Dono: Estoque, Equipe, Fornecedores; Funcionário: Estoque, Fornecedores). -->
+    <section id="aplicacao" aria-labelledby="titulo-inventario" hidden>
+      <!-- Identidade do restaurante e Dock fixo com módulos liberados conforme o perfil. -->
       <div class="painel-admin-topo">
         <div class="identidade-restaurante">
           <p class="restaurante" id="restaurante"></p>
           <span class="perfil-badge" id="perfil-badge" hidden></span>
         </div>
-        <nav class="nav-modulos" id="nav-modulos" aria-label="Administração do restaurante">
-          <button type="button" class="botao botao-secundario" id="aba-estoque" data-modulo="estoque" aria-pressed="true">Estoque</button>
-          <!-- O dono acessa o relatório na navegação superior, junto ao módulo Estoque. -->
-          <a class="botao botao-secundario" id="abrir-relatorio-desperdicio" href="#titulo-relatorio-desperdicio" hidden>Ver relatório de desperdício</a>
-          <button type="button" class="botao botao-secundario" id="aba-equipe" data-modulo="equipe" aria-pressed="false" hidden>Equipe</button>
-          <button type="button" class="botao botao-secundario" id="aba-fornecedores" data-modulo="fornecedores" aria-pressed="false">Fornecedores</button>
-        </nav>
+        <div class="nav-modulos" id="nav-modulos" hidden>
+          <div id="dock-nav-root" class="dock-nav-raiz"></div>
+        </div>
       </div>
 
-      <!-- MÓDULO 1: ESTOQUE + ASSISTENTE VISION -->
-      <div id="modulo-estoque">
+      <!-- MÓDULO DE ESTOQUE: saldos agregados por produto, agrupados a partir dos lotes. -->
+      <section id="modulo-inventario" aria-labelledby="titulo-inventario">
         <div class="cabecalho-estoque">
           <div>
-            <h1 id="titulo-estoque" tabindex="-1">Estoque</h1>
-            <p class="subtitulo-modulo">Lotes ordenados por vencimento (PVPS: Primeiro que Vence, Primeiro que Sai).</p>
+            <h1 id="titulo-inventario" tabindex="-1">Estoque</h1>
+            <p class="subtitulo-modulo">Saldos disponíveis por produto. As quantidades acompanham os lotes registrados no controle de validade.</p>
+          </div>
+          <button class="botao botao-primario" id="adicionar-estoque" type="button">Adicionar entrada</button>
+        </div>
+        <section class="painel inventario-painel" aria-labelledby="titulo-produtos-inventario">
+          <div class="inventario-cabecalho">
+            <div><h2 id="titulo-produtos-inventario">Produtos cadastrados</h2><p id="resumo-inventario" class="subtitulo-modulo" role="status"></p></div>
+            <div class="visualizacao-estoque" id="visualizacao-inventario" role="group" aria-label="Forma de visualizar o estoque">
+              <span>Visualização</span>
+              <button type="button" class="botao botao-secundario" data-visualizacao-inventario="grade" aria-pressed="true">Grade</button>
+              <button type="button" class="botao botao-secundario" data-visualizacao-inventario="lista" aria-pressed="false">Lista</button>
+            </div>
+          </div>
+          <div class="inventario-filtros">
+            <label>Buscar produto <input id="busca-inventario" type="search" autocomplete="off" placeholder="Ex.: leite condensado"></label>
+            <label>Categoria <select id="categoria-inventario"><option value="todas">Todas as categorias</option></select></label>
+          </div>
+          <div class="inventario-resumo" id="indicadores-inventario" aria-live="polite"></div>
+          <div id="grade-inventario" class="grade-inventario" role="list" aria-label="Produtos em grade"></div>
+          <div id="lista-inventario" class="lista-inventario" role="list" aria-label="Produtos em lista" hidden></div>
+          <p id="mensagem-inventario" class="mensagem" role="status"></p>
+        </section>
+      </section>
+
+      <!-- MÓDULO DE VALIDADE: cadastro, rastreio e movimentação dos lotes. -->
+      <div id="modulo-estoque" hidden>
+        <div class="cabecalho-estoque">
+          <div>
+            <h1 id="titulo-estoque" tabindex="-1">Controle de validade</h1>
+            <p class="subtitulo-modulo">Acompanhe os lotes por vencimento (PVPS: Primeiro que Vence, Primeiro que Sai).</p>
             <!-- Explica que o assistente de IA sugere os campos e deixa a conferência e o salvamento com a pessoa. -->
             <p class="subtitulo-modulo" id="ajuda-cadastro-vision">O Vision é o assistente de IA: descreva ou dite o lote, revise os campos preenchidos e salve quando estiverem corretos.</p>
           </div>
@@ -254,6 +275,7 @@
             </div>
           </div>
           <div class="barra-filtros-estoque" id="barra-filtros-estoque" hidden>
+            <label class="busca-lotes-validade">Buscar insumo <input id="busca-lotes-validade" type="search" autocomplete="off" placeholder="Ex.: leite condensado"></label>
             <div class="filtros-estoque" id="filtros-estoque" role="group" aria-label="Filtrar lotes por validade">
               <button type="button" class="botao botao-secundario" data-filtro-estoque="todos" aria-pressed="true">Todos</button>
               <button type="button" class="botao botao-secundario" data-filtro-estoque="vencido" aria-pressed="false">Vencido</button>
@@ -275,9 +297,18 @@
             </table>
           </div>
         </section>
-        <!-- O relatório usa baixas reais do restaurante e só aparece para a conta do dono. -->
-        <section class="painel painel-lista relatorio-perdas" id="painel-descartes" aria-labelledby="titulo-relatorio-desperdicio" hidden>
-          <h2 id="titulo-relatorio-desperdicio" tabindex="-1">Relatório de desperdício</h2>
+      </div>
+
+      <!-- O levantamento de desperdício é uma área independente, no mesmo nível do estoque e da validade. -->
+      <div id="modulo-relatorio-desperdicio" hidden>
+        <div class="cabecalho-estoque">
+          <div>
+            <h1 id="titulo-relatorio-desperdicio" tabindex="-1">Relatório de desperdício</h1>
+            <p class="subtitulo-modulo">Levantamento mensal das perdas registradas no restaurante.</p>
+          </div>
+        </div>
+        <section class="painel painel-lista relatorio-perdas" id="painel-descartes" aria-labelledby="titulo-resumo-perdas" hidden>
+          <h2 id="titulo-resumo-perdas">Resumo mensal</h2>
           <p>Descartes registrados em <strong id="mes-relatorio-desperdicio"></strong>.</p>
           <div class="resumo-perdas" aria-live="polite" aria-atomic="true">
             <div><strong id="total-descartes-mes">0</strong><span>Descartes no mês</span></div>

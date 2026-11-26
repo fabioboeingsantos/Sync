@@ -101,6 +101,7 @@ erDiagram
 | `listar_equipe_restaurante` | `authenticated` | Exige `papel = 'dono'` e `ativo = true` no restaurante alvo (`42501` caso contrário). |
 | `vincular_membro_restaurante` | `authenticated` | Exige `dono` ativo; localiza conta por usuário ou e-mail (`PT404` se inexistente); cria/reativa vínculo; impede deixar restaurante sem dono (`PT409`). |
 | `remover_membro_restaurante` | `authenticated` | Exige `dono` ativo; define `ativo = false` imediatamente; protege contra remoção do último dono ativo (`PT409`). |
+| `nome_usuario_proprio`, `definir_nome_usuario_proprio` | `authenticated` | Consultam ou definem apenas o nome da própria conta via `auth.uid()`; permitem substituir nomes técnicos de legado uma única vez e mantêm a unicidade case-insensitive. |
 | `email_para_nome_usuario`, `controle_limite_autenticacao`, `emitir_verificacao_email`, `consumir_verificacao_email`, `estado_verificacao_email`, `email_cadastrado` | `service_role` | Chamadas apenas por Edge Functions assinadas com HMAC pelo backend. |
 
 ## 4. Histórico de migrações (`supabase/migrations/`)
@@ -112,3 +113,5 @@ erDiagram
 - `20261124001200`: backfill e autoprovisionamento de `public.nomes_usuario` para contas criadas direto no Auth.
 - `20261124001300`: RPCs de gestão de equipe (`listar_equipe_restaurante`, `vincular_membro_restaurante`, `remover_membro_restaurante`).
 - `20261124001400`: tabela `public.fornecedores` com RLS e RPCs (`listar_fornecedores_restaurante`, `salvar_fornecedor_restaurante`, `alterar_status_fornecedor`).
+- `20261124001500`: criação autenticada do primeiro restaurante e vínculo inicial do dono.
+- `20261126000100`: RPCs pessoais para consultar e completar o nome de usuário de contas legadas sem abrir leitura direta da tabela.

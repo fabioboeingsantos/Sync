@@ -201,11 +201,13 @@ test('verificação opcional funciona mesmo para conta criada direto em auth.use
   assert.equal(depois.verificado, true);
 });
 
-test('tela de estoque inclui diálogo Minha conta e opção de confirmação de e-mail', async () => {
+test('tela de estoque direciona para a página Minha conta', async () => {
   const html = await readFile(new URL('../piloto/index.html', import.meta.url), 'utf8');
-  assert.match(html, /id="conta-topo"/);
-  assert.match(html, /id="dialogo-conta"/);
-  assert.match(html, /id="solicitar-confirmacao-email"/);
+  const conta = await readFile(new URL('../piloto/conta.html', import.meta.url), 'utf8');
+  assert.ok(html.includes('href="../conta/"'));
+  assert.match(conta, /id="solicitar-confirmacao-email"/);
+  assert.match(conta, /id="form-alterar-senha"/);
+  assert.match(html, /id="dock-nav-root"/);
 });
 
 test('regra global de botões aplica GlassSurface com paleta Aço Inox e componente React disponível', async () => {
@@ -368,8 +370,11 @@ test('sessão persiste automaticamente por 7 dias com renovação deslizante e t
   const estoqueHtml = await readFile(new URL('../piloto/index.html', import.meta.url), 'utf8');
   assert.match(entradaJsx, /PasswordCredential/);
   assert.match(entradaJsx, /if \(temAcesso && !querCadastro\)/);
-  assert.match(entradaJsx, /Sair de todos os dispositivos/);
-  assert.match(estoqueHtml, /id="sair-todos-dispositivos"/);
+  const contaHtml = await readFile(new URL('../piloto/conta.html', import.meta.url), 'utf8');
+  const contaJs = await readFile(new URL('../piloto/conta.js', import.meta.url), 'utf8');
+  assert.match(contaHtml, /id="sair-todos-dispositivos"/);
+  assert.match(contaHtml, /Sair de todos os dispositivos/);
+  assert.match(estoqueHtml, /id="dock-nav-root"/);
 });
 
 test('auth diferencia conta não confirmada e limite de envio de e-mail do Supabase', async (t) => {

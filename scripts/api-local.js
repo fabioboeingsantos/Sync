@@ -20,6 +20,10 @@ export const api = {
     catch (erro) { if (erro.status === 401) return null; throw erro; }
   },
   sair: (escopo = 'local') => solicitar('sair', { escopo }),
+  // O servidor local mantém o nome, a troca de senha e os estados da conta pela mesma interface da versão online.
+  definirNomeUsuario: (nomeUsuario) => solicitar('perfil/nome-usuario', { nomeUsuario }),
+  alterarSenha: ({ senha_atual, senha_nova }) => solicitar('redefinir-senha', { senhaAtual: senha_atual, novaSenha: senha_nova }),
+  solicitarConfirmacaoEmail: () => solicitar('confirmacao-email', {}),
   restaurantes: async () => {
     try {
       return await solicitar('restaurantes');

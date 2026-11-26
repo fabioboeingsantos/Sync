@@ -179,14 +179,65 @@ paths:
         "401":
           description: Token de recuperação inválido
 
+  /api/auth/username:
+    post:
+      summary: Definir o nome de usuário de uma conta legada autenticada
+      description: Só completa perfis sem nome personalizado; valida sintaxe e unicidade no banco via auth.uid().
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome_usuario]
+              properties:
+                nome_usuario: { type: string, pattern: "^[a-z0-9][a-z0-9._-]{2,31}$" }
+      responses:
+        "200":
+          description: Nome de usuário salvo
+        "400":
+          description: Nome inválido
+        "401":
+          description: Sessão necessária
+        "409":
+          description: Nome em uso ou conta já configurada
+
+  /api/auth/change-password:
+    post:
+      summary: Trocar senha após confirmar a senha atual
+      description: Aplica rate limit compartilhado e encerra as sessões após atualizar a senha. A senha atual nunca é devolvida.
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [senha_atual, senha_nova]
+              properties:
+                senha_atual: { type: string, minLength: 1, maxLength: 128 }
+                senha_nova: { type: string, minLength: 6, maxLength: 128 }
+      responses:
+        "200":
+          description: Senha atualizada e todas as sessões encerradas
+        "400":
+          description: Senha nova inválida ou igual à atual
+        "401":
+          description: Senha atual incorreta
+        "429":
+          description: Muitas tentativas
+
   /api/auth/session:
     get:
-      summary: Consultar sessão atual, restaurantes vinculados e estado de confirmação opcional
+      summary: Consultar sessão, nome de usuário, restaurantes e estado de confirmação opcional
       security:
         - sessionCookie: []
       responses:
         "200":
-          description: Estado da sessão (`user: null` quando não autenticado)
+          description: Estado da sessão (`user: null` quando não autenticado); inclui `user.nome_usuario` quando configurado
 
   /api/auth/logout:
     post:

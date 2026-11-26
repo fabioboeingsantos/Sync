@@ -13,7 +13,7 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Abra a [seção de acesso na landing page](http://127.0.0.1:8080/#prototipos) e entre com uma das contas de teste. Depois do login, a página abre o estoque em `/estoque/`. A senha compartilhada para essas contas fictícias é `senha123`. Ao abrir `index.html` diretamente como arquivo, use **Abrir login local** para chegar a essa mesma seção pelo servidor.
+Abra diretamente a [tela de estoque](http://127.0.0.1:8080/estoque/) e use uma das contas de teste. A página inicial apresenta o VisionChef e as demonstrações do produto, sem botões de entrar ou criar conta. Depois do login, a página abre o estoque. A senha compartilhada para essas contas fictícias é `senha123`.
 
 | Usuário | E-mail | O que permite verificar |
 | --- | --- | --- |

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Minha conta | VisionChef</title>
+  <!-- A conta compartilha o mesmo tema e os estilos acessíveis da área de estoque. -->
+  <link rel="stylesheet" href="../css/estoque.css">
+  <link rel="stylesheet" href="../css/botoes.css">
+  <script src="../Insumo%20vencendo%20na%20cozinha/abertura/js/tema.js"></script>
+  <script type="module" src="../conta.js"></script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Ir para o conteúdo</a>
+  <header class="topo">
+    <div class="largura topo-conteudo">
+      <!-- Mantém a navegação de conta integrada visualmente ao cabeçalho do produto. -->
+      <a class="marca marca-link" href="../" aria-label="VisionChef, voltar ao início da Sync">
+        <span class="vc-pictorica-topo" aria-hidden="true"><img src="../Insumo%20vencendo%20na%20cozinha/imagens/visionchef-logo.jpg" width="1356" height="759" alt=""></span>
+        <span>VisionChef <small>· Sync</small></span>
+      </a>
+      <div class="acoes-topo">
+        <a class="link-topo" href="../estoque/">Estoque</a>
+        <button type="button" class="theme-toggle theme-toggle-inline" data-theme-toggle aria-pressed="false" aria-label="Alternar entre tema claro e escuro">
+          <span class="sky-track" aria-hidden="true"><span class="sky-stars"></span><span class="sky-clouds"></span><span class="sky-rays"></span><span class="celestial-thumb"><img class="orb orb-sun" src="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/sol-realista.webp" alt="" width="40" height="40"><img class="orb orb-moon" src="../Insumo%20vencendo%20na%20cozinha/abertura/imagens/lua-realista.webp" alt="" width="40" height="40"></span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <main class="largura pagina-conta" id="conteudo" tabindex="-1">
+    <p class="aviso-local" id="ambiente-local" hidden>Ambiente local com contas e dados fictícios</p>
+    <p id="estado-carregamento-conta" class="mensagem" role="status">Carregando sua conta…</p>
+    <section id="conta-indisponivel" class="painel conta-indisponivel" hidden aria-labelledby="titulo-conta-indisponivel">
+      <span class="conta-simbolo" aria-hidden="true">S</span>
+      <p class="conta-chapeu">Área pessoal</p>
+      <h1 id="titulo-conta-indisponivel">Entre para acessar sua conta</h1>
+      <p>Seus dados de perfil e segurança ficam disponíveis depois que você entrar.</p>
+      <a class="botao botao-primario" href="../estoque/">Entrar na conta</a>
+    </section>
+    <div id="pagina-conta" hidden>
+      <!-- A introdução situa a pessoa e fornece retorno consistente à operação do estoque. -->
+      <section class="conta-cabecalho" aria-labelledby="titulo-minha-conta">
+        <div class="conta-cabecalho-identidade">
+          <span class="conta-simbolo" aria-hidden="true">S</span>
+          <div><p class="conta-chapeu">Configurações pessoais</p><h1 id="titulo-minha-conta">Minha conta</h1><p>Gerencie seus dados de acesso e a segurança da sua conta.</p></div>
+        </div>
+        <a class="botao botao-secundario" href="../estoque/">Voltar ao estoque</a>
+      </section>
+      <p id="feedback-conta" class="mensagem conta-feedback" role="status" aria-live="polite"></p>
+      <div class="conta-grade">
+        <div class="conta-coluna">
+          <section class="painel conta-cartao" aria-labelledby="titulo-perfil-conta">
+            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">01</span><div><p class="conta-chapeu">Perfil</p><h2 id="titulo-perfil-conta">Seus dados</h2></div></div>
+            <dl class="conta-dados">
+              <div><dt>E-mail</dt><dd id="conta-email">—</dd></div>
+              <div><dt>Acesso ao estoque</dt><dd id="conta-acesso">Carregando…</dd></div>
+              <div class="conta-linha-usuario"><dt>Nome de usuário</dt><dd id="conta-usuario">Não definido</dd></div>
+            </dl>
+            <form id="form-nome-usuario" class="formulario conta-formulario" hidden>
+              <label for="novo-nome-usuario">Crie um nome de usuário</label>
+              <input id="novo-nome-usuario" name="nome_usuario" type="text" minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Ex.: fabio.santos" required>
+              <small>Use de 3 a 32 letras, números, ponto, hífen ou sublinhado. Você poderá entrar com esse nome ou com seu e-mail.</small>
+              <button class="botao botao-primario" type="submit">Salvar nome de usuário</button>
+            </form>
+          </section>
+          <section class="painel conta-cartao conta-confirmacao" aria-labelledby="titulo-confirmacao">
+            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">02</span><div><p class="conta-chapeu">E-mail</p><h2 id="titulo-confirmacao">Confirmação do endereço</h2></div></div>
+            <div class="conta-status-linha"><span id="estado-confirmacao" class="conta-status pendente">Pendente</span><p id="texto-confirmacao">Confirme seu e-mail para manter seus dados de contato atualizados.</p></div>
+            <button id="solicitar-confirmacao-email" class="botao botao-primario" type="button" hidden>Enviar link de confirmação</button>
+            <p class="conta-ajuda">O link enviado por e-mail é válido por 24 horas. Confira também Spam, Promoções e Atualizações.</p>
+          </section>
+          <section class="painel conta-cartao conta-sessao" aria-labelledby="titulo-sessao">
+            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">03</span><div><p class="conta-chapeu">Sessão</p><h2 id="titulo-sessao">Acesso à conta</h2></div></div>
+            <p>Encerre sua sessão nos dispositivos em que sua conta está conectada.</p>
+            <button id="sair-todos-dispositivos" class="botao botao-secundario danger" type="button">Sair de todos os dispositivos</button>
+          </section>
+        </div>
+        <div class="conta-coluna">
+          <section class="painel conta-cartao conta-seguranca" aria-labelledby="titulo-seguranca">
+            <div class="conta-cartao-cabecalho"><span class="conta-icone" aria-hidden="true">04</span><div><p class="conta-chapeu">Segurança</p><h2 id="titulo-seguranca">Alterar senha</h2></div></div>
+            <p class="conta-intro-seguranca">Sua senha atual nunca é exibida. Confirme sua identidade e escolha uma senha nova.</p>
+            <form id="form-alterar-senha" class="formulario conta-formulario">
+              <label for="senha-atual">Senha atual<input id="senha-atual" name="senha_atual" type="password" autocomplete="current-password" minlength="6" maxlength="128" required></label>
+              <label for="senha-nova">Nova senha<input id="senha-nova" name="senha_nova" type="password" autocomplete="new-password" minlength="6" maxlength="128" required></label>
+              <label for="confirmar-senha-nova">Confirme a nova senha<input id="confirmar-senha-nova" name="confirmar_senha" type="password" autocomplete="new-password" minlength="6" maxlength="128" required></label>
+              <small>Use de 6 a 128 caracteres. Evite reutilizar senhas de outros serviços.</small>
+              <button class="botao botao-primario" type="submit">Atualizar senha</button>
+            </form>
+            <div class="conta-esqueci-senha"><span>Não lembra sua senha atual?</span><a href="../#recuperar">Esqueci minha senha</a></div>
+          </section>
+          <aside class="conta-nota-seguranca"><span aria-hidden="true">i</span><p><strong>Dica de segurança</strong><br>Use uma senha exclusiva e não compartilhe seu acesso com outras pessoas.</p></aside>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import { api } from './api.js';
 import { interpretarLote } from './interpretar-lote.js';
 import { gerarXmlNfeExemplo, interpretarXmlNfe } from './interpretar-nfe.js';
+import { catalogoProdutos, chaveProdutoEstoque } from './catalogo-estoque.js';
 
 // Controla os estados de acesso, consulta e movimentação da tela de estoque.
 const porId = (id) => document.getElementById(id);
@@ -22,15 +23,13 @@ const sair = porId('sair');
 const linkEquipe = porId('link-equipe');
 const minhaConta = porId('minha-conta');
 const contaTopo = porId('conta-topo');
-const abrirContaSemRestaurante = porId('abrir-conta-sem-restaurante');
-const dialogoConta = porId('dialogo-conta');
-const contaEmail = porId('conta-email');
-const contaAcesso = porId('conta-acesso');
-const contaConfirmacao = porId('conta-confirmacao');
-const feedbackConta = porId('feedback-conta');
-const botaoConfirmarEmail = porId('solicitar-confirmacao-email');
-const sairTodosDispositivos = porId('sair-todos-dispositivos');
-const fecharConta = porId('fechar-conta');
+const notificacoesTopo = porId('notificacoes-topo');
+const sinoNotificacoesRaiz = porId('sino-notificacoes-root');
+const botaoNotificacoesValidade = sinoNotificacoesRaiz;
+const painelNotificacoesValidade = porId('painel-notificacoes-validade');
+
+const listaNotificacoesValidade = porId('lista-notificacoes-validade');
+const mensagemNotificacoesValidade = porId('mensagem-notificacoes-validade');
 const abrirCadastro = porId('abrir-cadastro');
 const abrirVision = porId('abrir-vision');
 const painelCadastro = porId('painel-cadastro');
@@ -48,10 +47,10 @@ const itensFilaNfe = porId('itens-fila-nfe');
 const limparNfe = porId('limpar-nfe');
 const perfilBadge = porId('perfil-badge');
 const navModulos = porId('nav-modulos');
-const abaEstoque = porId('aba-estoque');
-const abaEquipe = porId('aba-equipe');
-const abaFornecedores = porId('aba-fornecedores');
+
 const moduloEstoque = porId('modulo-estoque');
+const moduloInventario = porId('modulo-inventario');
+const moduloRelatorioDesperdicio = porId('modulo-relatorio-desperdicio');
 const moduloEquipe = porId('modulo-equipe');
 const moduloFornecedores = porId('modulo-fornecedores');
 const formEquipePainel = porId('form-equipe-painel');
@@ -88,7 +87,15 @@ const formSaida = porId('form-saida');
 const cancelarSaida = porId('cancelar-saida');
 const erroSaida = porId('erro-saida');
 const painelDescartes = porId('painel-descartes');
-const abrirRelatorioDesperdicio = porId('abrir-relatorio-desperdicio');
+const buscaLotesValidade = porId('busca-lotes-validade');
+const buscaInventario = porId('busca-inventario');
+const categoriaInventario = porId('categoria-inventario');
+const gradeInventario = porId('grade-inventario');
+const listaInventario = porId('lista-inventario');
+const indicadoresInventario = porId('indicadores-inventario');
+const resumoInventario = porId('resumo-inventario');
+const mensagemInventario = porId('mensagem-inventario');
+const visualizacaoInventarioControles = porId('visualizacao-inventario');
 const historicoDescartes = porId('historico-descartes');
 const descricaoLote = porId('descricao-lote');
 const statusAssistente = porId('status-assistente');
@@ -97,6 +104,7 @@ const filtrosEstoque = porId('filtros-estoque');
 const contagemEstoque = porId('contagem-estoque');
 const visualizacaoEstoqueControles = porId('visualizacao-estoque');
 const chaveVisualizacaoEstoque = 'visionchef-estoque-visualizacao';
+const chaveVisualizacaoInventario = 'visionchef-inventario-visualizacao';
 // Recupera a preferência local de leitura sem depender dela para carregar ou alterar os dados.
 let visualizacaoEstoque = 'grade';
 try {
@@ -105,7 +113,13 @@ try {
   visualizacaoEstoque = 'grade';
 }
 let filtroSituacao = 'todos';
-let moduloAtivo = 'estoque';
+let visualizacaoInventario = 'grade';
+try {
+  visualizacaoInventario = localStorage.getItem(chaveVisualizacaoInventario) === 'lista' ? 'lista' : 'grade';
+} catch {
+  visualizacaoInventario = 'grade';
+}
+let moduloAtivo = 'inventario';
 let ehDonoAtual = false;
 let membroEmRemocao = null;
 let lotesCarregados = [];
@@ -145,25 +159,11 @@ function mensagem(erro, reserva) {
   return conhecidas[erro.code] ?? reserva;
 }
 
-// Atualiza o resumo da sessão no cabeçalho e no diálogo Minha conta.
+// Atualiza o resumo de sessão no cabeçalho e preserva o destino da nova página Minha conta.
 function atualizarPainelConta(sessao, restaurantes) {
   const email = sessao?.user?.email ?? '';
   contaTopo.textContent = email;
   contaTopo.hidden = !email;
-  contaEmail.textContent = email || (api.modoLocal ? 'Conta de demonstração local' : 'Não disponível');
-  contaAcesso.textContent = restaurantes?.length
-    ? restaurantes.map((item) => item.nome).join(', ')
-    : 'Sem vínculo ativo (aguardando liberação do dono)';
-  if (api.modoLocal) {
-    contaConfirmacao.textContent = 'Disponível apenas na versão online';
-    botaoConfirmarEmail.hidden = true;
-  } else if (sessao?.email_verificado_app) {
-    contaConfirmacao.textContent = 'Confirmado';
-    botaoConfirmarEmail.hidden = true;
-  } else {
-    contaConfirmacao.textContent = 'Opcional · pendente';
-    botaoConfirmarEmail.hidden = !sessao?.user;
-  }
 }
 
 async function mostrarSessao(focar = false) {
@@ -186,16 +186,22 @@ async function mostrarSessao(focar = false) {
     ehDonoAtual = false;
     porId('lotes').replaceChildren();
     porId('grade-estoque').replaceChildren();
+    gradeInventario?.replaceChildren();
+    listaInventario?.replaceChildren();
+    if (notificacoesTopo) notificacoesTopo.hidden = true;
+    if (painelNotificacoesValidade) painelNotificacoesValidade.hidden = true;
+    if (listaNotificacoesValidade) listaNotificacoesValidade.replaceChildren();
+    definirEstadoNotificacoes(false);
+    notificarPerfil(false);
+    if (navModulos) navModulos.hidden = true;
     notaFiscalAtual = null;
     itemNfeAtivoUid = null;
     notaFiscalDuplicada = false;
     renderizarFilaNfe();
     if (linkEquipe) linkEquipe.hidden = true;
-    if (abaEquipe) abaEquipe.hidden = true;
     if (perfilBadge) perfilBadge.hidden = true;
     if (abrirFornecedor) abrirFornecedor.hidden = true;
     painelDescartes.hidden = true;
-    if (abrirRelatorioDesperdicio) abrirRelatorioDesperdicio.hidden = true;
     historicoDescartes.replaceChildren();
     porId('tabela-estoque').hidden = true;
     if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = true;
@@ -205,8 +211,10 @@ async function mostrarSessao(focar = false) {
   }
 
   porId('restaurante').textContent = restaurante.nome;
-  alternarModulo('estoque', false);
-  if (focar) porId('titulo-estoque').focus();
+  if (notificacoesTopo) notificacoesTopo.hidden = false;
+  if (navModulos) navModulos.hidden = false;
+  alternarModulo('inventario', false);
+  if (focar) porId(moduloAtivo === 'inventario' ? 'titulo-inventario' : 'titulo-estoque').focus();
   await atualizarEstoque();
 }
 
@@ -235,6 +243,72 @@ function dataDoDescarte(saida) {
   const partes = partesDataNoFuso(new Date(saida.registrado_em));
   return `${partes.year}-${partes.month}-${partes.day}`;
 }
+
+// Mantém o sino restrito a lotes com saldo que vencem hoje ou nos próximos três dias.
+function renderizarNotificacoesValidade(lotes) {
+  if (!listaNotificacoesValidade || !botaoNotificacoesValidade) return;
+  const alertas = lotes
+    .filter((lote) => Number(lote.saldo) > 0 && (lote.situacao === 'hoje' || lote.situacao === 'breve'))
+    .sort((a, b) => a.validade_aplicavel.localeCompare(b.validade_aplicavel));
+  listaNotificacoesValidade.replaceChildren(...alertas.map((lote) => {
+    const item = document.createElement('li');
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = `botao botao-secundario notificacao-item notificacao-item-${lote.situacao}`;
+    botao.setAttribute('aria-label', `${lote.insumo}, ${lote.situacao === 'hoje' ? 'vence hoje' : 'vence em breve'}, ${formatarSaldo(lote.saldo, lote.medida)}, validade ${formatarData(lote.validade_aplicavel)}. Abrir controle de validade.`);
+    const nome = document.createElement('strong');
+    nome.textContent = lote.insumo;
+    const estado = document.createElement('span');
+    estado.className = 'notificacao-estado';
+    estado.textContent = lote.situacao === 'hoje' ? 'Vence hoje' : 'Vence em breve';
+    const detalhe = document.createElement('small');
+    detalhe.textContent = `${formatarSaldo(lote.saldo, lote.medida)} · ${formatarData(lote.validade_aplicavel)}${lote.codigo_fabricante ? ` · Lote ${lote.codigo_fabricante}` : ''}`;
+    botao.append(nome, estado, detalhe);
+    botao.addEventListener('click', () => {
+      definirEstadoNotificacoes(false);
+      alternarParaValidade(lote.insumo);
+    });
+    item.append(botao);
+    return item;
+  }));
+  window.dispatchEvent(new CustomEvent('visionchef:contagem-notificacoes', { detail: { quantidade: alertas.length } }));
+  mensagemNotificacoesValidade.textContent = alertas.length
+    ? `${alertas.length} ${alertas.length === 1 ? 'lote vence' : 'lotes vencem'} hoje ou em breve.`
+    : 'Nenhum produto vence hoje ou em breve.';
+}
+
+function definirEstadoNotificacoes(aberto) {
+  if (!painelNotificacoesValidade) return;
+  if (aberto) posicionarPainelNotificacoes();
+  painelNotificacoesValidade.hidden = !aberto;
+  window.dispatchEvent(new CustomEvent('visionchef:estado-notificacoes', { detail: { aberto } }));
+}
+
+// O sino controla a abertura; eventos separados sincronizam Escape e cliques fora do painel.
+window.addEventListener('visionchef:alternar-notificacoes', () => {
+  definirEstadoNotificacoes(painelNotificacoesValidade.hidden);
+});
+
+// Posiciona o painel abaixo do cabeçalho, mesmo quando ele quebra em várias linhas no celular.
+function posicionarPainelNotificacoes() {
+  const base = document.querySelector('.topo')?.getBoundingClientRect().bottom ?? 0;
+  document.documentElement.style.setProperty('--topo-notificacoes-mobile', `${Math.ceil(base + 8)}px`);
+}
+
+window.addEventListener('resize', () => {
+  if (painelNotificacoesValidade && !painelNotificacoesValidade.hidden) posicionarPainelNotificacoes();
+});
+
+document.addEventListener('click', (evento) => {
+  if (!notificacoesTopo || notificacoesTopo.hidden || notificacoesTopo.contains(evento.target)) return;
+  definirEstadoNotificacoes(false);
+});
+
+document.addEventListener('keydown', (evento) => {
+  if (evento.key !== 'Escape' || !painelNotificacoesValidade || painelNotificacoesValidade.hidden) return;
+  definirEstadoNotificacoes(false);
+  sinoNotificacoesRaiz.querySelector('button')?.focus();
+});
 
 function formatarSaldo(saldo, medida) {
   // Formata o saldo recebido como texto e preserva os dígitos decimais.
@@ -418,6 +492,7 @@ function mostrarLote(lote) {
   const linha = document.createElement('tr');
   linha.setAttribute('role', 'row');
   linha.dataset.situacao = lote.situacao;
+  linha.dataset.insumo = chaveProdutoEstoque(lote.insumo);
   const insumo = adicionarCelula(linha, lote.insumo);
   if (lote.codigo_fabricante) {
     const codigo = document.createElement('small');
@@ -466,6 +541,7 @@ function mostrarCartaoLote(lote) {
   const cartao = document.createElement('article');
   cartao.className = 'cartao-lote';
   cartao.dataset.situacao = lote.situacao;
+  cartao.dataset.insumo = chaveProdutoEstoque(lote.insumo);
   cartao.setAttribute('role', 'listitem');
 
   const cabecalho = document.createElement('div');
@@ -557,14 +633,242 @@ visualizacaoEstoqueControles?.addEventListener('click', (evento) => {
 });
 aplicarVisualizacaoEstoque(false);
 
+// Agrupa os lotes existentes para que saldo geral e controle de validade usem os mesmos registros.
+function agruparProdutos(lotes) {
+  const grupos = new Map();
+  for (const produto of catalogoProdutos) {
+    grupos.set(chaveProdutoEstoque(produto.nome), { ...produto, saldo: 0, saldoDisponivel: 0, saldoVencido: 0, lotes: [], validadeMaisProxima: null });
+  }
+  for (const lote of lotes) {
+    const chave = chaveProdutoEstoque(lote.insumo);
+    if (!grupos.has(chave)) grupos.set(chave, {
+      nome: lote.insumo, categoria: 'Outros', medida: lote.medida, minimo: 0, imagem: '',
+      saldo: 0, saldoDisponivel: 0, saldoVencido: 0, lotes: [], validadeMaisProxima: null,
+    });
+    const grupo = grupos.get(chave);
+    if (grupo.medida !== lote.medida) {
+      // Se houver unidades diferentes com o mesmo nome, mantém grupos separados sem misturar medidas.
+      const chaveMedida = `${chave}:${lote.medida}`;
+      if (!grupos.has(chaveMedida)) grupos.set(chaveMedida, { ...grupo, chaveVisual: chaveMedida, medida: lote.medida, saldo: 0, saldoDisponivel: 0, saldoVencido: 0, lotes: [], validadeMaisProxima: null });
+      const variante = grupos.get(chaveMedida);
+      variante.saldo += Number(lote.saldo) || 0;
+      if (lote.situacao === 'vencido') variante.saldoVencido += Number(lote.saldo) || 0;
+      else variante.saldoDisponivel += Number(lote.saldo) || 0;
+      variante.lotes.push(lote);
+      if (!variante.validadeMaisProxima || lote.validade_aplicavel < variante.validadeMaisProxima) variante.validadeMaisProxima = lote.validade_aplicavel;
+      continue;
+    }
+    grupo.saldo += Number(lote.saldo) || 0;
+    if (lote.situacao === 'vencido') grupo.saldoVencido += Number(lote.saldo) || 0;
+    else grupo.saldoDisponivel += Number(lote.saldo) || 0;
+    grupo.lotes.push(lote);
+    if (!grupo.validadeMaisProxima || lote.validade_aplicavel < grupo.validadeMaisProxima) grupo.validadeMaisProxima = lote.validade_aplicavel;
+  }
+  return [...grupos.values()];
+}
+
+function alternarParaValidade(produto = '') {
+  alternarModulo('estoque', true);
+  if (buscaLotesValidade) {
+    buscaLotesValidade.value = produto;
+    aplicarFiltroEstoque();
+  }
+  porId('titulo-estoque')?.focus();
+}
+
+function botaoVerLotes(produto) {
+  const botao = document.createElement('button');
+  botao.type = 'button';
+  botao.className = 'botao botao-secundario';
+  botao.textContent = 'Controlar validade';
+  botao.addEventListener('click', () => alternarParaValidade(produto));
+  return botao;
+}
+
+function renderizarIndicadoresInventario(produtos) {
+  if (!indicadoresInventario) return;
+  const lotesAtivos = produtos.reduce((soma, produto) => soma + produto.lotes.filter((lote) => Number(lote.saldo) > 0).length, 0);
+  const abaixoMinimo = produtos.filter((produto) => produto.minimo && produto.saldoDisponivel > 0 && produto.saldoDisponivel <= produto.minimo).length;
+  const semSaldo = produtos.filter((produto) => produto.saldoDisponivel <= 0).length;
+  indicadoresInventario.replaceChildren();
+  for (const [numero, rotulo, detalhe] of [
+    [String(produtos.length), 'Produtos', 'no catálogo'],
+    [String(lotesAtivos), 'Lotes com saldo', 'em controle de validade'],
+    [String(abaixoMinimo), 'Estoque baixo', 'no limite mínimo'],
+    [String(semSaldo), 'Sem saldo', 'para reposição'],
+  ]) {
+    const bloco = document.createElement('div');
+    bloco.className = 'indicador-inventario';
+    const forte = document.createElement('strong');
+    forte.textContent = numero;
+    const nome = document.createElement('span');
+    nome.textContent = rotulo;
+    const ajuda = document.createElement('small');
+    ajuda.textContent = detalhe;
+    bloco.append(forte, nome, ajuda);
+    indicadoresInventario.append(bloco);
+  }
+}
+
+function criarFotoProduto(produto) {
+  const moldura = document.createElement('div');
+  moldura.className = 'produto-foto';
+  if (produto.imagem) {
+    const foto = document.createElement('img');
+    foto.src = `../imagens/produtos/${encodeURIComponent(produto.imagem)}`;
+    foto.alt = `Fotografia de ${produto.nome}`;
+    foto.loading = 'lazy';
+    foto.width = 640;
+    foto.height = 640;
+    moldura.append(foto);
+  } else {
+    moldura.classList.add('produto-foto-sem-imagem');
+  }
+  const rotulo = document.createElement('span');
+  rotulo.className = 'produto-foto-legenda';
+  rotulo.textContent = produto.nome;
+  moldura.append(rotulo);
+  return moldura;
+}
+
+function renderizarCartaoProduto(produto) {
+  const cartao = document.createElement('article');
+  cartao.className = 'cartao-produto';
+  cartao.setAttribute('role', 'listitem');
+  cartao.append(criarFotoProduto(produto));
+  const corpo = document.createElement('div');
+  corpo.className = 'cartao-produto-corpo';
+  const titulo = document.createElement('h3');
+  titulo.textContent = produto.nome;
+  const categoria = document.createElement('p');
+  categoria.className = 'produto-categoria';
+  categoria.textContent = produto.categoria;
+  const saldo = document.createElement('p');
+  saldo.className = 'produto-saldo';
+  saldo.textContent = `${formatarSaldo(produto.saldoDisponivel, produto.medida)} disponíveis`;
+  const detalhes = document.createElement('p');
+  detalhes.className = 'produto-detalhe';
+  detalhes.textContent = `${produto.lotes.length} ${produto.lotes.length === 1 ? 'lote' : 'lotes'} · ${produto.validadeMaisProxima ? `validade mais próxima: ${formatarData(produto.validadeMaisProxima)}` : 'sem entrada registrada'}`;
+  const local = document.createElement('p');
+  local.className = 'produto-detalhe';
+  local.textContent = produto.local || 'Local não informado';
+  const vencido = document.createElement('p');
+  vencido.className = 'produto-detalhe';
+  vencido.textContent = produto.saldoVencido > 0 ? `Bloqueado por validade: ${formatarSaldo(produto.saldoVencido, produto.medida)}` : 'Sem saldo vencido';
+  corpo.append(titulo, categoria, saldo, detalhes, local, vencido, botaoVerLotes(produto.nome));
+  cartao.append(corpo);
+  return cartao;
+}
+
+function renderizarLinhaProduto(produto) {
+  const linha = document.createElement('article');
+  linha.className = 'linha-produto';
+  linha.setAttribute('role', 'listitem');
+  linha.append(criarFotoProduto(produto));
+  const dados = document.createElement('div');
+  dados.className = 'linha-produto-identidade';
+  const titulo = document.createElement('h3');
+  titulo.textContent = produto.nome;
+  const categoria = document.createElement('p');
+  categoria.textContent = produto.categoria;
+  dados.append(titulo, categoria);
+  const saldo = document.createElement('strong');
+  saldo.className = 'linha-produto-saldo';
+  saldo.textContent = `${formatarSaldo(produto.saldoDisponivel, produto.medida)} disponíveis`;
+  const validade = document.createElement('span');
+  validade.textContent = produto.validadeMaisProxima ? `Validade mais próxima: ${formatarData(produto.validadeMaisProxima)}` : 'Sem entrada registrada';
+  const vencido = document.createElement('span');
+  vencido.textContent = produto.saldoVencido > 0 ? `Bloqueado por validade: ${formatarSaldo(produto.saldoVencido, produto.medida)}` : '';
+  linha.append(dados, saldo, validade, vencido, botaoVerLotes(produto.nome));
+  return linha;
+}
+
+function aplicarFiltrosInventario() {
+  if (!gradeInventario || !listaInventario) return;
+  const termo = chaveProdutoEstoque(buscaInventario?.value ?? '');
+  const categoria = categoriaInventario?.value ?? 'todas';
+  for (const contêiner of [gradeInventario, listaInventario]) {
+    for (const item of contêiner.querySelectorAll('[role="listitem"]')) {
+      const nome = chaveProdutoEstoque(item.dataset.nome ?? '');
+      const categoriaItem = item.dataset.categoria ?? '';
+      item.hidden = Boolean((termo && !nome.includes(termo)) || (categoria !== 'todas' && categoriaItem !== categoria));
+    }
+  }
+  const total = [...(visualizacaoInventario === 'grade' ? gradeInventario : listaInventario).querySelectorAll('[role="listitem"]:not([hidden])')].length;
+  if (mensagemInventario) mensagemInventario.textContent = total ? '' : 'Nenhum produto corresponde aos filtros selecionados.';
+}
+
+function renderizarInventario(lotes) {
+  const produtos = agruparProdutos(lotes);
+  const termoCategoria = categoriaInventario?.value ?? 'todas';
+  if (categoriaInventario && categoriaInventario.options.length <= 1) {
+    for (const categoria of [...new Set(catalogoProdutos.map((produto) => produto.categoria))]) {
+      const opcao = document.createElement('option');
+      opcao.value = categoria;
+      opcao.textContent = categoria;
+      categoriaInventario.append(opcao);
+    }
+  }
+  if (categoriaInventario && termoCategoria !== 'todas') categoriaInventario.value = termoCategoria;
+  for (const produto of produtos) {
+    const chave = produto.chaveVisual ?? chaveProdutoEstoque(produto.nome);
+    const grade = renderizarCartaoProduto(produto);
+    const lista = renderizarLinhaProduto(produto);
+    grade.dataset.nome = chave;
+    lista.dataset.nome = chave;
+    grade.dataset.categoria = produto.categoria;
+    lista.dataset.categoria = produto.categoria;
+    gradeInventario.append(grade);
+    listaInventario.append(lista);
+  }
+  gradeInventario.replaceChildren(...[...gradeInventario.children]);
+  listaInventario.replaceChildren(...[...listaInventario.children]);
+  const totalItens = produtos.filter((produto) => produto.lotes.length > 0).length;
+  if (resumoInventario) resumoInventario.textContent = `${totalItens} de ${produtos.length} produtos com saldo ou lote registrado.`;
+  renderizarIndicadoresInventario(produtos);
+  aplicarFiltrosInventario();
+}
+
+function aplicarVisualizacaoInventario(persistir = true) {
+  const emGrade = visualizacaoInventario === 'grade';
+  if (gradeInventario) gradeInventario.hidden = !emGrade;
+  if (listaInventario) listaInventario.hidden = emGrade;
+  for (const botao of visualizacaoInventarioControles?.querySelectorAll('[data-visualizacao-inventario]') ?? []) {
+    botao.setAttribute('aria-pressed', String(botao.dataset.visualizacaoInventario === visualizacaoInventario));
+  }
+  if (persistir) {
+    try { localStorage.setItem(chaveVisualizacaoInventario, visualizacaoInventario); } catch { /* A opção continua válida nesta sessão. */ }
+  }
+  aplicarFiltrosInventario();
+}
+
+visualizacaoInventarioControles?.addEventListener('click', (evento) => {
+  const botao = evento.target.closest('button[data-visualizacao-inventario]');
+  if (!botao) return;
+  visualizacaoInventario = botao.dataset.visualizacaoInventario === 'lista' ? 'lista' : 'grade';
+  aplicarVisualizacaoInventario();
+});
+buscaInventario?.addEventListener('input', aplicarFiltrosInventario);
+categoriaInventario?.addEventListener('change', aplicarFiltrosInventario);
+aplicarVisualizacaoInventario(false);
+
+porId('adicionar-estoque')?.addEventListener('click', () => {
+  alternarParaValidade();
+  definirCadastro(true, 'manual');
+  campos.insumo.focus();
+});
+
 function aplicarFiltroEstoque() {
   const seletorAtivo = visualizacaoEstoque === 'grade'
     ? '#grade-estoque [data-situacao]'
     : '#lotes tr[data-situacao]';
   const linhas = [...porId('tabela-estoque').querySelectorAll(seletorAtivo)];
+  const termo = chaveProdutoEstoque(buscaLotesValidade?.value ?? '');
   let visiveis = 0;
   for (const linha of linhas) {
-    const mostrar = filtroSituacao === 'todos' || linha.dataset.situacao === filtroSituacao;
+    const situacaoOk = filtroSituacao === 'todos' || linha.dataset.situacao === filtroSituacao;
+    const insumoOk = !termo || linha.dataset.insumo?.includes(termo);
+    const mostrar = situacaoOk && insumoOk;
     linha.hidden = !mostrar;
     if (mostrar) visiveis += 1;
   }
@@ -578,9 +882,11 @@ function aplicarFiltroEstoque() {
   }
   if (linhas.length > 0) {
     porId('tabela-estoque').hidden = visiveis === 0;
-    mensagemLista.textContent = visiveis === 0 ? 'Nenhum lote nesta categoria.' : '';
+    mensagemLista.textContent = visiveis === 0 ? 'Nenhum lote corresponde aos filtros selecionados.' : '';
   }
 }
+
+buscaLotesValidade?.addEventListener('input', aplicarFiltroEstoque);
 
 filtrosEstoque?.addEventListener('click', (evento) => {
   const selecionado = evento.target.closest('button[data-filtro-estoque]');
@@ -601,6 +907,8 @@ async function atualizarEstoque() {
     const lotes = await api.estoque(restaurante.id);
     if (consulta !== versaoConsulta) return;
     lotesCarregados = lotes;
+    renderizarNotificacoesValidade(lotes);
+    renderizarInventario(lotes);
     porId('lotes').replaceChildren(...lotes.map(mostrarLote));
     porId('grade-estoque').replaceChildren(...lotes.map(mostrarCartaoLote));
     aplicarVisualizacaoEstoque(false);
@@ -612,6 +920,7 @@ async function atualizarEstoque() {
     return lotes;
   } catch (erro) {
     if (consulta !== versaoConsulta) return;
+    renderizarNotificacoesValidade([]);
     porId('lotes').replaceChildren();
     porId('grade-estoque').replaceChildren();
     porId('tabela-estoque').hidden = true;
@@ -637,10 +946,9 @@ async function atualizarDescartes(id, consulta) {
     // O relatório, assim como equipe e fornecedores, só é exibido à conta dona do restaurante.
     ehDonoAtual = descartes !== null;
     if (linkEquipe) linkEquipe.hidden = !ehDonoAtual;
-    if (abaEquipe) abaEquipe.hidden = !ehDonoAtual;
     if (abrirFornecedor) abrirFornecedor.hidden = !ehDonoAtual;
     if (colAcoesFornecedores) colAcoesFornecedores.hidden = !ehDonoAtual;
-    if (abrirRelatorioDesperdicio) abrirRelatorioDesperdicio.hidden = !ehDonoAtual;
+    notificarPerfil(ehDonoAtual);
     if (perfilBadge) {
       perfilBadge.textContent = ehDonoAtual ? 'Perfil: Dono' : 'Perfil: Funcionário';
       perfilBadge.hidden = false;
@@ -651,7 +959,7 @@ async function atualizarDescartes(id, consulta) {
         : 'Consulta dos fornecedores ativos cadastrados pelo dono do restaurante.';
     }
     painelDescartes.hidden = !ehDonoAtual;
-    if (!ehDonoAtual && moduloAtivo === 'equipe') alternarModulo('estoque', false);
+    if (!ehDonoAtual && (moduloAtivo === 'equipe' || moduloAtivo === 'desperdicio')) alternarModulo('inventario', false);
     if (!ehDonoAtual) return;
 
     const [ano, mes] = periodo.split('-').map(Number);
@@ -920,25 +1228,35 @@ function definirCadastro(aberto, modo = 'manual') {
   else (modo === 'vision' && abrirVision ? abrirVision : abrirCadastro).focus();
 }
 
-// Alterna entre os módulos administrativos dentro da conta (Estoque, Equipe e Fornecedores).
+// O perfil é repassado ao menu visual, mas a validação de acesso continua no módulo.
+function notificarPerfil(ehDono) {
+  window.dispatchEvent(new CustomEvent('visionchef:perfil', { detail: { ehDono } }));
+}
+
+// Alterna entre o estoque agregado, o controle de validade, a equipe e os fornecedores.
 function alternarModulo(destino, carregar = true) {
-  if (destino === 'equipe' && !ehDonoAtual) destino = 'estoque';
+  if (destino === 'equipe' && !ehDonoAtual) destino = 'inventario';
+  if (destino === 'desperdicio' && !ehDonoAtual) destino = 'inventario';
   moduloAtivo = destino;
   if (moduloEstoque) moduloEstoque.hidden = destino !== 'estoque';
+  if (moduloInventario) moduloInventario.hidden = destino !== 'inventario';
+  if (moduloRelatorioDesperdicio) moduloRelatorioDesperdicio.hidden = destino !== 'desperdicio';
   if (moduloEquipe) moduloEquipe.hidden = destino !== 'equipe';
   if (moduloFornecedores) moduloFornecedores.hidden = destino !== 'fornecedores';
-  for (const botao of navModulos?.querySelectorAll('[data-modulo]') ?? []) {
-    botao.setAttribute('aria-pressed', String(botao.dataset.modulo === destino));
-  }
+  window.dispatchEvent(new CustomEvent('visionchef:modulo', { detail: { modulo: destino } }));
   if (!carregar || !restaurante) return;
   if (destino === 'equipe') void carregarEquipePainel();
   if (destino === 'fornecedores') void carregarFornecedoresPainel();
 }
 
-navModulos?.addEventListener('click', (evento) => {
-  const botao = evento.target.closest('button[data-modulo]');
-  if (!botao) return;
-  alternarModulo(botao.dataset.modulo, true);
+window.addEventListener('visionchef:navegar-modulo', (evento) => {
+  alternarModulo(evento.detail?.modulo, true);
+});
+
+window.addEventListener('visionchef:adicionar-entrada', () => {
+  alternarModulo('estoque', false);
+  definirCadastro(true, 'manual');
+  campos.insumo.focus();
 });
 
 // O botão Equipe no cabeçalho também abre diretamente a aba Equipe dentro da conta.
@@ -1248,59 +1566,11 @@ formEntrada.addEventListener('submit', async (evento) => {
   }
 });
 
-// Abre o diálogo Minha conta com dados atualizados da sessão e opção de confirmação de e-mail.
-async function abrirMinhaConta() {
-  feedbackConta.textContent = '';
-  feedbackConta.classList.remove('erro');
-  if (api.sessao) {
-    try {
-      const atualizada = await api.sessao();
-      if (atualizada?.user) {
-        sessaoAtual = atualizada;
-        atualizarPainelConta(atualizada, atualizada.restaurantes);
-      }
-    } catch {
-      // Mantém os últimos dados da sessão já carregados se a atualização falhar.
-    }
-  }
-  if (!dialogoConta.open) dialogoConta.showModal();
-}
-
-minhaConta.addEventListener('click', abrirMinhaConta);
-abrirContaSemRestaurante?.addEventListener('click', abrirMinhaConta);
-fecharConta.addEventListener('click', () => dialogoConta.close());
-dialogoConta.addEventListener('click', (evento) => {
-  if (evento.target === dialogoConta) dialogoConta.close();
-});
-
-botaoConfirmarEmail.addEventListener('click', async () => {
-  if (botaoConfirmarEmail.disabled || !api.solicitarConfirmacaoEmail) return;
-  ocupado(botaoConfirmarEmail, true);
-  feedbackConta.textContent = '';
-  feedbackConta.classList.remove('erro');
-  try {
-    const resultado = await api.solicitarConfirmacaoEmail();
-    feedbackConta.textContent = resultado?.mensagem ?? 'E-mail enviado. Ele costuma chegar em alguns minutos. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações. O link vale por 24 horas.';
-    if (resultado?.verificado && api.sessao) {
-      sessaoAtual = await api.sessao();
-      atualizarPainelConta(sessaoAtual, sessaoAtual?.restaurantes);
-    }
-  } catch (erro) {
-    feedbackConta.classList.add('erro');
-    feedbackConta.textContent = erro.status === 429
-      ? 'Muitos pedidos de confirmação. Aguarde e tente novamente.'
-      : 'Não foi possível enviar a confirmação agora. Tente novamente mais tarde.';
-  } finally {
-    ocupado(botaoConfirmarEmail, false);
-  }
-});
-
 async function encerrarSessao(botaoAcionado, escopo = 'local') {
   if (botaoAcionado.disabled) return;
   ocupado(botaoAcionado, true);
   try {
     await api.sair(escopo);
-    if (dialogoConta.open) dialogoConta.close();
     formLote.reset();
     limparErros();
     envioPendente = null;
@@ -1335,7 +1605,6 @@ async function encerrarSessao(botaoAcionado, escopo = 'local') {
 }
 
 sair.addEventListener('click', () => encerrarSessao(sair, 'local'));
-sairTodosDispositivos?.addEventListener('click', () => encerrarSessao(sairTodosDispositivos, 'global'));
 
 abrirCadastro.addEventListener('click', () => {
   feedback.textContent = '';

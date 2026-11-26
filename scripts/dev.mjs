@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { randomBytes } from 'node:crypto';
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { arquivosPublicos, montarPiloto, raiz } from './build.mjs';
@@ -16,6 +16,7 @@ const tipos = {
   // MIME correto permite que o navegador carregue o motor WebAssembly e o modelo compactado locais.
   '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.mp4': 'video/mp4', '.wasm': 'application/wasm', '.gz': 'application/gzip',
 };
+const imagensProdutos = await readdir(resolve(raiz, 'piloto/imagens/produtos'));
 const arquivos = new Map([
   ...arquivosPublicos.map((arquivo) => [encodeURI(`/${arquivo}`), arquivo]),
   ['/index.html', 'index.html'],
@@ -24,13 +25,21 @@ const arquivos = new Map([
   ['/estoque/index.html', 'estoque/index.html'],
   ['/equipe/', 'equipe/index.html'],
   ['/equipe/index.html', 'equipe/index.html'],
+  // A página pessoal tem URL direta no teste local, sem usar o diálogo antigo.
+  ['/conta/', 'conta/index.html'],
+  ['/conta/index.html', 'conta/index.html'],
   ['/estoque.js', 'estoque.js'],
+  ['/catalogo-estoque.js', 'catalogo-estoque.js'],
   ['/equipe.js', 'equipe.js'],
+  ['/conta.js', 'conta.js'],
   ['/interpretar-lote.js', 'interpretar-lote.js'],
   ['/interpretar-nfe.js', 'interpretar-nfe.js'],
   ['/entrada.js', 'entrada.js'],
+  ['/menu-estoque.js', 'menu-estoque.js'],
+  ['/css/menu-estoque.css', 'css/menu-estoque.css'],
   ['/api.js', 'api.js'],
   ['/css/estoque.css', 'css/estoque.css'],
+  ...imagensProdutos.map((nome) => [`/imagens/produtos/${encodeURIComponent(nome)}`, `imagens/produtos/${nome}`]),
   // Arquivos locais do OCR abertos apenas quando a pessoa seleciona uma foto de embalagem.
   ['/ocr/tesseract.esm.min.js', 'ocr/tesseract.esm.min.js'],
   ['/ocr/worker.min.js', 'ocr/worker.min.js'],
@@ -81,7 +90,7 @@ export function criarServidorLocal(banco, pastaPublica) {
     const arquivo = arquivos.get(url.pathname);
     try {
       // O endereço da pasta mantém os links relativos das telas de estoque e equipe consistentes.
-      if (req.method === 'GET' && (url.pathname === '/estoque' || url.pathname === '/equipe')) {
+      if (req.method === 'GET' && ['/estoque', '/equipe', '/conta'].includes(url.pathname)) {
         res.writeHead(308, { Location: `${url.pathname}/${url.search}` });
         res.end();
         return;
@@ -168,9 +177,46 @@ export function criarServidorLocal(banco, pastaPublica) {
         return;
       }
 
+      if (req.method === 'POST' && url.pathname === '/demo/confirmacao-email') {
+        // O ambiente fictício não envia e-mail; informa claramente que a confirmação real é feita online.
+        json(res, 200, { enviado: false, local: true, mensagem: 'A confirmação de e-mail fica disponível na versão online. Este ambiente usa contas fictícias.' });
+        return;
+      }
+
+      if (req.method === 'POST' && url.pathname === '/demo/perfil/nome-usuario') {
+        const { nomeUsuario } = (await lerJson(req)) ?? {};
+        const nome = typeof nomeUsuario === 'string' ? nomeUsuario.trim().toLowerCase() : '';
+        if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome)) {
+          json(res, 400, { erro: 'Use de 3 a 32 letras, números, ponto, hífen ou sublinhado.' });
+          return;
+        }
+        try {
+          const resultado = await banco.transaction(async (tx) => {
+            const { rows: [atual] } = await tx.query('select nome_usuario from public.nomes_usuario where usuario_id = $1 for update', [conta.id]);
+            const automatico = `usuario.${conta.id.replaceAll('-', '').slice(0, 12)}`;
+            if (atual && atual.nome_usuario !== automatico) throw Object.assign(new Error('Sua conta já tem um nome de usuário.'), { status: 409 });
+            const { rows: [perfil] } = await tx.query(`
+              insert into public.nomes_usuario (usuario_id, nome_usuario) values ($1, $2)
+              on conflict (usuario_id) do update set nome_usuario = excluded.nome_usuario
+              returning nome_usuario
+            `, [conta.id, nome]);
+            return perfil.nome_usuario;
+          });
+          json(res, 200, { nome_usuario: resultado });
+        } catch (erroPerfil) {
+          const status = erroPerfil.status ?? (erroPerfil.code === '23505' ? 409 : 400);
+          json(res, status, { erro: status === 409 ? 'Esse nome de usuário já está sendo usado.' : 'Não foi possível salvar o nome de usuário.' });
+        }
+        return;
+      }
+
       if (req.method === 'GET' && url.pathname === '/demo/sessao') {
         // Devolve só os dados da conta atual e os restaurantes permitidos pela RLS.
-        const { rows: [user] } = await banco.query('select id, email from auth.users where id = $1', [conta.id]);
+        const { rows: [user] } = await banco.query(`
+          select u.id, u.email, n.nome_usuario
+          from auth.users as u left join public.nomes_usuario as n on n.usuario_id = u.id
+          where u.id = $1
+        `, [conta.id]);
         const restaurantes = await comoUsuario(banco, conta.id, listarRestaurantes);
         json(res, 200, { user, restaurantes });
       } else if (req.method === 'POST' && url.pathname === '/demo/restaurantes') {

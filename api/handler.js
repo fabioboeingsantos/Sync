@@ -541,7 +541,62 @@ export async function tratarApi(requisicao) {
       } catch (erro) {
         console.error('Falha ao consultar estado de confirmação de e-mail:', { status: erro?.status ?? 503 });
       }
-      return resposta({ user: usuario.dados, restaurantes: restaurantes.dados, email_verificado_app: Boolean(confirmacao?.verificado), email_verificado_em: confirmacao?.verificado_em ?? null }, 200, cookieAtualizado);
+      // A função lê somente o perfil da identidade autenticada e não expõe a tabela de usuários ao navegador.
+      let nomeUsuario = null;
+      const perfil = await supabase(cfg, '/rest/v1/rpc/nome_usuario_proprio', { metodo: 'POST', corpo: {}, token });
+      if (perfil.ok && typeof perfil.dados === 'string') nomeUsuario = perfil.dados;
+      return resposta({ user: { ...usuario.dados, nome_usuario: nomeUsuario }, restaurantes: restaurantes.dados, email_verificado_app: Boolean(confirmacao?.verificado), email_verificado_em: confirmacao?.verificado_em ?? null }, 200, cookieAtualizado);
+    }
+
+    if (caminho === 'auth/username' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 2048);
+      const nome = typeof dados.nome_usuario === 'string' ? dados.nome_usuario.trim().toLowerCase() : '';
+      if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome)) {
+        return resposta({ erro: 'Use de 3 a 32 letras, números, ponto, hífen ou sublinhado.' }, 400, cookieAtualizado);
+      }
+      const perfil = await supabase(cfg, '/rest/v1/rpc/definir_nome_usuario_proprio', {
+        metodo: 'POST', corpo: { p_nome_usuario: nome }, token,
+      });
+      if (!perfil.ok) {
+        const codigo = perfil.dados?.code;
+        const status = codigo === '23505' ? 409 : codigo === 'PT409' ? 409 : codigo === '22023' ? 400 : perfil.status >= 500 ? 503 : perfil.status;
+        const erro = codigo === '23505' ? 'Esse nome de usuário já está sendo usado.'
+          : codigo === 'PT409' ? 'Sua conta já tem um nome de usuário.'
+            : codigo === '22023' ? (perfil.dados?.message ?? 'Confira o nome de usuário.')
+              : 'Não foi possível salvar o nome de usuário agora.';
+        return resposta({ erro }, status, cookieAtualizado);
+      }
+      return resposta({ nome_usuario: perfil.dados }, 200, cookieAtualizado);
+    }
+
+    if (caminho === 'auth/change-password' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 8192);
+      const senhaAtual = typeof dados.senha_atual === 'string' ? dados.senha_atual : '';
+      const senhaNova = dados.senha_nova;
+      if (!senhaAtual || senhaAtual.length > 128) return resposta({ erro: 'Informe sua senha atual.' }, 400, cookieAtualizado);
+      if (!senhaNovaValida(senhaNova)) return resposta({ erro: mensagemSenhaNova }, 400, cookieAtualizado);
+      if (senhaAtual === senhaNova) return resposta({ erro: 'Escolha uma senha diferente da atual.' }, 400, cookieAtualizado);
+
+      // Confirma a senha atual via Auth; o navegador nunca recebe nem pode recuperar a senha armazenada.
+      const identidade = await supabase(cfg, '/auth/v1/user', { token });
+      if (!identidade.ok || !identidade.dados?.email) return resposta({ erro: 'Entre novamente para continuar.' }, 401, cookieAtualizado);
+      const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
+      const chave = chaveLimite(ip, 'login', estado.sessao.sub);
+      const limite = await controlarLimite(cfg, 'login', chave);
+      if (!limite.permitido) return resposta({ erro: 'Muitas tentativas. Aguarde antes de confirmar sua senha atual.' }, 429, { ...cookieAtualizado, 'Retry-After': String(limite.retry_after ?? cfg.bloqueio) });
+      const validacao = await supabase(cfg, '/auth/v1/token?grant_type=password', {
+        metodo: 'POST', corpo: { email: identidade.dados.email, password: senhaAtual },
+      });
+      if (!validacao.ok || !validacao.dados?.access_token) {
+        return resposta({ erro: 'A senha atual não confere.' }, 401, cookieAtualizado);
+      }
+      await controlarLimite(cfg, 'login', chave, 'reset').catch(() => null);
+      const atualizada = await supabase(cfg, '/auth/v1/user', {
+        metodo: 'PUT', token: validacao.dados.access_token, corpo: { password: senhaNova },
+      });
+      if (!atualizada.ok) return resposta({ erro: atualizada.status === 429 ? 'Muitas tentativas. Aguarde e tente novamente.' : mensagemSenhaNova }, atualizada.status === 429 ? 429 : 400, cookieAtualizado);
+      await supabase(cfg, '/auth/v1/logout?scope=global', { metodo: 'POST', token: validacao.dados.access_token }).catch(() => null);
+      return resposta({ atualizada: true, mensagem: 'Senha atualizada. Entre novamente com sua nova senha.' }, 200, { 'Set-Cookie': cookieRemovido(cfg, requisicao) });
     }
 
     if (caminho === 'auth/request-email-verification' && requisicao.method === 'POST') {

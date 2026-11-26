@@ -73,7 +73,7 @@ async function oferecerSalvarSenhaNavegador(identificador, senha) {
 }
 
 // Este módulo conecta a landing da Sync aos fluxos de sessão, cadastro e recuperação do VisionChef.
-function AcessoVisionChef({ destino }) {
+function AcessoVisionChef({ destino, somenteFluxosDiretos = false }) {
   const hashBruto = window.location.hash;
   const hash = new URLSearchParams(hashBruto.slice(1));
   const tokenConfirmacao = hash.get('confirmar-email') ?? '';
@@ -108,8 +108,13 @@ function AcessoVisionChef({ destino }) {
       const hashAtual = window.location.hash;
       const abrirConta = hashAtual === '#minha-conta';
       const abrirConfiguracao = !restaurantes?.length && !tokenConfirmacao && hash.get('type') !== 'recovery';
-      if (sessao?.user && (abrirConta || abrirConfiguracao)) {
-        definirModo(abrirConta ? 'conta' : 'restaurante');
+      if (sessao?.user && abrirConta) {
+        // Mantém atalhos antigos compatíveis, mas Minha conta agora sempre é uma página independente.
+        window.location.assign('/conta/');
+        return;
+      }
+      if (sessao?.user && abrirConfiguracao) {
+        definirModo('restaurante');
         definirDialogoAberto(true);
       } else if (restaurantes?.length && hashAtual === '#configurar-restaurante') {
         window.location.assign(destino);
@@ -153,7 +158,7 @@ function AcessoVisionChef({ destino }) {
       const atual = window.location.hash;
       if (atual === '#cadastro') { definirMensagem(''); definirModo('cadastro'); definirDialogoAberto(true); }
       else if (atual === '#recuperar') { definirMensagem(''); definirModo('recuperar'); definirDialogoAberto(true); }
-      else if (atual === '#minha-conta' && conta) { definirMensagem(''); definirModo('conta'); definirDialogoAberto(true); }
+      else if (atual === '#minha-conta' && conta) window.location.assign('/conta/');
       else if (atual === '#configurar-restaurante') {
         if (temAcesso) { window.location.assign(destino); return; }
         definirMensagem(''); definirModo(conta ? 'restaurante' : 'entrar'); definirDialogoAberto(true);
@@ -305,24 +310,6 @@ function AcessoVisionChef({ destino }) {
     }
   }
 
-  // Solicita a confirmação opcional somente dentro da sessão autenticada da conta.
-  async function solicitarConfirmacaoEmail() {
-    if (envioEmCurso.current || !api.solicitarConfirmacaoEmail) return;
-    envioEmCurso.current = true;
-    definirEnvio(true);
-    definirMensagem('');
-    try {
-      const resultado = await api.solicitarConfirmacaoEmail();
-      definirMensagem(resultado?.mensagem || 'E-mail enviado. Ele costuma chegar em alguns minutos. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações. O link vale por 24 horas.');
-      if (resultado.verificado && api.sessao) definirConta(await api.sessao());
-    } catch {
-      definirMensagem('Não foi possível enviar agora. Tente novamente mais tarde.');
-    } finally {
-      envioEmCurso.current = false;
-      definirEnvio(false);
-    }
-  }
-
   // Consome o link após uma ação explícita para reduzir confirmação acidental por scanners de e-mail.
   async function confirmarEmail(evento) {
     evento.preventDefault();
@@ -345,19 +332,6 @@ function AcessoVisionChef({ destino }) {
     } finally {
       envioEmCurso.current = false;
       definirEnvio(false);
-    }
-  }
-
-  // Encerra a sessão atual ou todas as sessões abertas em outros dispositivos sem alterar vínculos.
-  async function sairDaConta(escopo = 'local') {
-    try {
-      await api.sair(escopo);
-      definirConta(null);
-      definirAcesso(false);
-      definirMensagem(escopo === 'global' ? 'Você saiu de todos os dispositivos.' : 'Você saiu da sua conta.');
-      definirModo('resultado');
-    } catch {
-      definirMensagem('Não foi possível sair agora. Tente novamente.');
     }
   }
 
@@ -420,28 +394,21 @@ function AcessoVisionChef({ destino }) {
     'entrar-equipe': ['Entrar em uma equipe', 'O dono do restaurante precisa liberar seu acesso usando o e-mail da sua conta.'],
     recuperar: ['Recupere sua senha', 'Informe o e-mail da sua conta para receber o link de redefinição.'],
     redefinir: ['Escolha uma nova senha', 'Informe e confirme a nova senha da sua conta.'],
-    conta: ['Minha conta', 'Consulte seu e-mail e gerencie sua sessão.'],
     confirmar: ['Confirme seu e-mail', 'Abra esta página a partir do link enviado e confirme abaixo para concluir.'],
   }[modo] ?? ['Acesso ao VisionChef', ''];
 
   return (
     <>
-      {temAcesso ? <>
+      {!somenteFluxosDiretos && (temAcesso ? <>
         <a className="botao botao-primario" id="acesso-estoque" href={destino}>Abrir estoque</a>
-        {/* A pessoa já vinculada também pode abrir a área da própria conta. */}
-        <button className="botao botao-secundario" type="button" onClick={async () => {
-          const sessao = await api.sessao?.();
-          definirConta(sessao);
-          definirMensagem('');
-          definirModo('conta');
-          definirDialogoAberto(true);
-        }}>Minha conta</button>
+        {/* A área pessoal abre numa página própria, em vez de interromper a landing com um diálogo. */}
+        <a className="botao botao-secundario" href="/conta/">Minha conta</a>
       </> : <>
         <a className="botao botao-primario" id="acesso-estoque" href="#prototipos"
           onClick={() => { definirMensagem(''); definirModo(conta ? 'restaurante' : 'entrar'); definirDialogoAberto(true); }}>{conta ? 'Configurar acesso' : 'Entrar no VisionChef'}</a>
         {!conta && <button className="botao botao-secundario botao-criar-conta" type="button"
           onClick={() => { definirMensagem(''); definirModo('cadastro'); definirDialogoAberto(true); }}>Criar conta</button>}
-      </>}
+      </>)}
       <dialog className={`dialogo-acesso-sync${["entrar", "cadastro"].includes(modo) ? " acesso-inicial" : ""}`} ref={dialogo} aria-labelledby="titulo-acesso"
         onCancel={(evento) => { evento.preventDefault(); definirDialogoAberto(false); }}
         onClick={(evento) => { if (evento.target === dialogo.current) definirDialogoAberto(false); }}>
@@ -478,7 +445,7 @@ function AcessoVisionChef({ destino }) {
           {modo === 'restaurante' && <div className="acoes-acesso">
             <BotaoGlass className="botao-primario" type="button" onClick={() => { definirMensagem(''); definirModo('criar-restaurante'); }}>Criar meu restaurante</BotaoGlass>
             <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('entrar-equipe'); }}>Entrar em uma equipe</BotaoGlass>
-            <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('conta'); }}>Minha conta</BotaoGlass>
+            <a className="botao botao-secundario" href="/conta/">Minha conta</a>
           </div>}
           {modo === 'criar-restaurante' && <form className="formulario-acesso" onSubmit={configurarRestaurante}>
             <label>Nome do restaurante<input name="nome" type="text" autoComplete="organization" minLength={2} maxLength={120} required /></label>
@@ -498,21 +465,11 @@ function AcessoVisionChef({ destino }) {
             <CampoSenha rotulo="Confirmar nova senha" name="confirmarSenha" placeholder="Repita a nova senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Salvar nova senha</BotaoGlass>
           </form>}
-          {/* A confirmação facultativa só aparece após autenticação, dentro da conta. */}
-          {modo === 'conta' && <section className="formulario-acesso" aria-label="Dados da conta">
-            <p><strong>E-mail:</strong> {conta?.user?.email ?? 'Não disponível'}</p>
-            {!api.modoLocal && <p><strong>Confirmação:</strong> {conta?.email_verificado_app ? 'Confirmado' : 'Opcional · ainda não solicitado'}</p>}
-            {!api.modoLocal && !conta?.email_verificado_app && <BotaoGlass className="botao-primario" type="button" disabled={enviando} aria-busy={enviando || undefined} onClick={solicitarConfirmacaoEmail}>{enviando ? 'Enviando…' : 'Solicitar confirmação de e-mail'}</BotaoGlass>}
-            {mensagem && <p className="mensagem-acesso" role="status">{mensagem}</p>}
-            {!conta?.restaurantes?.length && <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('restaurante'); }}>Configurar acesso ao estoque</BotaoGlass>}
-            <BotaoGlass className="botao-secundario" type="button" onClick={() => sairDaConta('local')}>Sair da conta</BotaoGlass>
-            <BotaoGlass className="botao-secundario danger" type="button" onClick={() => sairDaConta('global')}>Sair de todos os dispositivos</BotaoGlass>
-          </section>}
           {modo === 'confirmar' && <form className="formulario-acesso" onSubmit={confirmarEmail}>
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Confirmando…' : 'Confirmar e-mail'}</BotaoGlass>
           </form>}
           {modo === 'resultado' && <p className="mensagem-acesso" role="status">{mensagem}</p>}
-          {mensagem && modo !== 'resultado' && modo !== 'conta' && <p className="mensagem-acesso" role="alert">{mensagem}</p>}
+          {mensagem && modo !== 'resultado' && <p className="mensagem-acesso" role="alert">{mensagem}</p>}
           {modo === 'entrar' && <nav className="acoes-acesso acoes-acesso-dupla" aria-label="Ações de acesso">
             {/* Mantém hierarquia subordinada ao Entrar (42px em 1 linha), sem opção de reenvio de confirmação. */}
             <BotaoGlass height={42} className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('cadastro'); }}>Criar conta</BotaoGlass>
@@ -521,7 +478,7 @@ function AcessoVisionChef({ destino }) {
           {configurandoRestaurante && modo !== 'restaurante' && <nav className="acoes-acesso" aria-label="Opções de restaurante">
             <BotaoGlass className="botao-secundario" type="button" disabled={enviando} onClick={() => { definirMensagem(''); definirModo('restaurante'); }}>Voltar às opções</BotaoGlass>
           </nav>}
-          {!configurandoRestaurante && modo !== 'entrar' && modo !== 'conta' && <nav className="acoes-acesso" aria-label="Ações de acesso">
+          {!configurandoRestaurante && modo !== 'entrar' && <nav className="acoes-acesso" aria-label="Ações de acesso">
             <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('entrar'); }}>Voltar para entrar</BotaoGlass>
           </nav>}
         </section>
@@ -533,7 +490,7 @@ function AcessoVisionChef({ destino }) {
 // O build monta o React no espaço de acesso e no fundo decorativo Horizon Bloom da abertura.
 const elemento = document.getElementById('acesso-visionchef');
 const destino = elemento?.querySelector('#acesso-estoque')?.href ?? new URL('estoque/', window.location.href).href;
-if (elemento) createRoot(elemento).render(<AcessoVisionChef destino={destino} />);
+if (elemento) createRoot(elemento).render(<AcessoVisionChef destino={destino} somenteFluxosDiretos={elemento.hasAttribute('data-somente-fluxos-diretos')} />);
 
 const fundoHorizonte = document.getElementById('hero-horizon-bloom');
 if (fundoHorizonte) createRoot(fundoHorizonte).render(<HorizonBloom />);

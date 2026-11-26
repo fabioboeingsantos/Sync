@@ -181,7 +181,7 @@ h2 { font-size: 1.25rem; letter-spacing: -.02em; color: var(--est-heading); }
 .topo {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 40;
   background: var(--est-topo-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -225,6 +225,26 @@ h2 { font-size: 1.25rem; letter-spacing: -.02em; color: var(--est-heading); }
 .link-topo:hover { background: rgb(255 255 255 / 12%); color: #ffffff; }
 /* Identifica visualmente a sessão autenticada na barra superior sem competir com os botões. */
 .conta-topo { padding: .35rem .7rem; border: 1px solid #a8d5dd; border-radius: 999px; background: rgb(255 255 255 / 12%); color: #ffffff; font-size: .875rem; font-weight: 700; max-width: 18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notificacoes-topo { position: relative; flex: none; }
+.notificacoes-topo[hidden] { display: none !important; }
+.botao-sino { position: relative; display: inline-grid; width: 2.75rem; height: 2.75rem; min-height: 2.75rem !important; place-items: center; padding: .55rem !important; border-radius: 50%; }
+.botao-sino svg { width: 1.3rem; height: 1.3rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.notificacao-contador { position: absolute; top: -.2rem; right: -.2rem; min-width: 1.2rem; height: 1.2rem; padding-inline: .25rem; display: grid; place-items: center; border: 2px solid var(--est-topo-bg); border-radius: 999px; color: #fff; background: var(--st-hoje-cor); font-size: .68rem; font-weight: 800; line-height: 1; }
+.notificacao-contador[hidden] { display: none !important; }
+.painel-notificacoes { position: absolute; top: calc(100% + .65rem); right: 0; z-index: 20; width: min(23rem, calc(100vw - 2rem)); max-height: min(70vh, 32rem); overflow: auto; padding: 1rem; border: 1px solid var(--est-border); border-radius: 1rem; color: var(--est-text); background: var(--est-surface); box-shadow: var(--est-shadow); }
+.painel-notificacoes[hidden] { display: none !important; }
+.painel-notificacoes h2 { margin: 0; color: var(--est-heading); font-size: 1.05rem; }
+.notificacao-ajuda { margin: .35rem 0 .65rem; color: var(--est-muted); font-size: .84rem; }
+.painel-notificacoes > .mensagem { margin: .35rem 0 .65rem; color: var(--est-muted); font-size: .86rem; }
+#lista-notificacoes-validade { display: grid; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+.notificacao-item { display: grid !important; width: 100%; min-height: 0 !important; justify-items: start; gap: .2rem; padding: .7rem .75rem !important; border-radius: .7rem !important; background: var(--est-surface) !important; color: var(--est-text) !important; text-align: left; white-space: normal; }
+.notificacao-item strong { color: var(--est-heading); font-size: .92rem; }
+.notificacao-item small { color: var(--est-muted); font-size: .78rem; }
+.notificacao-estado { font-size: .8rem; font-weight: 800; }
+.notificacao-item-hoje { border-color: var(--st-hoje-borda) !important; border-left: 4px solid var(--st-hoje-cor) !important; }
+.notificacao-item-hoje .notificacao-estado { color: var(--st-hoje-cor); }
+.notificacao-item-breve { border-color: var(--st-breve-borda) !important; border-left: 4px solid var(--st-breve-cor) !important; }
+.notificacao-item-breve .notificacao-estado { color: var(--st-breve-cor); }
 .dados-conta { display: grid; gap: .55rem; margin-block: .9rem .4rem; }
 .dados-conta p { overflow-wrap: anywhere; }
 .marca { display: flex; align-items: center; gap: .65rem; font-size: 1.125rem; font-weight: 750; }
@@ -405,6 +425,62 @@ summary { font-weight: 700; cursor: pointer; }
 }
 .dialogo-validade { width: min(100% - 2rem, 27rem); color: var(--est-text); background: var(--est-surface); }
 .dialogo-validade::backdrop { background: var(--est-backdrop); }
+
+/* A página de conta usa os tokens compartilhados, mantendo contraste em tema claro e escuro. */
+.pagina-conta { max-width: 68rem; min-height: calc(100vh - 5rem); padding-top: clamp(1.5rem, 5vw, 3.8rem); }
+.pagina-conta [hidden] { display: none !important; }
+.conta-cabecalho { display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; margin-bottom: 1.6rem; padding: clamp(1.2rem, 4vw, 2rem); border: 1px solid var(--est-border); border-radius: 1.25rem; background: linear-gradient(125deg, var(--est-surface) 45%, var(--est-surface-soft)); box-shadow: var(--est-shadow); }
+.conta-cabecalho-identidade { display: flex; align-items: center; gap: 1rem; }
+.conta-cabecalho h1 { margin: .12rem 0 .4rem; font-size: clamp(2rem, 5vw, 2.8rem); }
+.conta-cabecalho p:last-child { color: var(--est-muted); line-height: 1.5; }
+.conta-chapeu { margin-bottom: .22rem; color: var(--est-muted); font-size: .76rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.conta-simbolo { display: grid; flex: 0 0 3.6rem; width: 3.6rem; height: 3.6rem; place-items: center; border: 1px solid var(--est-input-border); border-radius: 1.15rem; background: var(--est-surface-soft); color: var(--est-heading); font-size: 1.7rem; font-weight: 800; box-shadow: inset 0 1px 0 rgb(255 255 255 / 48%); }
+.conta-grade { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(18rem, .94fr); align-items: start; gap: 1.15rem; }
+.conta-coluna { display: grid; gap: 1.15rem; }
+.conta-cartao { min-width: 0; padding: clamp(1.15rem, 3vw, 1.6rem); }
+.conta-cartao-cabecalho { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.2rem; }
+.conta-cartao-cabecalho h2 { font-size: 1.28rem; }
+.conta-icone { display: grid; flex: 0 0 2.45rem; height: 2.45rem; place-items: center; border: 1px solid var(--est-border); border-radius: .8rem; background: var(--est-surface-soft); color: var(--est-muted); font-size: .78rem; font-weight: 800; }
+.conta-dados { display: grid; gap: 0; margin: 0; }
+.conta-dados > div { display: grid; grid-template-columns: minmax(7rem, .65fr) minmax(0, 1.35fr); gap: .85rem; padding: .85rem 0; border-bottom: 1px solid var(--est-divider); }
+.conta-dados dt { color: var(--est-muted); font-size: .88rem; font-weight: 700; }
+.conta-dados dd { margin: 0; overflow-wrap: anywhere; font-weight: 600; }
+.conta-formulario { gap: .8rem; }
+.conta-formulario label { display: grid; gap: .32rem; }
+.conta-formulario input { margin: 0; }
+.conta-formulario small, .conta-ajuda { color: var(--est-muted); font-size: .86rem; line-height: 1.55; }
+.conta-formulario .botao { margin-top: .2rem; }
+.conta-status-linha { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: .8rem; margin-bottom: 1rem; }
+.conta-status-linha p, .conta-sessao > p, .conta-intro-seguranca { color: var(--est-muted); line-height: 1.55; }
+.conta-status { display: inline-flex; align-items: center; gap: .42rem; padding: .42rem .68rem; border: 1px solid var(--st-breve-borda); border-radius: 999px; background: var(--st-breve-fundo); color: var(--st-breve-cor); font-size: .82rem; font-weight: 800; white-space: nowrap; }
+.conta-status::before { width: .48rem; height: .48rem; border-radius: 50%; background: currentColor; content: ""; }
+.conta-status.confirmado { border-color: var(--st-prazo-borda); background: var(--st-prazo-fundo); color: var(--st-prazo-cor); }
+.conta-confirmacao .botao { margin-bottom: .75rem; }
+.conta-ajuda { margin-top: .2rem; }
+.conta-sessao > p { margin-bottom: 1rem; }
+.conta-esqueci-senha { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--est-divider); color: var(--est-muted); font-size: .92rem; }
+.conta-esqueci-senha a { color: var(--est-heading); font-weight: 700; text-underline-offset: 3px; }
+.conta-feedback { margin: 0 0 1rem; border-radius: .75rem; }
+.conta-feedback:not(:empty) { padding: .85rem 1rem; border: 1px solid var(--est-border); background: var(--est-surface); }
+.conta-feedback.erro { border-color: var(--est-erro); color: var(--est-erro); }
+.conta-nota-seguranca { display: flex; gap: .75rem; padding: 1rem; border: 1px solid var(--est-border); border-radius: 1rem; background: var(--est-surface-soft); color: var(--est-muted); font-size: .9rem; line-height: 1.55; }
+.conta-nota-seguranca > span { display: grid; flex: 0 0 1.5rem; height: 1.5rem; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-weight: 700; }
+.conta-nota-seguranca strong { color: var(--est-heading); }
+.conta-indisponivel { display: grid; justify-items: start; gap: 1rem; max-width: 38rem; margin: 5vh auto; box-shadow: var(--est-shadow); }
+.conta-indisponivel h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); }
+.conta-indisponivel > p:not(.conta-chapeu) { color: var(--est-muted); line-height: 1.6; }
+@media (max-width: 760px) {
+  .pagina-conta { padding-top: 1.2rem; }
+  .conta-grade { grid-template-columns: 1fr; }
+  .conta-cabecalho { align-items: flex-start; flex-direction: column; }
+  .conta-cabecalho > .botao { align-self: stretch; }
+}
+@media (max-width: 420px) {
+  .conta-cabecalho-identidade { align-items: flex-start; }
+  .conta-simbolo { flex-basis: 2.8rem; width: 2.8rem; height: 2.8rem; border-radius: .9rem; }
+  .conta-dados > div { grid-template-columns: 1fr; gap: .25rem; }
+  .conta-status-linha { grid-template-columns: 1fr; }
+}
 #lote-em-correcao, #lote-em-abertura { margin-top: .75rem; overflow-wrap: anywhere; }
 #validade-atual, #saldo-fechado { color: var(--est-muted); }
 .formulario { display: grid; gap: .9rem; margin-top: 1rem; }
@@ -891,13 +967,157 @@ td small { display: block; color: var(--est-muted); font-size: .875rem; font-wei
   letter-spacing: .02em;
 }
 .nav-modulos {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 60;
   display: flex;
-  flex-wrap: wrap;
-  gap: .55rem;
+  width: 100%;
+  height: calc(84px + env(safe-area-inset-bottom, 0px));
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 8px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, transparent 0%, var(--est-bg) 68%);
+  pointer-events: none;
 }
-.nav-modulos .botao {
-  min-height: 44px;
-  padding: 9px 18px;
+.nav-modulos[hidden] { display: none !important; }
+.dock-nav-raiz { position: relative; display: flex; width: 100%; height: 100%; align-items: flex-end; justify-content: center; pointer-events: none; }
+.dock-nav-raiz .dock { pointer-events: auto; }
+#aplicacao:not([hidden]) { padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px)); }
+.dock-visionchef .dock-item { -webkit-tap-highlight-color: transparent; }
+.dock-visionchef .dock-item:focus-visible .dock-face { outline-color: #77dbe8; }
+html[data-theme="light"] .dock-visionchef .dock-item:focus-visible .dock-face { outline-color: #0f4c5c; }
+@media (max-width: 380px) {
+  .nav-modulos { height: calc(78px + env(safe-area-inset-bottom, 0px)); }
+  #aplicacao:not([hidden]) { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* O nome sobre a fotografia mantém cada alimento identificável na grade, também em tela estreita. */
+.inventario-painel { margin-top: 1rem; }
+.inventario-cabecalho { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
+.inventario-cabecalho h2 { margin: 0; color: var(--est-heading); }
+.inventario-cabecalho .subtitulo-modulo { margin-bottom: 0; }
+.inventario-filtros { display: grid; grid-template-columns: minmax(200px, 2fr) minmax(180px, 1fr); gap: .8rem; margin: 1rem 0; }
+.inventario-filtros label, .busca-lotes-validade { display: grid; gap: .35rem; color: var(--est-heading); font-weight: 700; font-size: .9rem; }
+.inventario-filtros input, .inventario-filtros select, .busca-lotes-validade input {
+  width: 100%; min-height: 42px; padding: .55rem .7rem; border: 1px solid var(--est-input-border);
+  border-radius: .65rem; color: var(--est-text); background: var(--est-input-bg); font: inherit; font-weight: 400;
+}
+.inventario-resumo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; margin: .8rem 0 1rem; }
+.indicador-inventario { display: grid; gap: .1rem; padding: .75rem; text-align: center; border: 1px solid var(--est-border); border-radius: .8rem; background: var(--est-surface-soft); }
+.indicador-inventario strong { color: var(--est-heading); font-size: 1.2rem; }
+.indicador-inventario span { color: var(--est-text); font-weight: 700; }
+.indicador-inventario small { color: var(--est-muted); }
+.grade-inventario { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .85rem; }
+.grade-inventario[hidden], .lista-inventario[hidden] { display: none !important; }
+.cartao-produto { min-width: 0; overflow: hidden; border: 1px solid var(--est-border); border-radius: .9rem; background: var(--est-surface); box-shadow: var(--est-shadow); }
+.produto-foto { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: var(--est-surface-soft); }
+.produto-foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.produto-foto-legenda { position: absolute; inset: auto .55rem .55rem; display: block; padding: .45rem .6rem; border: 1px solid rgb(255 255 255 / 35%); border-radius: .55rem; color: #fff; background: rgb(4 24 34 / 88%); font-size: clamp(.82rem, 1.1vw, 1rem); font-weight: 800; line-height: 1.2; text-align: center; text-shadow: 0 1px 2px #000; overflow-wrap: anywhere; }
+.produto-foto-sem-imagem { display: grid; place-items: center; color: var(--est-heading); }
+.produto-foto-sem-imagem .produto-foto-legenda { inset: 50% .55rem auto; transform: translateY(-50%); }
+.cartao-produto-corpo { display: grid; gap: .35rem; padding: .75rem; }
+.cartao-produto-corpo h3, .linha-produto h3 { margin: 0; color: var(--est-heading); font-size: 1rem; }
+.produto-categoria, .linha-produto-identidade p { margin: 0; color: var(--est-muted); font-size: .85rem; }
+.produto-saldo { margin: .25rem 0 0; color: var(--est-text); font-size: 1.05rem; font-weight: 800; }
+.produto-detalhe { margin: 0; color: var(--est-muted); font-size: .82rem; }
+.cartao-produto .botao { margin-top: .35rem; min-height: 40px; padding: .45rem .65rem; font-size: .85rem; }
+.lista-inventario { display: grid; gap: .6rem; }
+.linha-produto { display: grid; grid-template-columns: 84px minmax(120px, 1fr) minmax(110px, auto) minmax(180px, auto) auto; align-items: center; gap: .8rem; padding: .55rem; border: 1px solid var(--est-border); border-radius: .8rem; background: var(--est-surface); }
+.linha-produto .produto-foto { width: 84px; border-radius: .55rem; }
+.linha-produto .produto-foto-legenda { inset: auto .25rem .25rem; padding: .2rem .25rem; font-size: .65rem; }
+.linha-produto-saldo { color: var(--est-heading); }
+.linha-produto > span { color: var(--est-muted); font-size: .85rem; }
+.linha-produto .botao { min-height: 38px; padding: .4rem .6rem; font-size: .82rem; }
+.busca-lotes-validade { min-width: min(100%, 220px); }
+.barra-filtros-estoque .busca-lotes-validade { flex: 1 1 220px; }
+.barra-filtros-estoque .filtros-estoque { flex: 3 1 550px; }
+.barra-filtros-estoque .contagem-estoque { margin: 0; }
+
+@media (max-width: 980px) {
+  .grade-inventario { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  /* O cabeçalho ocupa várias linhas no celular; o painel ancora na janela e respeita a área visível. */
+  .painel-notificacoes { position: fixed; top: var(--topo-notificacoes-mobile, 10rem); right: 1rem; left: .75rem; z-index: 30; width: auto; max-height: calc(100vh - var(--topo-notificacoes-mobile, 10rem) - 1rem); }
+  .inventario-resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grade-inventario { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .linha-produto { grid-template-columns: 68px minmax(0, 1fr) auto; gap: .55rem; }
+  .linha-produto .produto-foto { grid-row: span 2; width: 68px; }
+  .linha-produto-saldo { justify-self: end; }
+  .linha-produto > span { grid-column: 2 / 4; }
+  .linha-produto .botao { grid-column: 2 / 4; justify-self: start; }
+}
+@media (max-width: 420px) {
+  .inventario-filtros { grid-template-columns: minmax(0, 1fr); }
+  .grade-inventario { gap: .55rem; }
+  .cartao-produto-corpo { padding: .55rem; }
+  .cartao-produto-corpo h3 { font-size: .9rem; }
+  .produto-foto-legenda { inset: auto .25rem .25rem; padding: .35rem; font-size: .78rem; }
+}
+
+/* Agrupa a marca e as ações autenticadas em uma grade estável no celular. */
+@media (max-width: 680px) {
+  .topo-conteudo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .65rem;
+    padding-block: .65rem;
+  }
+
+  .acoes-topo {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: .5rem;
+  }
+
+  .acoes-topo > .link-topo,
+  .acoes-topo > .botao,
+  .acoes-topo > .notificacoes-topo,
+  .acoes-topo > .theme-toggle-inline {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding-inline: .35rem;
+    font-size: .76rem;
+    white-space: nowrap;
+  }
+
+  .acoes-topo > .conta-topo {
+    display: flex;
+    grid-column: span 2;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding-inline: .5rem;
+    text-align: center;
+  }
+
+  .acoes-topo > .notificacoes-topo { justify-self: stretch; }
+  .acoes-topo .bell-toggle { width: 100%; }
+  .acoes-topo .bell-toggle .bell-toggle__button { width: 100%; min-height: 44px; }
+  .acoes-topo > .theme-toggle-inline { height: 44px; }
+}
+
+@media (max-width: 380px) {
+  .acoes-topo { gap: .4rem; }
+  .acoes-topo > .link-topo,
+  .acoes-topo > .botao,
+  .acoes-topo > .notificacoes-topo,
+  .acoes-topo > .theme-toggle-inline { padding-inline: .08rem; font-size: .72rem; }
+  .rotulo-conta-topo { font-size: 0; }
+  .rotulo-conta-topo::after { content: "Conta"; font-size: .72rem; }
+  .acoes-topo > .theme-toggle-inline .sky-track { flex: 1 1 0; min-width: 0; }
 }
 .subtitulo-modulo {
   margin-top: .35rem;

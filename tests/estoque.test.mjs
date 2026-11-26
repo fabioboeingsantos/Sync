@@ -50,16 +50,19 @@ test('dono e funcionário compartilham o estoque em ordem de validade, incluindo
   await once(servidor, 'listening');
   const origem = `http://127.0.0.1:${servidor.address().port}`;
 
-  // A landing, a autenticação e o estoque são servidos pelo mesmo endereço base.
+  // A landing apresenta a Sync e oferece acesso à conta e à demonstração.
   const htmlLanding = await (await fetch(`${origem}/`)).text();
+  assert.match(htmlLanding, /<h1 id="titulo">Sync<\/h1>/);
+  assert.match(htmlLanding, /data-somente-fluxos-diretos/);
+  assert.match(htmlLanding, /Quais lotes vencem primeiro\?/);
+  assert.match(htmlLanding, /Vence em breve/);
   assert.match(htmlLanding, /id="prototipos"/);
-  assert.match(htmlLanding, /id="acesso-visionchef"/);
-  assert.match(htmlLanding, /id="acesso-estoque" href="estoque\/"/);
+  assert.match(htmlLanding, /href="\/estoque\/">Entrar<\/a>/);
+  assert.match(htmlLanding, /href="#cadastro">Criar conta<\/a>/);
   assert.match(htmlLanding, /<script type="module" src="entrada\.js"><\/script>/);
-  // A versão aberta pelo arquivo mantém um caminho para a mesma seção no servidor local.
+  // O arquivo fonte também oferece o acesso direto ao cadastro.
   const htmlArquivo = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  // O link de ajuda precisa acompanhar a porta HTTP_PORT usada pelo servidor local.
-  assert.match(htmlArquivo, /href="http:\/\/127\.0\.0\.1:8080\/#prototipos"/);
+  assert.match(htmlArquivo, /href="#cadastro"/);
   const moduloEntrada = await fetch(`${origem}/entrada.js`);
   assert.equal(moduloEntrada.status, 200);
   const codigoEntrada = await moduloEntrada.text();

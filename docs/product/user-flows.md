@@ -4,12 +4,13 @@
 
 | Tela ou ação | Quem usa | Caminho principal e estados a revisar |
 | --- | --- | --- |
-| Landing e cadastro | Pessoa interessada | Criar conta individual com usuário, e-mail e senha. Com sessão válida, escolher **Criar meu restaurante** ou **Entrar em uma equipe**. |
+| Página pública | Pessoa interessada | Conhecer o VisionChef por meio da apresentação do produto e da demonstração de lotes; não oferece botões de entrar ou criar conta. Links diretos de confirmação e recuperação continuam sendo atendidos. |
 | Primeiro acesso | Dono e funcionário | O dono informa o nome do novo restaurante e vai ao estoque com o vínculo criado. Para entrar em equipe existente, pedir ao dono que use **Equipe → Liberar acesso** com o e-mail da conta. Depois, selecionar **Verificar meu acesso** para consultar a liberação e abrir o estoque. |
 | Entrar | Dono e funcionário | Entrar com usuário ou e-mail e senha. Contas com vínculo ativo vão ao estoque. Contas que aguardam vínculo voltam à configuração de acesso. A tela oferece recuperação de senha como ação secundária. |
-| Minha conta | Pessoa autenticada | Consultar e-mail e estado de confirmação opcional; solicitar o e-mail de confirmação somente nesta área; confirmar por link de uso único. Permitir sair da conta. A confirmação não substitui o vínculo com restaurante. |
+| Minha conta | Pessoa autenticada | Abrir uma página própria. Consultar e-mail, usuário e acesso ao estoque; completar o usuário quando a conta legada ainda não tem um nome personalizado; ver claramente e-mail confirmado ou pendente; solicitar confirmação nesta área; trocar senha após confirmar a senha atual (sem exibi-la); recuperar a senha por link; encerrar todas as sessões. |
 | Recuperar senha | Pessoa sem sessão | Informar o e-mail e receber resposta genérica. O link abre o formulário para escolher nova senha. Não oferecer reenvio de confirmação nesta tela. |
-| Estoque | Dono e funcionário | Consultar o saldo e a validade aplicável. Identificar as partes abertas e fechadas pelo texto. Se estiver vazio, oferecer o cadastro do primeiro lote. Se houver falha de conexão, permitir nova tentativa. |
+| Estoque | Dono e funcionário | Consultar o saldo agregado por produto e alternar entre grade e lista. Identificar cada alimento pela foto com o nome sobreposto. A ação de cada item abre o Controle de validade filtrado para aquele insumo. |
+| Controle de validade | Dono e funcionário | Consultar lotes por vencimento, filtrar por situação e insumo, cadastrar ou corrigir lote, registrar abertura, uso ou descarte. Saldos agregados do Estoque refletem os mesmos lotes. |
 | Cadastrar ou corrigir lote | Dono e funcionário | Informar insumo, quantidade, medida e validade no cadastro. Corrigir os dados quando necessário. Mostrar os campos inválidos e confirmar quando o registro for salvo. |
 | Registrar abertura ou fracionamento | Dono e funcionário | Selecionar o lote, indicar quanto foi aberto ou fracionado, a data da operação e a validade aplicável. Conferir no estoque a quantidade aberta e a fechada, com suas respectivas datas. |
 | Registrar uso ou descarte | Dono e funcionário | Selecionar a parte do lote, o tipo de saída e a quantidade na medida cadastrada. Mostrar o saldo atualizado. Se a quantidade exceder o saldo, explicar o erro e permitir correção. |
@@ -32,6 +33,14 @@
 
 ## Endereços do piloto
 
-- `/#prototipos` para entrar pela landing page.
-- `/estoque/` para consultar lotes. Cadastro manual ou assistido, correção, abertura e saídas partem da própria tela. O dono abre **Ver relatório de desperdício** para consultar as baixas do mês, quantas ocorreram com a validade vencida e a quantidade, motivo e data de cada registro. O painel usa os dados reais do restaurante e funcionários não o acessam. O dono também acessa a gestão da equipe pelo botão **Equipe**.
+- `/` para a apresentação do VisionChef e a demonstração ilustrativa de validade.
+- `/estoque/` para entrar na área do produto.
+- `/estoque/` começa no módulo **Estoque**, com grade/lista e filtros por produto e categoria. O Dock inferior organiza **Estoque**, **Controle de validade**, **Relatório de desperdício**, **Equipe** e **Fornecedores** conforme o perfil; o relatório é um módulo independente acessível apenas ao dono. O botão **Adicionar entrada** abre o cadastro manual. O sino BellToggle mostra somente itens que vencem hoje ou em breve e exibe a contagem desses alertas. Os saldos do estoque são calculados dos mesmos lotes e o tema claro/escuro acompanha o Dock.
 - `/equipe/` (com redirecionamento de `/equipe` para `/equipe/`) para o dono ativo liberar acesso por usuário ou e-mail, reativar vínculos e remover acessos com efeito imediato mesmo com sessão aberta.
+- `/conta/` para consultar dados pessoais, confirmação do e-mail e segurança da senha numa página independente, responsiva e compatível com tema claro ou escuro.
+
+## Demonstração local do estoque
+
+- A conta fictícia `dono@piloto.test` / `dono.piloto` começa com 20 alimentos perecíveis em lotes de até 25 unidades, kg ou litros. O seed é idempotente e não repõe produtos que a pessoa já consumiu ou alterou.
+- A grade e a lista mostram o nome legível sobre cada foto e nos dados do cartão. As quantidades vencidas são destacadas como bloqueadas; o saldo disponível exclui lotes vencidos.
+- As fotos foram otimizadas para JPEG quadrado de 640 px. As 12 fotos de hortifruti mantêm atribuição em [créditos das imagens](creditos-imagens-estoque.md); as outras 8 são ilustrações geradas para este catálogo.

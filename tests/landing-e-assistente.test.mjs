@@ -68,7 +68,8 @@ test('assistente IA e cadastro manual trazem VoicePill, 5 simulações (com erro
   assert.match(agenteHtml, /id="duplicate-warning"/);
   assert.match(agenteHtml, /id="nfe-file-input"/);
   assert.match(agenteHtml, /id="nfe-demo-btn"/);
-  assert.match(agenteHtml, /Roadmap fiscal integrado \(Fases 1, 2 e 3\)/);
+  // O planejamento fiscal é interno e não deve aparecer na demonstração pública.
+  assert.doesNotMatch(agenteHtml, /Roadmap fiscal integrado \(Fases 1, 2 e 3\)/);
 
   // Cadastro manual também possui tema claro/escuro e proteção contra lote repetido.
   assert.match(manualHtml, /abertura\/js\/tema\.js/);

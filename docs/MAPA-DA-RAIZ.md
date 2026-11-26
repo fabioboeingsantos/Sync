@@ -1,6 +1,6 @@
 # Mapa da raiz do VisionChef
 
-Inventário atualizado em 25/11/2026 do repositório `Sync`. A árvore lista os itens observados na raiz e abre os diretórios usados para desenvolver e documentar o piloto.
+Inventário atualizado em 26/11/2026 do repositório `Sync`. A árvore lista os itens observados na raiz e abre os diretórios usados para desenvolver e documentar o piloto.
 
 ```text
 Sync/
@@ -18,7 +18,7 @@ Sync/
 │   ├── operations/             runbook operacional (deploy, rollback, rotação e restore)
 │   ├── product/                escopo, requisitos funcionais/não funcionais e fluxos do piloto
 │   └── MAPA-DA-RAIZ.md         inventário e dependências de caminhos
-├── frontend/                   componente React de acesso e componentes GlassSurface, HorizonBloom e VoicePill (components/)
+├── frontend/                   componentes React de acesso, Dock e BellToggle; GlassSurface, HorizonBloom e VoicePill em components/
 ├── Insumo vencendo na cozinha/
 │   ├── abertura/               estilos, tema e mídias da abertura da SYNC
 │   ├── agente_IA/              documentação do protótipo de assistente e roadmap fiscal
@@ -29,7 +29,8 @@ Sync/
 │   ├── pitch/                  slides, roteiro e estúdio de ensaio de voz (ensaio-voz.html)
 │   └── documentos do tema      índice, persona, matriz CSD, regras e guia visual
 ├── node_modules/               dependências instaladas pelo npm
-├── piloto/                     HTML, CSS, JavaScript (incluindo interpretar-nfe.js) e cliente Supabase do piloto
+├── piloto/                     HTML, CSS, JavaScript, imagens dos produtos e cliente Supabase do piloto
+│   └── imagens/produtos/       20 fotos quadradas otimizadas para o estoque fictício local
 ├── scripts/                    servidor local, banco de teste e geração de dist/
 ├── supabase/
 │   ├── functions/              funções de servidor para login, limites e confirmação facultativa
@@ -52,7 +53,7 @@ Sync/
 
 ## Dependências de caminhos
 
-- **Piloto e build.** O [script de build](../scripts/build.mjs) monta a landing a partir de `index.html`, compila em Vite o [acesso em React](../frontend/entrada.jsx), monta `/estoque/` e `/equipe/` a partir de `piloto/` e publica as funções Node de `api/`. O backend consulta o Supabase e mantém a sessão em cookie HttpOnly. A versão integrada fica em `dist/`; a configuração privada é lida pelas funções em runtime. Os comandos estão no [manifesto npm](../package.json).
+- **Piloto e build.** O [script de build](../scripts/build.mjs) monta a landing a partir de `index.html`, compila em Vite o [acesso em React](../frontend/entrada.jsx), monta `/estoque/`, `/equipe/` e `/conta/` a partir de `piloto/` e publica as funções Node de `api/`. O backend consulta o Supabase e mantém a sessão em cookie HttpOnly. A versão integrada fica em `dist/`; a configuração privada é lida pelas funções em runtime. Os comandos estão no [manifesto npm](../package.json).
 - **Ambiente local.** O [servidor](../scripts/dev.mjs) monta a página local e guarda os dados em `.dados-local/`. O [banco local](../scripts/banco-local.mjs) lê as migrações de `supabase/migrations/`, também usadas nos [testes de estoque](../tests/estoque.test.mjs) e nos [testes de equipe](../tests/equipe.test.mjs).
 - **Primeiro acesso.** A [migração de restaurante inicial](../supabase/migrations/20261124001500_criar_restaurante_inicial.sql) cria o restaurante e o vínculo do dono na mesma transação. O fluxo começa no [diálogo de acesso](../frontend/entrada.jsx) e usa o mesmo procedimento no piloto local.
 - **Simulado.** A [página inicial](../index.html) e a [página de informações](../informacoes.html) continuam na raiz como pontos de entrada. Os estilos da SYNC, o alternador de tema e as mídias da abertura ficam em [abertura/](<../Insumo vencendo na cozinha/abertura/>). As entregas, os guias e os protótipos estão organizados no [índice do simulado](<../Insumo vencendo na cozinha/README.md>).

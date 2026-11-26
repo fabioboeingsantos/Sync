@@ -33,6 +33,8 @@ export const api = {
   recuperarSenha: (email) => solicitar('auth/recover', { metodo: 'POST', corpo: { email } }),
   sessao,
   solicitarConfirmacaoEmail: () => solicitar('auth/request-email-verification', { metodo: 'POST', corpo: {} }),
+  definirNomeUsuario: (nomeUsuario) => solicitar('auth/username', { metodo: 'POST', corpo: { nome_usuario: nomeUsuario } }),
+  alterarSenha: (dados) => solicitar('auth/change-password', { metodo: 'POST', corpo: dados }),
   confirmarEmail: (token) => solicitar('auth/verify-email', { metodo: 'POST', corpo: { token } }),
   atualizarSenha: (senha) => {
     const hash = new URLSearchParams(window.location.hash.slice(1));

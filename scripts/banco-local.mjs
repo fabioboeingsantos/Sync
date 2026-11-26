@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { gerarHashSenha, precisaAtualizarHash, verificarSenha, verificarSenhaFicticia } from './senhas.mjs';
+import { catalogoProdutos } from '../piloto/catalogo-estoque.js';
 
 // O restaurante adicional permite verificar que o estoque fica isolado por vínculo da equipe.
 export const restaurantePiloto = '10000000-0000-4000-8000-000000000001';
@@ -12,6 +13,16 @@ export const contas = new Map([
   ['funcionario@piloto.test', { id: '20000000-0000-4000-8000-000000000002', nome: 'funcionario.piloto', restaurante: restaurantePiloto, papel: 'funcionario' }],
   ['dono@outro.test', { id: '20000000-0000-4000-8000-000000000003', nome: 'dono.outro', restaurante: outroRestaurante, papel: 'dono' }],
 ]);
+
+// Usa o calendário de São Paulo para manter datas demonstrativas coerentes com quem testa no Brasil.
+function dataLocalComDeslocamento(dias) {
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const agora = Object.fromEntries(partes.map(({ type, value }) => [type, value]));
+  const data = new Date(Date.UTC(Number(agora.year), Number(agora.month) - 1, Number(agora.day) + dias));
+  return data.toISOString().slice(0, 10);
+}
 
 const pastaMigracoes = new URL('../supabase/migrations/', import.meta.url);
 const migracaoInicial = '20261124000100_estoque_inicial.sql';
@@ -105,6 +116,30 @@ export async function abrirBancoLocal(diretorio) {
         `, [id, hashesPadrao.get(email)]);
       }
     });
+    // A demonstração persistente recebe o catálogo; bancos temporários de teste começam vazios.
+    if (typeof diretorio === 'string') {
+      // Semeia os 20 perecíveis apenas no restaurante piloto, preservando inclusões e baixas já feitas.
+      await comoUsuario(banco, contas.get('dono@piloto.test').id, async (tx) => {
+        const existentes = await listarEstoque(tx, restaurantePiloto);
+        const nomesExistentes = new Set(existentes.map(({ insumo }) => String(insumo).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')));
+        for (const [indice, produto] of catalogoProdutos.entries()) {
+          const chave = produto.nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+          if (nomesExistentes.has(chave)) continue;
+          const sequencia = String(indice + 1).padStart(12, '0');
+          await cadastrarLote(tx, {
+            p_restaurante_id: restaurantePiloto,
+            p_insumo: produto.nome,
+            p_codigo_fabricante: `DEMO-${String(indice + 1).padStart(3, '0')}`,
+            p_validade: dataLocalComDeslocamento(produto.diasValidade),
+            p_medida: produto.medida,
+            p_quantidade: produto.saldoInicial,
+            p_operacao_id: `30000000-0000-4000-8000-${sequencia}`,
+            p_local: produto.local,
+          });
+          nomesExistentes.add(chave);
+        }
+      });
+      }
     return banco;
   } catch (erro) {
     await banco.close();
