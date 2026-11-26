@@ -34,7 +34,8 @@ export const api = {
   corrigirValidade: (correcao) => solicitar('lotes/validade', correcao),
   registrarAbertura: (abertura) => solicitar('lotes/abertura', abertura),
   registrarSaida: (saida) => solicitar('lotes/saida', saida),
-  descartes: (restaurante) => solicitar('descartes?restaurante=' + encodeURIComponent(restaurante)),
+  // O banco local aplica o mesmo filtro mensal da API hospedada.
+  descartes: (restaurante, mes) => solicitar('descartes?restaurante=' + encodeURIComponent(restaurante) + '&mes=' + encodeURIComponent(mes)),
   equipe: (restaurante) => solicitar('equipe?restaurante=' + encodeURIComponent(restaurante)),
   vincularMembro: (dados) => solicitar('equipe/vincular', dados),
   removerMembro: (dados) => solicitar('equipe/remover', dados),

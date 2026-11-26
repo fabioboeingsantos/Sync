@@ -604,13 +604,29 @@ export async function tratarApi(requisicao) {
 
     if (caminho === 'descartes' && requisicao.method === 'GET') {
       const restaurante = url.searchParams.get('restaurante') ?? '';
+      const mes = url.searchParams.get('mes') ?? '';
       if (!/^[0-9a-f-]{36}$/i.test(restaurante)) return resposta({ erro: 'Restaurante inválido.' }, 400);
+      if (!/^20\d{2}-(0[1-9]|1[0-2])$/.test(mes)) return resposta({ erro: 'Mês do relatório inválido.' }, 400);
       const membro = await supabase(cfg, `/rest/v1/membros_restaurante?select=papel&restaurante_id=eq.${restaurante}&limit=1`, { token });
       if (!membro.ok) return erroBanco(membro);
       if (membro.dados?.[0]?.papel !== 'dono') return resposta(null, 200, cookieAtualizado);
-      const consulta = new URLSearchParams({ select: 'insumo,codigo_fabricante,medida,quantidade,motivo,registrado_em', restaurante_id: `eq.${restaurante}`, tipo: 'eq.descarte', order: 'registrado_em.desc,id.desc', limit: '50' });
-      const remoto = await supabase(cfg, `/rest/v1/saidas_estoque?${consulta}`, { token });
-      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+      // As contas do produto usam America/Sao_Paulo (UTC-3); os limites são meia-noite local, com fim exclusivo.
+      const [ano, numeroMes] = mes.split('-').map(Number);
+      const inicio = new Date(Date.UTC(ano, numeroMes - 1, 1, 3)).toISOString();
+      const fim = new Date(Date.UTC(ano, numeroMes, 1, 3)).toISOString();
+      const consulta = new URLSearchParams({ select: 'insumo,codigo_fabricante,medida,quantidade,motivo,validade_aplicavel,registrado_em', restaurante_id: `eq.${restaurante}`, tipo: 'eq.descarte', order: 'registrado_em.desc,id.desc' });
+      consulta.append('registrado_em', `gte.${inicio}`);
+      consulta.append('registrado_em', `lt.${fim}`);
+      const todos = [];
+      for (let deslocamento = 0; ; deslocamento += 1000) {
+        consulta.set('limit', '1000');
+        consulta.set('offset', String(deslocamento));
+        const remoto = await supabase(cfg, `/rest/v1/saidas_estoque?${consulta}`, { token });
+        if (!remoto.ok) return erroBanco(remoto);
+        todos.push(...remoto.dados);
+        if (remoto.dados.length < 1000) break;
+      }
+      return resposta(todos, 200, cookieAtualizado);
     }
 
     if (caminho === 'equipe' && requisicao.method === 'GET') {

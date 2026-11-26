@@ -260,13 +260,17 @@ export async function registrarSaida(tx, s) {
   return registro.id;
 }
 
-export async function listarDescartes(tx, restaurante) {
-  // Um histórico vazio é diferente de uma conta sem acesso à visão do dono.
+export async function listarDescartes(tx, restaurante, mes) {
+  // Um relatório vazio é diferente de uma conta sem acesso à visão do dono.
   const { rows: [membro] } = await tx.query('select papel from public.membros_restaurante where restaurante_id = $1', [restaurante]);
   if (membro?.papel !== 'dono') return null;
+  const [ano, numeroMes] = mes.split('-').map(Number);
+  // Meia-noite de São Paulo corresponde a 03:00 UTC; o limite final exclui o mês seguinte.
+  const inicio = new Date(Date.UTC(ano, numeroMes - 1, 1, 3)).toISOString();
+  const fim = new Date(Date.UTC(ano, numeroMes, 1, 3)).toISOString();
   const { rows } = await tx.query(
-    "select insumo, codigo_fabricante, medida, quantidade::text, motivo, registrado_em from public.saidas_estoque where restaurante_id = $1 and tipo = 'descarte' order by registrado_em desc, id desc limit 50",
-    [restaurante],
+    "select insumo, codigo_fabricante, medida, quantidade::text, motivo, validade_aplicavel, registrado_em from public.saidas_estoque where restaurante_id = $1 and tipo = 'descarte' and registrado_em >= $2::timestamptz and registrado_em < $3::timestamptz order by registrado_em desc, id desc",
+    [restaurante, inicio, fim],
   );
   return rows;
 }

@@ -13,7 +13,8 @@ import {
 // O servidor de desenvolvimento atende apenas os arquivos públicos listados aqui e as rotas de teste.
 const tipos = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
-  '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.mp4': 'video/mp4',
+  // MIME correto permite que o navegador carregue o motor WebAssembly e o modelo compactado locais.
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.mp4': 'video/mp4', '.wasm': 'application/wasm', '.gz': 'application/gzip',
 };
 const arquivos = new Map([
   ...arquivosPublicos.map((arquivo) => [encodeURI(`/${arquivo}`), arquivo]),
@@ -30,6 +31,14 @@ const arquivos = new Map([
   ['/entrada.js', 'entrada.js'],
   ['/api.js', 'api.js'],
   ['/css/estoque.css', 'css/estoque.css'],
+  // Arquivos locais do OCR abertos apenas quando a pessoa seleciona uma foto de embalagem.
+  ['/ocr/tesseract.esm.min.js', 'ocr/tesseract.esm.min.js'],
+  ['/ocr/worker.min.js', 'ocr/worker.min.js'],
+  ['/ocr/core/tesseract-core.wasm.js', 'ocr/core/tesseract-core.wasm.js'],
+  ['/ocr/core/tesseract-core-simd.wasm.js', 'ocr/core/tesseract-core-simd.wasm.js'],
+  ['/ocr/core/tesseract-core-lstm.wasm.js', 'ocr/core/tesseract-core-lstm.wasm.js'],
+  ['/ocr/core/tesseract-core-simd-lstm.wasm.js', 'ocr/core/tesseract-core-simd-lstm.wasm.js'],
+  ['/ocr/lang/por.traineddata.gz', 'ocr/lang/por.traineddata.gz'],
 ]);
 
 async function lerJson(req) {
@@ -187,7 +196,12 @@ export function criarServidorLocal(banco, pastaPublica) {
         json(res, 200, await comoUsuario(banco, conta.id, (tx) => registrarSaida(tx, saida)));
       } else if (req.method === 'GET' && url.pathname === '/demo/descartes') {
         const restaurante = url.searchParams.get('restaurante');
-        json(res, 200, await comoUsuario(banco, conta.id, (tx) => listarDescartes(tx, restaurante)));
+        const mes = url.searchParams.get('mes') ?? '';
+        if (!/^20\d{2}-(0[1-9]|1[0-2])$/.test(mes)) {
+          json(res, 400, { erro: 'Mês do relatório inválido.' });
+          return;
+        }
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => listarDescartes(tx, restaurante, mes)));
       } else if (req.method === 'GET' && url.pathname === '/demo/equipe') {
         const restaurante = url.searchParams.get('restaurante');
         json(res, 200, await comoUsuario(banco, conta.id, (tx) => listarEquipe(tx, restaurante)));

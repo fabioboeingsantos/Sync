@@ -7,6 +7,20 @@ export const raiz = fileURLToPath(new URL('../', import.meta.url));
 
 // Só entram na distribuição os recursos usados pela landing e pelas demonstrações públicas.
 const tema = 'Insumo vencendo na cozinha';
+// O OCR e o modelo português são servidos na mesma origem; nenhuma foto ou dependência é enviada a um CDN.
+const arquivosOcr = [
+  ['node_modules/tesseract.js/dist/tesseract.esm.min.js', 'ocr/tesseract.esm.min.js'],
+  ['node_modules/tesseract.js/dist/worker.min.js', 'ocr/worker.min.js'],
+  ['node_modules/tesseract.js-core/tesseract-core.wasm.js', 'ocr/core/tesseract-core.wasm.js'],
+  ['node_modules/tesseract.js-core/tesseract-core-simd.wasm.js', 'ocr/core/tesseract-core-simd.wasm.js'],
+  ['node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js', 'ocr/core/tesseract-core-lstm.wasm.js'],
+  ['node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js', 'ocr/core/tesseract-core-simd-lstm.wasm.js'],
+  ['node_modules/@tesseract.js-data/por/4.0.0_best_int/por.traineddata.gz', 'ocr/lang/por.traineddata.gz'],
+  ['node_modules/tesseract.js/LICENSE.md', 'ocr/LICENSE-tesseract.js.txt'],
+  ['node_modules/tesseract.js-core/LICENSE', 'ocr/LICENSE-tesseract.js-core.txt'],
+  ['node_modules/@tesseract.js-data/por/README.md', 'ocr/README-idioma.txt'],
+  ['node_modules/@tesseract.js-data/por/package.json', 'ocr/METADADOS-idioma.json'],
+];
 export const arquivosPublicos = [
   'informacoes.html',
   'css/botoes.css',
@@ -72,6 +86,11 @@ export async function montarPiloto({ destino = resolve(raiz, 'dist'), local = fa
     cp(resolve(raiz, 'piloto/interpretar-nfe.js'), resolve(destino, 'interpretar-nfe.js')),
     cp(resolve(raiz, local ? 'scripts/api-local.js' : 'piloto/api.js'), resolve(destino, 'api.js')),
     cp(resolve(raiz, 'piloto/estoque.css'), resolve(destino, 'css/estoque.css')),
+    ...arquivosOcr.map(async ([origem, saida]) => {
+      const destinoArquivo = resolve(destino, saida);
+      await mkdir(resolve(destinoArquivo, '..'), { recursive: true });
+      await cp(resolve(raiz, origem), destinoArquivo);
+    }),
     ...arquivosPublicos.map((arquivo) => cp(resolve(raiz, arquivo), resolve(destino, arquivo))),
   ]);
 

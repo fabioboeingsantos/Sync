@@ -683,9 +683,18 @@ td small { display: block; color: var(--est-muted); font-size: .875rem; font-wei
 .assistente { margin-top: 1rem; }
 .assistente summary { cursor: pointer; }
 .formulario .sugestao { border-color: var(--est-muted); background-color: var(--est-surface-soft); }
-.historico { margin-top: 1rem; }
-.historico ul { padding-inline-start: 1.2rem; }
-.historico li + li { margin-top: .55rem; }
+/* O dono consulta os indicadores mensais e a quantidade de cada baixa em uma área própria. */
+.relatorio-perdas { margin-top: 1rem; scroll-margin-top: 1rem; }
+.resumo-perdas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin: .8rem 0; }
+.resumo-perdas > div { display: grid; justify-items: center; gap: .2rem; padding: .75rem; border: 1px solid var(--est-border); border-radius: .7rem; background: var(--est-surface-soft); text-align: center; }
+.resumo-perdas strong { color: var(--est-heading); font-size: 1.35rem; }
+.resumo-perdas span { font-size: .88rem; }
+.resumo-perdas .perdas-vencidas strong { color: var(--st-hoje-cor); }
+#historico-descartes { display: grid; gap: .55rem; margin: .65rem 0 0; padding: 0; list-style: none; }
+.descarte-relatorio-item { display: grid; gap: .2rem; padding: .75rem; border: 1px solid var(--est-border); border-left: 4px solid var(--st-hoje-cor); border-radius: .65rem; background: var(--est-surface-soft); overflow-wrap: anywhere; }
+.descarte-relatorio-item p { margin: 0; }
+.descarte-relatorio-item small { color: var(--est-muted); }
+@media (max-width: 480px) { .resumo-perdas { grid-template-columns: minmax(0, 1fr); } }
 
 /* Badges de situação nos 4 estados semânticos */
 .estado {
@@ -959,6 +968,17 @@ td small { display: block; color: var(--est-muted); font-size: .875rem; font-wei
 .vision-microfone svg { width: 1.45rem; height: 1.45rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 #assistente-lote .formulario { gap: .65rem; margin-top: .85rem; }
 #assistente-lote textarea { min-height: 6rem; resize: vertical; }
+/* O bloco do OCR deixa explícito que as imagens são lidas no aparelho e requer revisão humana. */
+.ocr-validade { display: grid; gap: .45rem; min-width: 0; padding: .75rem; border: 1px dashed var(--est-border); border-radius: .7rem; background: var(--est-surface-soft); }
+.ocr-validade h4 { margin: 0; color: var(--est-heading); font-size: .92rem; }
+.ocr-validade p { margin: .2rem 0 0; color: var(--est-muted); font-size: .82rem; }
+.ocr-validade .ocr-selecionar { justify-self: start; min-height: 40px; padding: 8px 13px; cursor: pointer; font-size: .86rem; }
+.ocr-validade #estado-ocr { margin: 0; font-size: .84rem; }
+.ocr-validade #estado-ocr[data-estado="erro"] { color: var(--est-erro); }
+.ocr-validade #estado-ocr[data-estado="ok"] { color: var(--est-heading); }
+.ocr-validade #estado-ocr[aria-busy="true"]::before { content: ""; display: inline-block; width: .8rem; height: .8rem; margin-right: .4rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -.1rem; animation: ocr-giro .7s linear infinite; }
+@keyframes ocr-giro { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ocr-validade #estado-ocr[aria-busy="true"]::before { animation: none; } }
 .nfe-box { display: grid; gap: .55rem; min-width: 0; margin-top: .25rem; padding-top: .75rem; border-top: 1px solid var(--est-divider); }
 .nfe-cabecalho, .fila-nfe-cabecalho { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .45rem; }
 .nfe-cabecalho h4 { margin: 0; color: var(--est-heading); font-size: .96rem; }

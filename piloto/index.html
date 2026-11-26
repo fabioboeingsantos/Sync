@@ -145,6 +145,7 @@
             <p class="subtitulo-modulo" id="ajuda-cadastro-vision">O Vision é o assistente de IA: descreva ou dite o lote, revise os campos preenchidos e salve quando estiverem corretos.</p>
           </div>
           <div class="acoes">
+            <a class="botao botao-secundario" id="abrir-relatorio-desperdicio" href="#titulo-relatorio-desperdicio" hidden>Ver relatório de desperdício</a>
             <button class="botao botao-primario" id="abrir-vision" type="button" aria-expanded="false" aria-controls="painel-cadastro" aria-describedby="ajuda-cadastro-vision">Cadastrar com Vision · Assistente IA</button>
             <button class="botao botao-secundario" id="abrir-cadastro" type="button" aria-expanded="false" aria-controls="painel-cadastro">Cadastrar manual</button>
           </div>
@@ -203,6 +204,16 @@
                 </button>
               </div>
               <p id="aviso-ditado" class="aviso-vision">Toque no microfone e fale o insumo, a quantidade e a validade. Você também pode digitar.</p>
+              <!-- A leitura da embalagem é processada localmente com OCR open source; a foto nunca é enviada ao servidor. -->
+              <section class="ocr-validade" aria-labelledby="titulo-ocr-validade">
+                <div>
+                  <h4 id="titulo-ocr-validade">Ler lote e validade pela câmera</h4>
+                  <p>Fotografe o rótulo com boa luz. O OCR sugere os dados para você revisar; a imagem é processada neste aparelho.</p>
+                </div>
+                <label class="botao botao-secundario ocr-selecionar" for="foto-validade">Fotografar ou escolher imagem</label>
+                <input id="foto-validade" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
+                <p id="estado-ocr" class="mensagem" role="status" aria-live="polite"></p>
+              </section>
               <p class="mensagem" id="status-assistente" role="status"></p>
               <!-- A NF-e real é importada neste estoque; a simulação continua exclusiva da demonstração da landing page. -->
               <section class="nfe-box" aria-labelledby="titulo-nfe">
@@ -263,11 +274,16 @@
             </table>
           </div>
         </section>
-        <!-- A visão do dono registra perdas pelo motivo informado na baixa. -->
-        <section class="painel painel-lista historico" id="painel-descartes" aria-labelledby="titulo-descartes" hidden>
-          <h2 id="titulo-descartes">Descartes recentes</h2>
+        <!-- O relatório usa baixas reais do restaurante e só aparece para a conta do dono. -->
+        <section class="painel painel-lista relatorio-perdas" id="painel-descartes" aria-labelledby="titulo-relatorio-desperdicio" hidden>
+          <h2 id="titulo-relatorio-desperdicio" tabindex="-1">Relatório de desperdício</h2>
+          <p>Descartes registrados em <strong id="mes-relatorio-desperdicio"></strong>.</p>
+          <div class="resumo-perdas" aria-live="polite" aria-atomic="true">
+            <div><strong id="total-descartes-mes">0</strong><span>Descartes no mês</span></div>
+            <div class="perdas-vencidas"><strong id="total-descartes-vencidos">0</strong><span>Com validade vencida</span></div>
+          </div>
           <p id="mensagem-descartes" role="status"></p>
-          <ul id="historico-descartes"></ul>
+          <ul id="historico-descartes" aria-label="Detalhes dos descartes do mês"></ul>
         </section>
       </div>
 

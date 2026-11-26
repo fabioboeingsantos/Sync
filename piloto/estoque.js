@@ -38,6 +38,8 @@ const modoVision = porId('modo-vision');
 const modoManual = porId('modo-manual');
 const blocoVision = porId('assistente-lote');
 const arquivoNfe = porId('arquivo-nfe');
+const fotoValidade = porId('foto-validade');
+const estadoOcr = porId('estado-ocr');
 const estadoNfe = porId('estado-nfe');
 const filaNfe = porId('fila-nfe');
 const tituloFilaNfe = porId('titulo-fila-nfe');
@@ -86,6 +88,7 @@ const formSaida = porId('form-saida');
 const cancelarSaida = porId('cancelar-saida');
 const erroSaida = porId('erro-saida');
 const painelDescartes = porId('painel-descartes');
+const abrirRelatorioDesperdicio = porId('abrir-relatorio-desperdicio');
 const historicoDescartes = porId('historico-descartes');
 const descricaoLote = porId('descricao-lote');
 const statusAssistente = porId('status-assistente');
@@ -119,6 +122,7 @@ let envioAbertura = null;
 let notaFiscalAtual = null;
 let itemNfeAtivoUid = null;
 let notaFiscalDuplicada = false;
+let leituraOcrAtiva = false;
 
 const rotulos = { em_dia: 'Em dia', breve: 'Vence em até 3 dias', hoje: 'Vence hoje', vencido: 'Vencido' };
 
@@ -191,6 +195,7 @@ async function mostrarSessao(focar = false) {
     if (perfilBadge) perfilBadge.hidden = true;
     if (abrirFornecedor) abrirFornecedor.hidden = true;
     painelDescartes.hidden = true;
+    if (abrirRelatorioDesperdicio) abrirRelatorioDesperdicio.hidden = true;
     historicoDescartes.replaceChildren();
     porId('tabela-estoque').hidden = true;
     if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = true;
@@ -209,6 +214,26 @@ function formatarData(data) {
   // Validade é uma data de calendário. A exibição mantém o dia recebido do banco.
   const [ano, mes, dia] = data.split('-');
   return `${dia}/${mes}/${ano}`;
+}
+
+// O restaurante usa America/Sao_Paulo; o mesmo fuso define o mês e o dia do descarte no relatório.
+const fusoRelatorio = 'America/Sao_Paulo';
+function partesDataNoFuso(data) {
+  return Object.fromEntries(new Intl.DateTimeFormat('en', {
+    timeZone: fusoRelatorio, year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(data).filter((parte) => parte.type !== 'literal').map(({ type, value }) => [type, value]));
+}
+
+// Retorna o período civil atual do restaurante sem depender do fuso configurado no dispositivo.
+function mesAtualRelatorio() {
+  const partes = partesDataNoFuso(new Date());
+  return `${partes.year}-${partes.month}`;
+}
+
+// Verifica vencimento na data local do descarte, como faz o relatório do protótipo E3.
+function dataDoDescarte(saida) {
+  const partes = partesDataNoFuso(new Date(saida.registrado_em));
+  return `${partes.year}-${partes.month}-${partes.day}`;
 }
 
 function formatarSaldo(saldo, medida) {
@@ -606,14 +631,16 @@ async function atualizarEstoque() {
 
 async function atualizarDescartes(id, consulta) {
   try {
-    const descartes = await api.descartes(id);
+    const periodo = mesAtualRelatorio();
+    const descartes = await api.descartes(id, periodo);
     if (consulta !== versaoConsulta) return;
-    // O acesso à lista de descartes, gestão de equipe e edição de fornecedores é exclusivo do dono ativo.
+    // O relatório, assim como equipe e fornecedores, só é exibido à conta dona do restaurante.
     ehDonoAtual = descartes !== null;
     if (linkEquipe) linkEquipe.hidden = !ehDonoAtual;
     if (abaEquipe) abaEquipe.hidden = !ehDonoAtual;
     if (abrirFornecedor) abrirFornecedor.hidden = !ehDonoAtual;
     if (colAcoesFornecedores) colAcoesFornecedores.hidden = !ehDonoAtual;
+    if (abrirRelatorioDesperdicio) abrirRelatorioDesperdicio.hidden = !ehDonoAtual;
     if (perfilBadge) {
       perfilBadge.textContent = ehDonoAtual ? 'Perfil: Dono' : 'Perfil: Funcionário';
       perfilBadge.hidden = false;
@@ -625,22 +652,42 @@ async function atualizarDescartes(id, consulta) {
     }
     painelDescartes.hidden = !ehDonoAtual;
     if (!ehDonoAtual && moduloAtivo === 'equipe') alternarModulo('estoque', false);
-    historicoDescartes.replaceChildren(...(descartes ?? []).map((saida) => {
+    if (!ehDonoAtual) return;
+
+    const [ano, mes] = periodo.split('-').map(Number);
+    const mesExtenso = new Intl.DateTimeFormat('pt-BR', {
+      month: 'long', year: 'numeric', timeZone: fusoRelatorio,
+    }).format(new Date(Date.UTC(ano, mes - 1, 15, 12)));
+    porId('mes-relatorio-desperdicio').textContent = mesExtenso;
+    const lista = Array.isArray(descartes) ? descartes : [];
+    const vencidos = lista.filter((saida) => saida.validade_aplicavel < dataDoDescarte(saida)).length;
+    porId('total-descartes-mes').textContent = String(lista.length);
+    porId('total-descartes-vencidos').textContent = String(vencidos);
+    historicoDescartes.replaceChildren(...lista.map((saida) => {
       const item = document.createElement('li');
-      const codigo = saida.codigo_fabricante ? ' · Lote ' + saida.codigo_fabricante : '';
+      item.className = 'descarte-relatorio-item';
+      const titulo = document.createElement('strong');
+      titulo.textContent = saida.insumo;
+      const lote = saida.codigo_fabricante ? ` · Lote ${saida.codigo_fabricante}` : '';
+      const quantidade = document.createElement('p');
+      quantidade.textContent = `Quantidade descartada: ${formatarSaldo(saida.quantidade, saida.medida)}${lote}`;
       const motivo = saida.motivo === 'vencimento' ? 'Vencimento' : 'Outro motivo';
-      const data = new Date(saida.registrado_em).toLocaleString('pt-BR');
-      item.textContent = saida.insumo + codigo + ' · ' + formatarSaldo(saida.quantidade, saida.medida) + ' · ' + motivo + ' · ' + data;
+      const detalhes = document.createElement('small');
+      detalhes.textContent = `Validade: ${formatarData(saida.validade_aplicavel)} · Motivo: ${motivo} · Descartado em: ${new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'short', timeStyle: 'short', timeZone: fusoRelatorio,
+      }).format(new Date(saida.registrado_em))}`;
+      item.append(titulo, quantidade, detalhes);
       return item;
     }));
-    porId('mensagem-descartes').textContent = descartes?.length ? '' : 'Nenhum descarte registrado.';
+    porId('mensagem-descartes').textContent = lista.length ? '' : 'Nenhum descarte registrado neste mês.';
   } catch {
     if (consulta !== versaoConsulta) return;
     historicoDescartes.replaceChildren();
-    porId('mensagem-descartes').textContent = 'Não foi possível consultar o histórico.';
+    porId('total-descartes-mes').textContent = '—';
+    porId('total-descartes-vencidos').textContent = '—';
+    porId('mensagem-descartes').textContent = 'Não foi possível carregar o relatório deste mês. Tente atualizar o estoque.';
   }
 }
-
 function iniciarSaida(parte, tipo) {
   parteEmSaida = { parte, tipo };
   formSaida.reset();
@@ -1435,16 +1482,19 @@ function preencherComAssistente() {
         campo.classList.remove('sugestao');
         continue;
       }
+      // A sugestão obtida pela foto permanece enquanto a pessoa completa os demais campos por texto ou voz.
+      if (campo.dataset.fonteOcr === 'true') continue;
       campo.value = campo.defaultValue ?? 'un';
       campo.classList.remove('sugestao');
     }
-    if (!itemNfeAtivoUid) campos.validade.value = '';
+    if (!itemNfeAtivoUid && campos.validade.dataset.fonteOcr !== 'true') campos.validade.value = '';
     for (const [nome, valor] of Object.entries(sugestao)) {
       const campo = campos[nome];
       if (!valor) continue;
       campo.value = campo.maxLength > 0 ? valor.slice(0, campo.maxLength) : valor;
       campo.classList.add('sugestao');
       delete campo.dataset.fonteNfe;
+      delete campo.dataset.fonteOcr;
     }
     if (!sugestao.validade) {
       statusAssistente.textContent = 'Vision: informe uma data completa e válida antes de salvar.';
@@ -1459,10 +1509,97 @@ function preencherComAssistente() {
   }
 }
 
+// Localiza uma data completa associada a um rótulo de validade, evitando confundir fabricação com vencimento.
+function extrairValidadeOcr(texto) {
+  const normalizado = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  const ocorrencia = normalizado.match(/(?:VALIDADE|VALID|VAL|VENC(?:IMENTO)?|EXP(?:IRA(?:TION)?)?)\s*[:#\-]?\s*(\d{1,2}[./-]\d{1,2}[./-]\d{2,4})/i);
+  if (!ocorrencia) return '';
+  const partes = ocorrencia[1].split(/[./-]/).map(Number);
+  const [dia, mes, anoInformado] = partes;
+  const ano = String(anoInformado).length === 2 ? 2000 + anoInformado : anoInformado;
+  const data = new Date(Date.UTC(ano, mes - 1, dia));
+  if (data.getUTCFullYear() !== ano || data.getUTCMonth() !== mes - 1 || data.getUTCDate() !== dia) return '';
+  return `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+}
+
+// Extrai códigos apenas quando há um marcador explícito de lote para reduzir sugestões incorretas.
+function extrairLoteOcr(texto) {
+  const ocorrencia = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').match(/\b(?:LOTE|LOT)\s*[:#\-]?\s*([A-Z0-9][A-Z0-9._/-]{1,23})/i);
+  return ocorrencia?.[1]?.replace(/[.,;:]$/, '') ?? '';
+}
+
+// Lê a fotografia localmente com Tesseract.js e preenche somente campos vazios para revisão.
+fotoValidade?.addEventListener('change', async (evento) => {
+  const arquivo = evento.target.files?.[0];
+  evento.target.value = '';
+  if (!arquivo) return;
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(arquivo.type) || arquivo.size > 12 * 1024 * 1024) {
+    estadoOcr.textContent = 'Escolha uma imagem JPG, PNG ou WebP de até 12 MB.';
+    estadoOcr.dataset.estado = 'erro';
+    return;
+  }
+  if (leituraOcrAtiva) return;
+  leituraOcrAtiva = true;
+  estadoOcr.textContent = 'Preparando o OCR local em português…';
+  estadoOcr.dataset.estado = '';
+  estadoOcr.setAttribute('aria-busy', 'true');
+  let worker;
+  try {
+    // O módulo, worker, motor WebAssembly e idioma são arquivos do próprio site, sem chamadas a APIs ou CDN.
+    const { createWorker } = await import('./ocr/tesseract.esm.min.js');
+    worker = await createWorker('por', 1, {
+      workerPath: new URL('./ocr/worker.min.js', import.meta.url).href,
+      corePath: new URL('./ocr/core/', import.meta.url).href,
+      langPath: new URL('./ocr/lang/', import.meta.url).href,
+      logger: (progresso) => {
+        if (progresso.status === 'recognizing text' && Number.isFinite(progresso.progress)) {
+          estadoOcr.textContent = `Lendo a imagem no aparelho… ${Math.round(progresso.progress * 100)}%`;
+        }
+      },
+    });
+    const resultado = await worker.recognize(arquivo);
+    const validade = extrairValidadeOcr(resultado.data.text);
+    const lote = extrairLoteOcr(resultado.data.text);
+    const preenchidos = [];
+    if (lote && !campos.codigo.value.trim()) {
+      campos.codigo.value = lote.slice(0, campos.codigo.maxLength || 80);
+      campos.codigo.classList.add('sugestao');
+      campos.codigo.dataset.fonteOcr = 'true';
+      preenchidos.push('lote');
+    }
+    if (validade && !campos.validade.value) {
+      campos.validade.value = validade;
+      campos.validade.classList.add('sugestao');
+      campos.validade.dataset.fonteOcr = 'true';
+      preenchidos.push('validade');
+    }
+    if (preenchidos.length) {
+      estadoOcr.textContent = `Sugestão de ${preenchidos.join(' e ')} preenchida. Confira o rótulo e os campos antes de salvar.`;
+      estadoOcr.dataset.estado = 'ok';
+      statusAssistente.textContent = 'O OCR sugeriu dados da embalagem. Confira as sugestões destacadas e corrija se necessário.';
+    } else if (lote || validade) {
+      estadoOcr.textContent = 'O OCR reconheceu dados, mas os campos correspondentes já têm conteúdo. Confira-os manualmente.';
+      estadoOcr.dataset.estado = 'ok';
+    } else {
+      estadoOcr.textContent = 'Não identifiquei lote ou validade com segurança. Tente outra foto aproximada e bem iluminada ou digite os dados.';
+      estadoOcr.dataset.estado = 'erro';
+    }
+  } catch (erro) {
+    console.error('Falha na leitura OCR local:', erro);
+    estadoOcr.textContent = 'Não foi possível carregar o OCR local. Recarregue a tela e tente outra vez.';
+    estadoOcr.dataset.estado = 'erro';
+  } finally {
+    if (worker) await worker.terminate().catch(() => {});
+    estadoOcr.removeAttribute('aria-busy');
+    leituraOcrAtiva = false;
+  }
+});
+
 porId('sugerir-lote').addEventListener('click', preencherComAssistente);
 formLote.addEventListener('input', (evento) => {
   evento.target.classList.remove('sugestao');
   delete evento.target.dataset.fonteNfe;
+  delete evento.target.dataset.fonteOcr;
   duplicadoConfirmado = null;
 });
 

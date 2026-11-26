@@ -74,7 +74,7 @@ erDiagram
 | `membros_restaurante` | Tabela | `SELECT` apenas da própria linha ativa (`usuario_id = auth.uid() and ativo`). Escritas diretas negadas (`REVOKE`). | Autorização por restaurante e papel (`dono` ou `funcionario`). |
 | `lotes` | Tabela | `SELECT` por vínculo ativo no restaurante. Escritas somente via RPCs `SECURITY DEFINER`. | Dados de origem do lote, validade da embalagem, trava otimista (`revisao_validade`) e idempotência (`operacao_id`). |
 | `partes_lote` | Tabela | `SELECT` via visibilidade do lote. Escritas somente via RPCs. | Saldo independente de partes fechadas e abertas/fracionadas. |
-| `saidas_estoque` | Tabela | `SELECT` restrito ao restaurante (visão de descartes filtrada ao `dono` na API). | Histórico imutável de uso e descarte, com motivo e horário. |
+| `saidas_estoque` | Tabela | `SELECT` restrito ao restaurante (visão de descartes filtrada ao `dono` na API). | Histórico imutável de uso e descarte, com motivo, validade aplicável e horário; o dono usa as baixas do mês no relatório de perdas. |
 | `estoque` | View (`security_invoker = true`) | Herda exatamente a RLS do usuário autenticado | Projeção ordenada por `validade_aplicavel`, calculando `situacao` (`vencido`, `hoje`, `breve`, `em_dia`) no fuso do restaurante. |
 | `nomes_usuario` | Tabela | Acesso direto negado a `authenticated` (`42501`); leitura/escrita apenas via funções protegidas | Nome de usuário único case-insensitive entre todos os restaurantes e carimbo opcional `email_verificado_em`. |
 

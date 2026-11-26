@@ -33,5 +33,5 @@
 ## Endereços do piloto
 
 - `/#prototipos` para entrar pela landing page.
-- `/estoque/` para consultar lotes. Cadastro manual ou assistido, correção, abertura e saídas partem da própria tela. O dono consulta os descartes recentes e acessa a gestão da equipe pelo botão **Equipe**.
+- `/estoque/` para consultar lotes. Cadastro manual ou assistido, correção, abertura e saídas partem da própria tela. O dono abre **Ver relatório de desperdício** para consultar as baixas do mês, quantas ocorreram com a validade vencida e a quantidade, motivo e data de cada registro. O painel usa os dados reais do restaurante e funcionários não o acessam. O dono também acessa a gestão da equipe pelo botão **Equipe**.
 - `/equipe/` (com redirecionamento de `/equipe` para `/equipe/`) para o dono ativo liberar acesso por usuário ou e-mail, reativar vínculos e remover acessos com efeito imediato mesmo com sessão aberta.

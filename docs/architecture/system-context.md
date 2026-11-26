@@ -10,7 +10,7 @@
 | Visitante | Sem sessão | Navega na landing Sync (`/`), cria conta individual (`/#cadastro`) ou solicita recuperação de senha (`/#recuperar`). |
 | Usuário autenticado sem vínculo | Sessão válida sem linha ativa em `membros_restaurante` | Acessa **Minha conta**, consulta status de vínculo e solicita/confirma e-mail opcional. Não acessa estoque nem equipe. |
 | Funcionário (`funcionario`) | Vínculo ativo em `membros_restaurante` | Consulta lotes do seu restaurante, cadastra, corrige validade, registra abertura/fracionamento e baixas (uso/descarte). Não acessa descartes gerenciais nem `/equipe/`. |
-| Dono (`dono`) | Vínculo ativo com `papel = 'dono'` | Todas as ações do funcionário + consulta de descartes recentes + gestão completa de acessos em `/equipe/` (vincular, reativar e revogar). |
+| Dono (`dono`) | Vínculo ativo com `papel = 'dono'` | Todas as ações do funcionário + relatório mensal de descartes reais + gestão completa de acessos em `/equipe/` (vincular, reativar e revogar). |
 
 ## 2. Fronteiras de confiança e fluxo de dados
 

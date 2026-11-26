@@ -21,9 +21,9 @@ No piloto, public.membros_restaurante usa os papéis de acesso dono e funcionari
 
 ## Integração de Notas Fiscais (NF-e / NFC-e) com a Assistente IA
 
-**Status** — Fase 1 implementada no MVP; Fases 2 e 3 planejadas para o piloto online.
+**Status** — Fase 1 e OCR local da Fase 3 implementados no estoque. A captura automática da Fase 2 continua opcional e depende de certificado A1 e homologação.
 
 O [plano de integração de notas fiscais](integracao-notas-fiscais.md) documenta como as notas chegam nos restaurantes no Brasil (NF-e 55, NFC-e 65, grupo `<rastro>` e romaneios) e o passo a passo técnico em 3 fases:
 1. **Fase 1 (Ativa no MVP):** leitura local de XML NF-e via `DOMParser` (`agente-ia-cadastro.html` e `piloto/interpretar-nfe.js`), aproveitamento de `<rastro>`, proteção contra nota/lote duplicado e conferência por voz (**VoicePill**).
-2. **Fase 2 (Piloto SEFAZ):** captura automática via SEFAZ Distribuição DF-e (Certificado Digital A1), leitura de QR Code de NFC-e e tabela de De/Para de fornecedores no Supabase.
-3. **Fase 3 (Câmera / Vision):** leitura da validade na embalagem (OCR) e foto de romaneio para compras sem XML.
+2. **Fase 2 (opcional e futura):** consulta direta ao serviço oficial DF-e, sem API fiscal paga; depende de certificado A1, homologação e configuração segura por restaurante. QR Code NFC-e e De/Para também permanecem futuros.
+3. **Fase 3 (OCR local implementado no estoque):** Tesseract.js e modelo português open source sugerem lote e validade a partir de uma foto no aparelho, sempre com revisão manual; a leitura de romaneio não está incluída.

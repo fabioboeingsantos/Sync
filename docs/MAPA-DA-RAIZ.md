@@ -44,6 +44,7 @@ Sync/
 ├── index.html                  página inicial do simulado
 ├── informacoes.html            informações sobre a versão do simulado
 ├── package-lock.json           versões exatas das dependências npm
+├── requirements.txt            informa que o projeto não possui dependências Python
 ├── package.json                dependências e comandos do piloto
 ├── README.md                   entrada do repositório e instruções locais
 └── vercel.json                 configuração do build e da saída na Vercel
@@ -57,7 +58,7 @@ Sync/
 - **Simulado.** A [página inicial](../index.html) e a [página de informações](../informacoes.html) continuam na raiz como pontos de entrada. Os estilos da SYNC, o alternador de tema e as mídias da abertura ficam em [abertura/](<../Insumo vencendo na cozinha/abertura/>). As entregas, os guias e os protótipos estão organizados no [índice do simulado](<../Insumo vencendo na cozinha/README.md>).
 - **Exemplar da E3.** O [protótipo interativo](<../Insumo vencendo na cozinha/desafios/E3-prototipo.html>) fica ao lado do roteiro do desafio. Carrega o [estilo global de botões](../css/botoes.css), as imagens locais, o [interpretador da Vision](<../Insumo vencendo na cozinha/htmls/interpretar-lote.js>) e o [microfone animado](<../Insumo vencendo na cozinha/htmls/voice-pill.js>), compartilhados com a demonstração pública de cadastro assistido.
 - **Lean Canvas visual.** O [PDF](<../Insumo vencendo na cozinha/desafios/E3-lean-canvas-visual.pdf>) e a [imagem PNG](<../Insumo vencendo na cozinha/desafios/E3-lean-canvas-visual.png>) acompanham a seção Lean Canvas do [documento da E3](<../Insumo vencendo na cozinha/desafios/E3.md>).
-- **Itens locais e gerados.** `.dados-local/`, `dist/`, `node_modules/`, `.env.local`, `.vercel/` e `supabase/.temp/`, quando existirem, estão cobertos pelo [.gitignore](../.gitignore). `.env.example` é o modelo compartilhado.
+- **Itens locais e gerados.** `.dados-local/`, `dist/`, `node_modules/`, `.env.local`, `.vercel/` e `supabase/.temp/`, quando existirem, estão cobertos pelo [.gitignore](../.gitignore). `.env.example` é o modelo compartilhado. O [requirements.txt](../requirements.txt) registra que não há pacotes Python; as dependências do projeto são Node.js e ficam em `package.json` e `package-lock.json`.
 
 ## Onde colocar mudanças
 

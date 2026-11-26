@@ -1,6 +1,6 @@
 # Integração de Notas Fiscais (NF-e / NFC-e) com a Assistente do VisionChef
 
-**Status:** Fase 1 implementada no MVP (`agente-ia-cadastro.html` e `piloto/interpretar-nfe.js`) · Fases 2 e 3 planejadas para a evolução do piloto online.
+**Status:** Fase 1 e leitura local por câmera da Fase 3 implementadas no estoque. A captura automática SEFAZ da Fase 2 continua opcional e depende do certificado A1 do restaurante.
 
 Este documento consolida o levantamento da realidade fiscal no Brasil para restaurantes pequenos e define o passo a passo técnico de implantação em **3 fases**, mantendo a regra de ouro do VisionChef: **o sistema sugere e acelera, e a pessoa na cozinha sempre confere e confirma antes de gravar**.
 
@@ -26,7 +26,7 @@ Mesmo quando um ERP importa o XML automaticamente, o arquivo informa **o quê** 
 flowchart LR
     F1["Fase 1 (MVP Ativo)<br/>Upload XML NF-e local<br/>(DOMParser + &lt;rastro&gt;)"] --> A["Fila de Conferência<br/>Normaliza nomes + detecta<br/>validades ausentes"]
     F2["Fase 2 (Piloto SEFAZ)<br/>Distribuição DF-e (A1)<br/>+ QR Code NFC-e + De/Para"] --> A
-    F3["Fase 3 (Câmera / Vision)<br/>OCR da validade na embalagem<br/>e foto de romaneio"] --> A
+    F3["Fase 3 (OCR local implementado)<br/>Foto do rótulo no aparelho<br/>sugere lote e validade"] --> A
     A --> B["Assistente por Voz / Texto<br/>(VoicePill + trava de data ambígua<br/>e alerta de duplicidade)"]
     B --> C["Conferência Humana<br/>(1 toque para salvar)"]
     C --> D["Estoque PVPS<br/>4 cores semânticas + alerta<br/>pulsante em Vence hoje"]
@@ -52,33 +52,28 @@ flowchart LR
 
 ---
 
-### Fase 2 — Captura automática SEFAZ (DF-e), QR Code de NFC-e e De/Para *(Evolução do Piloto)*
-**Objetivo:** eliminar até o upload manual do XML no restaurante piloto, fazendo as notas aparecerem automaticamente antes do caminhão descarregar.
+### Fase 2 — Captura automática SEFAZ (DF-e), QR Code de NFC-e e De/Para *(opcional; ainda não implementada)*
+**Objetivo futuro:** permitir que um restaurante que já possua certificado A1 consulte os documentos fiscais diretamente nos serviços oficiais, sem contratar intermediário fiscal.
 
-1. **Certificado Digital A1 (`.pfx`) no backend seguro:**
-   - Armazenado de forma cifrada fora do navegador (cofre/variáveis privadas no servidor Node/provedor fiscal parceiro como *Nuvem Fiscal*, *Focus NFe* ou *Tecnospeed* — nunca exposto ao front-end).
-2. **Fluxo SEFAZ Distribuição DF-e:**
-   - Job periódico consulta o Web Service da SEFAZ pelo CNPJ do restaurante usando o último **NSU** (*Número Sequencial Único*).
-   - Recebe o resumo da nota (`resNFe`), envia o evento de **Manifestação do Destinatário (Ciência da Operação)** e baixa o XML completo (`procNFe`).
-   - Persiste a nota em uma nova tabela `notas_fiscais_entrada` com `UNIQUE (restaurante_id, chave_nfe)` e **RLS por restaurante** no PostgreSQL/Supabase.
-3. **Leitura de QR Code da NFC-e (compras de atacarejo/mercado):**
-   - Câmera do celular lê o QR Code do cupom térmico, extrai a chave/URL da SEFAZ estadual e carrega os itens na mesma fila de conferência.
-4. **Tabela de De/Para por fornecedor (`de_para_fornecedor`):**
-   - Mapeia `(restaurante_id, cnpj_fornecedor, codigo_produto_fornecedor ou ean)` → `(insumo_padronizado, fator_conversao, medida_cozinha)`.
-   - Na 1ª compra de `"CX 24UN"`, o dono confirma `× 24 un`; a partir da 2ª compra, a conversão entra automaticamente.
+1. **Certificado Digital A1 (`.pfx`):** necessário para autenticar o CNPJ nos serviços de distribuição DF-e. O A1 deve ser emitido por uma autoridade certificadora; essa emissão ou renovação pode ter custo, mesmo sem tarifa de API. Sem certificado, a importação manual do XML da Fase 1 continua funcionando.
+2. **Integração direta:** implementar cliente SOAP no backend para os endereços oficiais da SEFAZ, com certificado e senha protegidos no servidor. O repositório ainda não consulta a SEFAZ, não guarda certificado e não manifesta notas automaticamente.
+3. **Manifestação do destinatário:** exigir ação explícita de pessoa autorizada; não enviar Ciência da Operação automaticamente. O XML completo pode depender de evento de manifestação conforme as regras fiscais.
+4. **NFC-e e De/Para:** QR Code varia conforme a UF e a tabela de conversão depende das unidades e dos produtos do estabelecimento. Essas duas funções ainda precisam de implementação e validação por estado antes de serem oferecidas como operacionais.
+5. **Operação em produção:** habilitar somente depois de obter A1 de homologação, validar a UF e o CNPJ do restaurante, testar os serviços da SEFAZ e definir armazenamento seguro do certificado. Não há provedor ou API comercial obrigatório no desenho.
 
 ---
 
-### Fase 3 — Câmera na Cozinha / Visão Computacional *(Escala — Vision)*
-**Objetivo:** cobrir os casos em que não existe XML (hortifrúti, feira, produtor local) e agilizar ainda mais a leitura da data impressa nas embalagens.
+### Fase 3 — Câmera na Cozinha / OCR local *(Implementada no estoque)*
+**Objetivo:** cobrir a leitura de lote e validade em rótulos fotografados quando o XML não traz o bloco `<rastro>`.
 
-1. **Leitura da validade na embalagem (OCR / Vision):**
-   - Na conferência de um item sem `<rastro>`, o funcionário aponta a câmera do celular para o carimbo de lote e validade (`L: B02 / VAL: 30/11/26`).
-   - O modelo de visão extrai `lote` e `validade` e preenche os campos destacados no formulário (mesmo contrato de conferência humana da Fase 1).
-2. **Foto de romaneio / recibo em papel:**
-   - Para entregas de feira sem NF-e, uma foto do romaneio alimenta a mesma fila de conferência da nota, aplicando validação de calendário real, bloqueio de datas ambíguas e detecção de duplicidade.
+1. **Leitura da validade na embalagem (OCR local):**
+   - Na conferência de um item sem `<rastro>`, o funcionário fotografa ou seleciona a imagem do carimbo de lote e validade (`LOTE: B02 / VAL: 30/11/2026`).
+   - O Tesseract.js (Apache-2.0), com o pacote de idioma português (MIT), roda no aparelho. Os arquivos do motor e do idioma são servidos pela própria aplicação; foto e texto extraído não são enviados a uma API.
+   - Marcadores explícitos `LOTE` e `VAL`/`VALIDADE`/`VENCIMENTO` são usados para sugerir os campos vazios. A pessoa revisa e salva manualmente; o OCR nunca grava um lote sozinho.
+2. **Limites do MVP:**
+   - A câmera sugere somente o código do lote e uma data associada a rótulos explícitos. A leitura de romaneios e a extração automática de nomes e quantidades ainda não estão implementadas; esses dados continuam sendo preenchidos por voz, texto ou pelo formulário manual.
 3. **Privacidade e segurança:**
-   - Imagens de rótulos são processadas apenas para extrair texto da embalagem e descartadas em seguida, mantendo aderência à LGPD.
+   - O arquivo da imagem permanece em memória durante a leitura e não é persistido em `localStorage`, banco ou servidor. A leitura é processada no navegador e exige conferência humana.
 
 ---
 
@@ -87,5 +82,5 @@ flowchart LR
 | Fase | Entrada da nota | Custo de infra | Benefício principal na cozinha |
 | --- | --- | --- | --- |
 | **Fase 1 (MVP ativo)** | Upload `.xml` da NF-e + Simulação pronta | **R$ 0** (roda no navegador) | Elimina digitação de itens/quantidades e já aproveita `<rastro>` |
-| **Fase 2 (Piloto SEFAZ)** | Automático via SEFAZ DF-e (A1) + QR Code NFC-e | Baixo (API fiscal por CNPJ) | Nota já espera o caminhão na tela; De/Para automático |
-| **Fase 3 (Vision)** | Câmera na embalagem (OCR) + foto de romaneio | Sob demanda por leitura | Cobre feira/hortifrúti sem XML e zera digitação de datas |
+| **Fase 2 (opcional)** | Consulta direta ao WS oficial SEFAZ DF-e (A1), sem intermediário fiscal | **Sem tarifa de API**; emissão/renovação do A1 pode ter custo externo | Importação automática após configuração do certificado; XML local continua disponível sem A1 |
+| **Fase 3 (OCR local)** | Câmera ou foto de rótulo para sugerir lote e validade | **R$ 0 por leitura** (Tesseract.js e modelo open source, servidos pela aplicação) | Sugere lote e data para revisão; romaneios ainda exigem entrada manual |

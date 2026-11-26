@@ -1,0 +1,3 @@
+# Este projeto nao possui dependencias Python.
+# Use package.json e package-lock.json para instalar as dependencias Node.js:
+# npm ci

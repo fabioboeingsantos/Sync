@@ -59,7 +59,7 @@ fases:
   F06_jornada_vertical:
     status: "READY_FOR_RELEASE"
     artefatos: ["piloto/estoque.js", "piloto/interpretar-nfe.js", "piloto/equipe.js", "piloto/api.js", "api/index.js", "vercel.json"]
-    evidencia_atual: "Jornadas do piloto (auth, conta, estoque com filtros e proteção contra lote repetido, baixas/abertura, descartes, /equipe e módulo NF-e XML Fase 1) implementadas"
+    evidencia_atual: "Jornadas do piloto (auth, conta, estoque com filtros e proteção contra lote repetido, baixas/abertura, descartes, /equipe, módulo NF-e XML Fase 1, OCR local de lote/validade e relatório mensal real de descartes para o dono) implementadas"
     pendencias: ["Executar suíte completa npm test e smoke test pós-deploy em /api/health e /equipe/"]
   F07_llm_agentes:
     status: "NOT_APPLICABLE"

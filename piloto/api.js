@@ -47,7 +47,8 @@ export const api = {
   corrigirValidade: (correcao) => solicitar('estoque/corrigir-validade', { metodo: 'POST', corpo: correcao }),
   registrarAbertura: (abertura) => solicitar('estoque/registrar-abertura', { metodo: 'POST', corpo: abertura }),
   registrarSaida: (saida) => solicitar('estoque/registrar-saida', { metodo: 'POST', corpo: saida }),
-  descartes: (restaurante) => solicitar(`descartes?restaurante=${encodeURIComponent(restaurante)}`),
+  // O mês é filtrado no servidor para que o relatório real não dependa dos últimos itens da lista.
+  descartes: (restaurante, mes) => solicitar(`descartes?restaurante=${encodeURIComponent(restaurante)}&mes=${encodeURIComponent(mes)}`),
   equipe: (restaurante) => solicitar(`equipe?restaurante=${encodeURIComponent(restaurante)}`),
   vincularMembro: (dados) => solicitar('equipe/vincular', { metodo: 'POST', corpo: dados }),
   removerMembro: (dados) => solicitar('equipe/remover', { metodo: 'POST', corpo: dados }),
