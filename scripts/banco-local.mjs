@@ -160,11 +160,11 @@ export async function autenticarContaLocal(banco, identificador, senha) {
   return conta;
 }
 
-// Cria conta local gravando somente o hash Argon2id da senha, sem conceder vínculo com restaurante.
+// Cria conta local com o mesmo mínimo de senha do piloto e grava somente o hash Argon2id.
 export async function criarContaLocal(banco, { nomeUsuario, email, senha }) {
   const nome = typeof nomeUsuario === 'string' ? nomeUsuario.trim().toLowerCase() : '';
   const endereco = typeof email === 'string' ? email.trim().toLowerCase() : '';
-  if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(endereco) || typeof senha !== 'string' || senha.length < 15 || senha.length > 128) {
+  if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(endereco) || typeof senha !== 'string' || senha.length < 6 || senha.length > 128) {
     throw Object.assign(new Error('Confira o usuário, o e-mail e a senha.'), { status: 400 });
   }
   const senhaHash = await gerarHashSenha(senha);
@@ -179,10 +179,10 @@ export async function criarContaLocal(banco, { nomeUsuario, email, senha }) {
   return { id, email: endereco, nome };
 }
 
-// Substitui o hash armazenado por um novo hash Argon2id com novo sal aleatório.
+// Valida o tamanho da nova senha antes de gravar um hash Argon2id com novo sal aleatório.
 export async function redefinirSenhaLocal(banco, usuarioId, novaSenha) {
-  if (typeof novaSenha !== 'string' || novaSenha.length < 15 || novaSenha.length > 128) {
-    throw Object.assign(new Error('A senha deve ter entre 15 e 128 caracteres.'), { status: 400 });
+  if (typeof novaSenha !== 'string' || novaSenha.length < 6 || novaSenha.length > 128) {
+    throw Object.assign(new Error('A senha deve ter entre 6 e 128 caracteres.'), { status: 400 });
   }
   const novoHash = await gerarHashSenha(novaSenha);
   const { rows } = await banco.query(`

@@ -113,6 +113,7 @@ paths:
   /api/auth/signup:
     post:
       summary: Criar conta individual (sem vínculo automático ao restaurante)
+      description: O domínio do e-mail deve publicar um registro MX de recebimento. A confirmação da caixa postal é facultativa.
       requestBody:
         required: true
         content:
@@ -123,14 +124,16 @@ paths:
               properties:
                 nomeUsuario: { type: string, pattern: "^[a-z0-9][a-z0-9._-]{2,31}$" }
                 email: { type: string, format: email }
-                senha: { type: string, minLength: 15, maxLength: 128 }
+                senha: { type: string, minLength: 6, maxLength: 128 }
       responses:
         "201":
           description: Conta criada
         "400":
-          description: Dados ou política de senha inválidos
+          description: Dados inválidos, senha fora da política ou domínio sem registro MX de recebimento
         "429":
           description: Muitos cadastros em sequência
+        "503":
+          description: Verificação do domínio ou serviço de cadastro temporariamente indisponível
 
   /api/auth/recover:
     post:
@@ -167,7 +170,7 @@ paths:
               required: [access_token, senha]
               properties:
                 access_token: { type: string }
-                senha: { type: string, minLength: 15, maxLength: 128 }
+                senha: { type: string, minLength: 6, maxLength: 128 }
       responses:
         "200":
           description: Senha atualizada e cookie de sessão limpo

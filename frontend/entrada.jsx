@@ -210,8 +210,8 @@ function AcessoVisionChef({ destino }) {
       definirMensagem('As senhas não coincidem.');
       return;
     }
-    if (dados.senha.length < 15) {
-      definirMensagem('Use uma senha com pelo menos 15 caracteres.');
+    if (dados.senha.length < 6) {
+      definirMensagem('Use uma senha com pelo menos 6 caracteres.');
       return;
     }
     if (api.modoLocal) {
@@ -234,8 +234,11 @@ function AcessoVisionChef({ destino }) {
         definirMensagem(resultado.mensagem ?? 'Conta criada. Entre para acessar sua área da conta.');
         definirModo('resultado');
       }
-    } catch {
-      definirMensagem('Não foi possível criar a conta. Confira os dados ou tente outro usuário e e-mail.');
+    } catch (erro) {
+      // Mostra a orientação retornada pela API para senha, domínio e limite de tentativas.
+      definirMensagem(erro.status === 400 || erro.status === 429 || erro.code === 'consulta_email_indisponivel'
+        ? erro.message
+        : 'Não foi possível criar a conta. Confira os dados ou tente outro usuário e e-mail.');
     } finally {
       envioEmCurso.current = false;
       definirEnvio(false);
@@ -331,8 +334,8 @@ function AcessoVisionChef({ destino }) {
   async function redefinirSenha(evento) {
     evento.preventDefault();
     const dados = Object.fromEntries(new FormData(evento.currentTarget));
-    if (dados.senha.length < 15 || dados.senha !== dados.confirmarSenha) {
-      definirMensagem(dados.senha.length < 15 ? 'Use uma senha com pelo menos 15 caracteres.' : 'As senhas não coincidem.');
+    if (dados.senha.length < 6 || dados.senha !== dados.confirmarSenha) {
+      definirMensagem(dados.senha.length < 6 ? 'Use uma senha com pelo menos 6 caracteres.' : 'As senhas não coincidem.');
       return;
     }
     definirEnvio(true);
@@ -395,8 +398,8 @@ function AcessoVisionChef({ destino }) {
           {modo === 'cadastro' && <form className="formulario-acesso" onSubmit={criarConta}>
             <label>Nome de usuário<input name="nomeUsuario" type="text" placeholder="Digite seu nome de usuário" autoComplete="username" minLength="3" maxLength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}" required /></label>
             <label>E-mail<input name="email" type="email" placeholder="Digite seu e-mail" autoComplete="email" maxLength="254" required /></label>
-            <CampoSenha rotulo="Senha (mínimo de 15 caracteres)" name="senha" placeholder="Crie sua senha" autoComplete="new-password" minLength="15" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
-            <CampoSenha rotulo="Confirmar senha" name="confirmarSenha" placeholder="Repita sua senha" autoComplete="new-password" minLength="15" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Senha (mínimo de 6 caracteres)" name="senha" placeholder="Crie sua senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Confirmar senha" name="confirmarSenha" placeholder="Repita sua senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Criando…' : 'Criar conta'}</BotaoGlass>
           </form>}
           {modo === 'recuperar' && <form className="formulario-acesso" onSubmit={recuperarSenha}>
@@ -404,8 +407,9 @@ function AcessoVisionChef({ destino }) {
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Enviar link de recuperação</BotaoGlass>
           </form>}
           {modo === 'redefinir' && <form className="formulario-acesso" onSubmit={redefinirSenha}>
-            <CampoSenha rotulo="Nova senha" name="senha" placeholder="Digite a nova senha" autoComplete="new-password" minLength="15" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
-            <CampoSenha rotulo="Confirmar nova senha" name="confirmarSenha" placeholder="Repita a nova senha" autoComplete="new-password" minLength="15" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            {/* Mostra o mesmo mínimo obrigatório do cadastro antes de a pessoa digitar. */}
+            <CampoSenha rotulo="Nova senha (mínimo de 6 caracteres)" name="senha" placeholder="Digite a nova senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
+            <CampoSenha rotulo="Confirmar nova senha" name="confirmarSenha" placeholder="Repita a nova senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Salvar nova senha</BotaoGlass>
           </form>}
           {/* A confirmação facultativa só aparece após autenticação, dentro da conta. */}

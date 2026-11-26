@@ -140,7 +140,8 @@ export function criarServidorLocal(banco, pastaPublica) {
         try {
           await redefinirSenhaLocal(banco, conta.id, novaSenha);
         } catch {
-          json(res, 400, { erro: 'A nova senha deve ter entre 15 e 128 caracteres.' });
+          // Apresenta o mesmo intervalo aplicado pela validação do banco local.
+          json(res, 400, { erro: 'A nova senha deve ter entre 6 e 128 caracteres.' });
           return;
         }
         // Revoga todas as sessões ativas da conta após a troca de senha.

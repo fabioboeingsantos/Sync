@@ -58,8 +58,8 @@ test('assistente IA e cadastro manual trazem VoicePill, 5 simulações (com erro
   assert.match(voiceCss, /\.voice-pill__capsule/);
   assert.match(voiceCss, /\.voice-pill__wave/);
 
-  // Assistente interativo pronto para o QR Code: VoicePill, 5 simulações (incluindo erro), duplicidade e XML NF-e.
-  assert.match(agenteHtml, /class="voice-pill"/);
+  // A cápsula usa a classe VoicePill junto com as classes obrigatórias de botão do projeto.
+  assert.match(agenteHtml, /class="[^"]*\bbotao\b[^"]*\bvoice-pill\b[^"]*"/);
   assert.match(agenteHtml, /data-sim="hoje"/);
   assert.match(agenteHtml, /data-sim="breve"/);
   assert.match(agenteHtml, /data-sim="prazo"/);

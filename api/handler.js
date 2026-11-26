@@ -1,5 +1,26 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { Resolver } from 'node:dns/promises';
+import { domainToASCII } from 'node:url';
 import nodemailer from 'nodemailer';
+
+// A política vale ao criar ou redefinir senhas. O login valida a credencial que já existe.
+const senhaNovaValida = (senha) => typeof senha === 'string' && senha.length >= 6 && senha.length <= 128;
+const mensagemSenhaNova = 'A senha deve ter entre 6 e 128 caracteres.';
+
+// Consulta apenas o domínio. O DNS verifica o serviço de e-mail sem enviar uma mensagem à caixa postal.
+const dnsCadastro = new Resolver({ timeout: 1500, tries: 2 });
+
+async function dominioRecebeEmail(dominio) {
+  try {
+    const registros = await dnsCadastro.resolveMx(dominio);
+    // Um MX vazio ou apontando para a raiz informa que o domínio não aceita e-mail (RFC 7505).
+    return registros.some(({ exchange }) => exchange && exchange !== '.');
+  } catch (erro) {
+    if (erro.code === 'ENOTFOUND' || erro.code === 'ENODATA') return false;
+    // Falhas temporárias de DNS não indicam que o endereço está inválido.
+    return null;
+  }
+}
 
 // Lê e valida toda configuração privada no servidor, sem incorporá-la ao JavaScript público.
 function configuracao() {
@@ -368,13 +389,26 @@ export async function tratarApi(requisicao) {
       const nome = typeof dados.nomeUsuario === 'string' ? dados.nomeUsuario.trim().toLowerCase() : '';
       const email = typeof dados.email === 'string' ? dados.email.trim().toLowerCase() : '';
       const senha = dados.senha;
-      if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || typeof senha !== 'string' || senha.length < 15 || senha.length > 128) {
-        return resposta({ erro: 'Confira o usuário, o e-mail e a senha.' }, 400);
+      if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(nome) || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return resposta({ erro: 'Confira o usuário e o e-mail.' }, 400);
+      }
+      if (!senhaNovaValida(senha)) return resposta({ erro: mensagemSenhaNova }, 400);
+      // O domínio precisa ser um nome DNS, sem caracteres que indiquem uma URL.
+      const dominioInformado = email.split('@')[1];
+      const dominio = /[\\/%:?#\[\]]/.test(dominioInformado) ? '' : domainToASCII(dominioInformado);
+      if (!dominio || dominio.split('.').some(rotulo => !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(rotulo))) {
+        return resposta({ erro: 'Informe um e-mail com domínio válido.' }, 400);
       }
       const ip = requisicao.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'desconhecido';
       const chave = chaveLimite(ip, 'cadastro');
       const limite = await controlarLimite(cfg, 'cadastro', chave);
       if (!limite.permitido) return resposta({ erro: 'Muitos cadastros em sequência. Aguarde e tente novamente.' }, 429, { 'Retry-After': String(limite.retry_after ?? cfg.bloqueio) });
+      // O limite de cadastro também protege as consultas DNS antes de criar a conta no Supabase.
+      const aceitaEmail = await dominioRecebeEmail(dominio);
+      if (aceitaEmail === null) {
+        return resposta({ erro: 'Não foi possível verificar o domínio do e-mail agora. Tente novamente.', codigo: 'consulta_email_indisponivel' }, 503);
+      }
+      if (!aceitaEmail) return resposta({ erro: 'O domínio desse e-mail não recebe mensagens. Confira o endereço ou use outro e-mail.' }, 400);
       const cadastro = await supabase(cfg, `/auth/v1/signup?redirect_to=${encodeURIComponent(url.origin)}`, {
         metodo: 'POST', corpo: { email, password: senha, data: { nome_usuario: nome } },
       });
@@ -420,7 +454,8 @@ export async function tratarApi(requisicao) {
     if (caminho === 'auth/update-password' && requisicao.method === 'POST') {
       const dados = await jsonEntrada(requisicao, 8192);
       const tokenRecuperacao = typeof dados.access_token === 'string' ? dados.access_token : '';
-      if (!tokenRecuperacao || typeof dados.senha !== 'string' || dados.senha.length < 15 || dados.senha.length > 128) return resposta({ erro: 'O link expirou ou a senha não atende à política.' }, 400);
+      if (!tokenRecuperacao) return resposta({ erro: 'O link expirou. Solicite uma nova recuperação.' }, 400);
+      if (!senhaNovaValida(dados.senha)) return resposta({ erro: mensagemSenhaNova }, 400);
       const remoto = await supabase(cfg, '/auth/v1/user', { metodo: 'PUT', token: tokenRecuperacao, corpo: { password: dados.senha } });
       if (!remoto.ok) return resposta({ erro: 'O link pode ter expirado. Solicite uma nova recuperação.' }, remoto.status === 401 ? 401 : 400);
       return resposta({ atualizada: true }, 200, { 'Set-Cookie': cookieRemovido(cfg, requisicao) });

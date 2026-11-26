@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
+import { Resolver } from 'node:dns/promises';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 import { tratarApi } from '../api/handler.js';
@@ -36,6 +37,42 @@ async function comAmbienteApi(overrides, fn) {
     }
   }
 }
+
+test('cadastro exige pelo menos seis caracteres e domínio com MX de recebimento', async (t) => {
+  // A simulação garante que e-mails recusados nunca chegam ao endpoint de cadastro do Supabase.
+  const dns = t.mock.method(Resolver.prototype, 'resolveMx', async (dominio) => {
+    if (dominio === 'nulo.test') return [{ exchange: '.', priority: 0 }];
+    if (dominio === 'ausente.test' || dominio === 'falha.test') {
+      throw Object.assign(new Error('Consulta DNS simulada.'), { code: dominio === 'ausente.test' ? 'ENOTFOUND' : 'ETIMEOUT' });
+    }
+    assert.equal(dominio, 'recebe.test');
+    return [{ exchange: 'mx.recebe.test', priority: 10 }];
+  });
+  const chamadas = t.mock.method(globalThis, 'fetch', async (url) => {
+    if (url.pathname === '/functions/v1/limitar-autenticacao') return Response.json({ permitido: true });
+    assert.equal(url.pathname, '/auth/v1/signup');
+    return Response.json({ id: 'conta-de-teste' });
+  });
+
+  await comAmbienteApi({}, async () => {
+    const cadastrar = (email, senha = 'abc123') => tratarApi(new Request('https://sync.test/api/auth/signup', {
+      method: 'POST', headers: { Origin: 'https://sync.test', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nomeUsuario: 'teste', email, senha }),
+    }));
+    const senhaCurta = await cadastrar('teste@recebe.test', 'abc12');
+    assert.equal(senhaCurta.status, 400);
+    assert.match((await senhaCurta.json()).erro, /entre 6 e 128 caracteres/);
+    assert.equal((await cadastrar('teste@recebe.test/extra')).status, 400);
+    assert.equal(dns.mock.callCount(), 0);
+    assert.equal((await cadastrar('teste@ausente.test')).status, 400);
+    assert.equal((await cadastrar('teste@nulo.test')).status, 400);
+    const falha = await cadastrar('teste@falha.test');
+    assert.equal(falha.status, 503);
+    assert.equal((await falha.json()).codigo, 'consulta_email_indisponivel');
+    assert.equal((await cadastrar('teste@recebe.test')).status, 201);
+    assert.equal(chamadas.mock.calls.filter(({ arguments: [url] }) => url.pathname === '/auth/v1/signup').length, 1);
+  });
+});
 
 test('vercel.json reescreve /api/* para /api/index e redireciona /estoque e /equipe', async () => {
   // Evita trailingSlash global, que gera 308 em POST /api/*, mantendo /estoque/ e /equipe/ consistentes.
