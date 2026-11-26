@@ -313,7 +313,7 @@ function AcessoVisionChef({ destino }) {
     definirMensagem('');
     try {
       const resultado = await api.solicitarConfirmacaoEmail();
-      definirMensagem(resultado.mensagem);
+      definirMensagem(resultado?.mensagem || 'E-mail enviado. Ele costuma chegar em alguns minutos. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações. O link vale por 24 horas.');
       if (resultado.verificado && api.sessao) definirConta(await api.sessao());
     } catch {
       definirMensagem('Não foi possível enviar agora. Tente novamente mais tarde.');
@@ -376,7 +376,7 @@ function AcessoVisionChef({ destino }) {
     definirMensagem('');
     try {
       const resultado = await api.recuperarSenha(email);
-      definirMensagem(resultado?.mensagem ?? 'Enviamos um link de recuperação para o seu e-mail.');
+      definirMensagem(resultado?.mensagem ?? 'Enviamos um link de recuperação. Ele costuma chegar em alguns minutos. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações.');
       definirModo('resultado');
     } catch (erro) {
       if (erro.status === 404 || erro.status === 400 || erro.status === 429) {
@@ -442,7 +442,7 @@ function AcessoVisionChef({ destino }) {
         {!conta && <button className="botao botao-secundario botao-criar-conta" type="button"
           onClick={() => { definirMensagem(''); definirModo('cadastro'); definirDialogoAberto(true); }}>Criar conta</button>}
       </>}
-      <dialog className="dialogo-acesso-sync" ref={dialogo} aria-labelledby="titulo-acesso"
+      <dialog className={`dialogo-acesso-sync${["entrar", "cadastro"].includes(modo) ? " acesso-inicial" : ""}`} ref={dialogo} aria-labelledby="titulo-acesso"
         onCancel={(evento) => { evento.preventDefault(); definirDialogoAberto(false); }}
         onClick={(evento) => { if (evento.target === dialogo.current) definirDialogoAberto(false); }}>
         <section className="cartao-acesso">
@@ -454,7 +454,7 @@ function AcessoVisionChef({ destino }) {
               <img src="Insumo%20vencendo%20na%20cozinha/imagens/visionchef-logo.jpg" width="1356" height="759" alt="" />
             </span>
             <p className="marca-acesso-titulo">VisionChef</p>
-            <p className="marca-acesso-subtitulo">Acesso da equipe e do restaurante</p>
+
           </div>
           <hr className="divisor-acesso" />
           <header className="cabecalho-acesso">
@@ -503,6 +503,7 @@ function AcessoVisionChef({ destino }) {
             <p><strong>E-mail:</strong> {conta?.user?.email ?? 'Não disponível'}</p>
             {!api.modoLocal && <p><strong>Confirmação:</strong> {conta?.email_verificado_app ? 'Confirmado' : 'Opcional · ainda não solicitado'}</p>}
             {!api.modoLocal && !conta?.email_verificado_app && <BotaoGlass className="botao-primario" type="button" disabled={enviando} aria-busy={enviando || undefined} onClick={solicitarConfirmacaoEmail}>{enviando ? 'Enviando…' : 'Solicitar confirmação de e-mail'}</BotaoGlass>}
+            {mensagem && <p className="mensagem-acesso" role="status">{mensagem}</p>}
             {!conta?.restaurantes?.length && <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('restaurante'); }}>Configurar acesso ao estoque</BotaoGlass>}
             <BotaoGlass className="botao-secundario" type="button" onClick={() => sairDaConta('local')}>Sair da conta</BotaoGlass>
             <BotaoGlass className="botao-secundario danger" type="button" onClick={() => sairDaConta('global')}>Sair de todos os dispositivos</BotaoGlass>
@@ -511,7 +512,7 @@ function AcessoVisionChef({ destino }) {
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Confirmando…' : 'Confirmar e-mail'}</BotaoGlass>
           </form>}
           {modo === 'resultado' && <p className="mensagem-acesso" role="status">{mensagem}</p>}
-          {mensagem && modo !== 'resultado' && <p className="mensagem-acesso" role="alert">{mensagem}</p>}
+          {mensagem && modo !== 'resultado' && modo !== 'conta' && <p className="mensagem-acesso" role="alert">{mensagem}</p>}
           {modo === 'entrar' && <nav className="acoes-acesso acoes-acesso-dupla" aria-label="Ações de acesso">
             {/* Mantém hierarquia subordinada ao Entrar (42px em 1 linha), sem opção de reenvio de confirmação. */}
             <BotaoGlass height={42} className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('cadastro'); }}>Criar conta</BotaoGlass>

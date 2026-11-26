@@ -1,5 +1,6 @@
 import { api } from './api.js';
 import { interpretarLote } from './interpretar-lote.js';
+import { gerarXmlNfeExemplo, interpretarXmlNfe } from './interpretar-nfe.js';
 
 // Controla os estados de acesso, consulta e movimentação da tela de estoque.
 const porId = (id) => document.getElementById(id);
@@ -32,10 +33,17 @@ const sairTodosDispositivos = porId('sair-todos-dispositivos');
 const fecharConta = porId('fechar-conta');
 const abrirCadastro = porId('abrir-cadastro');
 const abrirVision = porId('abrir-vision');
+const painelCadastro = porId('painel-cadastro');
 const modoVision = porId('modo-vision');
 const modoManual = porId('modo-manual');
 const blocoVision = porId('assistente-lote');
-const exemploVision = porId('exemplo-vision');
+const arquivoNfe = porId('arquivo-nfe');
+const estadoNfe = porId('estado-nfe');
+const filaNfe = porId('fila-nfe');
+const tituloFilaNfe = porId('titulo-fila-nfe');
+const resumoFilaNfe = porId('resumo-fila-nfe');
+const itensFilaNfe = porId('itens-fila-nfe');
+const limparNfe = porId('limpar-nfe');
 const perfilBadge = porId('perfil-badge');
 const navModulos = porId('nav-modulos');
 const abaEstoque = porId('aba-estoque');
@@ -84,6 +92,15 @@ const statusAssistente = porId('status-assistente');
 const barraFiltrosEstoque = porId('barra-filtros-estoque');
 const filtrosEstoque = porId('filtros-estoque');
 const contagemEstoque = porId('contagem-estoque');
+const visualizacaoEstoqueControles = porId('visualizacao-estoque');
+const chaveVisualizacaoEstoque = 'visionchef-estoque-visualizacao';
+// Recupera a preferência local de leitura sem depender dela para carregar ou alterar os dados.
+let visualizacaoEstoque = 'grade';
+try {
+  visualizacaoEstoque = localStorage.getItem(chaveVisualizacaoEstoque) === 'lista' ? 'lista' : 'grade';
+} catch {
+  visualizacaoEstoque = 'grade';
+}
 let filtroSituacao = 'todos';
 let moduloAtivo = 'estoque';
 let ehDonoAtual = false;
@@ -99,6 +116,9 @@ let versaoConsulta = 0;
 let loteEmCorrecao = null;
 let parteEmAbertura = null;
 let envioAbertura = null;
+let notaFiscalAtual = null;
+let itemNfeAtivoUid = null;
+let notaFiscalDuplicada = false;
 
 const rotulos = { em_dia: 'Em dia', breve: 'Vence em até 3 dias', hoje: 'Vence hoje', vencido: 'Vencido' };
 
@@ -161,6 +181,11 @@ async function mostrarSessao(focar = false) {
     versaoConsulta += 1;
     ehDonoAtual = false;
     porId('lotes').replaceChildren();
+    porId('grade-estoque').replaceChildren();
+    notaFiscalAtual = null;
+    itemNfeAtivoUid = null;
+    notaFiscalDuplicada = false;
+    renderizarFilaNfe();
     if (linkEquipe) linkEquipe.hidden = true;
     if (abaEquipe) abaEquipe.hidden = true;
     if (perfilBadge) perfilBadge.hidden = true;
@@ -198,6 +223,155 @@ function normalizarQuantidade(valor, medida) {
   const quantidade = valor.trim().replace(',', '.');
   const formato = medida === 'un' ? /^\d+$/ : /^\d+(\.\d+)?$/;
   return formato.test(quantidade) && /[1-9]/.test(quantidade) ? quantidade : null;
+}
+
+// Mantém somente a chave da NF-e por restaurante; o XML e os dados fiscais não são enviados para outro serviço.
+function chavesNfeImportadas() {
+  if (!restaurante) return [];
+  try {
+    const salvas = JSON.parse(localStorage.getItem(`visionchef:nfe:${restaurante.id}`) ?? '[]');
+    return Array.isArray(salvas) ? salvas : [];
+  } catch {
+    return [];
+  }
+}
+
+// Registra a chave depois que pelo menos um item é cadastrado, para alertar sobre reimportações acidentais.
+function salvarChaveNfeImportada(chave) {
+  if (!restaurante || !chave) return;
+  const chaves = chavesNfeImportadas();
+  if (chaves.includes(chave)) return;
+  try {
+    localStorage.setItem(`visionchef:nfe:${restaurante.id}`, JSON.stringify([...chaves, chave]));
+  } catch {
+    // A nota continua funcionando durante esta sessão mesmo se o navegador bloquear o armazenamento local.
+  }
+}
+
+// Converte somente unidades compatíveis com o estoque; caixas e pacotes exigem conversão conferida pela pessoa.
+function quantidadeNfeParaEstoque(quantidadeFiscal) {
+  const partes = String(quantidadeFiscal ?? '').match(/^\s*(\d+(?:[.,]\d+)?)(?:\s+(.+))?\s*$/);
+  if (!partes) return { quantidade: '', medida: 'un', aviso: 'Informe quantidade e medida antes de salvar.' };
+  const numero = partes[1].replace(',', '.');
+  const unidade = (partes[2] ?? '').trim().toLowerCase();
+  if (/^(g|gr|gramas?)$/.test(unidade)) return { quantidade: String(Number(numero) / 1000), medida: 'kg', aviso: '' };
+  if (/^ml$/.test(unidade)) return { quantidade: String(Number(numero) / 1000), medida: 'L', aviso: '' };
+  if (/^(kg|quilo|quilos)$/.test(unidade)) return { quantidade: numero, medida: 'kg', aviso: '' };
+  if (/^(l|litro|litros)$/.test(unidade)) return { quantidade: numero, medida: 'L', aviso: '' };
+  if (/^(un|und|unid|unidade|unidades)?$/.test(unidade) && Number.isInteger(Number(numero))) {
+    return { quantidade: numero, medida: 'un', aviso: '' };
+  }
+  return {
+    quantidade: '',
+    medida: 'un',
+    aviso: `A NF-e informa “${quantidadeFiscal}”. Converta para unidades, kg ou L no estoque antes de salvar.`,
+  };
+}
+
+// Preenche a fila de itens da nota sem inserir lotes automaticamente no estoque.
+function renderizarFilaNfe() {
+  if (!notaFiscalAtual) {
+    filaNfe.hidden = true;
+    itensFilaNfe.replaceChildren();
+    return;
+  }
+  filaNfe.hidden = false;
+  const conferidos = notaFiscalAtual.itens.filter((item) => item.conferido).length;
+  tituloFilaNfe.textContent = `NF-e nº ${notaFiscalAtual.numeroNota} · ${notaFiscalAtual.fornecedor}`;
+  resumoFilaNfe.textContent = `${notaFiscalAtual.totalComRastro} com lote/validade no XML · ${notaFiscalAtual.totalSemValidade} para conferir · ${conferidos}/${notaFiscalAtual.itens.length} salvos`;
+  itensFilaNfe.replaceChildren(...notaFiscalAtual.itens.map((item) => {
+    const linha = document.createElement('li');
+    linha.className = 'fila-nfe-item';
+    if (item.uid === itemNfeAtivoUid) linha.setAttribute('aria-current', 'true');
+    const informacao = document.createElement('div');
+    informacao.className = 'fila-nfe-item-info';
+    const nome = document.createElement('strong');
+    nome.textContent = item.nomeSugerido || item.descricaoFiscal;
+    const detalhe = document.createElement('small');
+    detalhe.textContent = `${item.quantidade || 'Quantidade não informada'} · ${item.temRastro ? `Lote ${item.lote}, validade ${formatarData(item.validade)}` : 'sem validade no XML'}`;
+    informacao.append(nome, detalhe);
+    const acao = document.createElement('button');
+    acao.type = 'button';
+    acao.className = 'botao botao-secundario';
+    acao.dataset.itemNfe = item.uid;
+    acao.textContent = item.conferido ? 'Salvo' : 'Conferir';
+    acao.disabled = item.conferido;
+    acao.setAttribute('aria-label', `${item.conferido ? 'Item salvo' : 'Conferir'}: ${item.nomeSugerido || item.descricaoFiscal}`);
+    linha.append(informacao, acao);
+    return linha;
+  }));
+}
+
+// Seleciona um item da nota e pré-preenche somente os dados que podem ser mapeados com segurança.
+function selecionarItemNfe(uid) {
+  if (!notaFiscalAtual) return;
+  const item = notaFiscalAtual.itens.find((entrada) => entrada.uid === uid);
+  if (!item || item.conferido) return;
+  itemNfeAtivoUid = uid;
+  estadoNfe.textContent = notaFiscalDuplicada
+    ? `Atenção: a NF-e nº ${notaFiscalAtual.numeroNota} já foi importada neste navegador. Confira se este item já existe antes de salvar.`
+    : `Item ${item.nItem} selecionado. Confira os dados antes de salvar.`;
+  estadoNfe.dataset.estado = notaFiscalDuplicada ? 'aviso' : 'ok';
+  formLote.reset();
+  limparErros();
+  for (const campo of [campos.insumo, campos.codigo, campos.quantidade, campos.medida, campos.validade, campos.local]) {
+    campo.classList.remove('sugestao');
+    delete campo.dataset.fonteNfe;
+    campo.removeAttribute('aria-invalid');
+  }
+
+  const preencher = (campo, valor) => {
+    if (!valor) return;
+    campo.value = valor;
+    campo.classList.add('sugestao');
+    campo.dataset.fonteNfe = 'true';
+  };
+  const conversao = quantidadeNfeParaEstoque(item.quantidade);
+  preencher(campos.insumo, item.nomeSugerido);
+  preencher(campos.codigo, item.lote);
+  preencher(campos.quantidade, conversao.quantidade);
+  campos.medida.value = conversao.medida;
+  if (conversao.quantidade) {
+    campos.medida.classList.add('sugestao');
+    campos.medida.dataset.fonteNfe = 'true';
+  }
+  preencher(campos.validade, item.validade);
+  descricaoLote.value = '';
+  renderizarFilaNfe();
+
+  if (conversao.aviso) {
+    statusAssistente.textContent = conversao.aviso;
+    estadoNfe.textContent = conversao.aviso;
+    estadoNfe.dataset.estado = 'aviso';
+  } else if (!item.temRastro) {
+    statusAssistente.textContent = 'Este item veio sem validade no XML. Informe a data ou dite no microfone para o Vision completar.';
+    campos.validade.focus();
+  } else {
+    statusAssistente.textContent = 'Lote e validade vieram do XML. Confira os campos antes de salvar.';
+  }
+}
+
+// Importa e interpreta o arquivo local no navegador, aproveitando <rastro> sem salvar itens sem conferência.
+function importarXmlNfe(xml) {
+  try {
+    notaFiscalAtual = interpretarXmlNfe(xml);
+    notaFiscalDuplicada = Boolean(notaFiscalAtual.chaveAcesso && chavesNfeImportadas().includes(notaFiscalAtual.chaveAcesso));
+    itemNfeAtivoUid = null;
+    estadoNfe.textContent = notaFiscalDuplicada
+      ? `Atenção: a NF-e nº ${notaFiscalAtual.numeroNota} já foi usada neste navegador. Confira os lotes existentes antes de salvar novamente.`
+      : `NF-e nº ${notaFiscalAtual.numeroNota} carregada. Selecione cada item, confira os campos e salve um por vez.`;
+    estadoNfe.dataset.estado = notaFiscalDuplicada ? 'aviso' : 'ok';
+    renderizarFilaNfe();
+    const primeiroPendente = notaFiscalAtual.itens.find((item) => !item.conferido);
+    if (primeiroPendente) selecionarItemNfe(primeiroPendente.uid);
+  } catch (erro) {
+    estadoNfe.textContent = erro.message || 'Não foi possível ler este XML de NF-e.';
+    estadoNfe.dataset.estado = 'erro';
+    notaFiscalAtual = null;
+    itemNfeAtivoUid = null;
+    notaFiscalDuplicada = false;
+    renderizarFilaNfe();
+  }
 }
 
 function adicionarCelula(linha, conteudo, rotulo) {
@@ -262,6 +436,57 @@ function mostrarLote(lote) {
   return linha;
 }
 
+// Cria o cartão da visão em grade com os mesmos dados e ações da tabela de lista.
+function mostrarCartaoLote(lote) {
+  const cartao = document.createElement('article');
+  cartao.className = 'cartao-lote';
+  cartao.dataset.situacao = lote.situacao;
+  cartao.setAttribute('role', 'listitem');
+
+  const cabecalho = document.createElement('div');
+  cabecalho.className = 'cartao-lote-cabecalho';
+  const titulo = document.createElement('h3');
+  titulo.textContent = lote.insumo;
+  const estado = document.createElement('span');
+  estado.className = 'estado';
+  estado.dataset.situacao = lote.situacao;
+  estado.textContent = rotulos[lote.situacao];
+  cabecalho.append(titulo, estado);
+
+  const detalhes = document.createElement('dl');
+  detalhes.className = 'cartao-lote-detalhes';
+  const incluirDetalhe = (rotulo, valor) => {
+    if (!valor) return;
+    const termo = document.createElement('dt');
+    termo.textContent = rotulo;
+    const descricao = document.createElement('dd');
+    descricao.textContent = valor;
+    detalhes.append(termo, descricao);
+  };
+  incluirDetalhe('Saldo', formatarSaldo(lote.saldo, lote.medida));
+  incluirDetalhe('Validade', formatarData(lote.validade_aplicavel));
+  incluirDetalhe('Lote', lote.codigo_fabricante);
+  incluirDetalhe('Local', lote.local_armazenamento);
+  incluirDetalhe('Abertura', lote.data_abertura ? formatarData(lote.data_abertura) : 'Fechado');
+  if (lote.data_abertura) {
+    incluirDetalhe('Validade da embalagem', formatarData(lote.validade_embalagem));
+    incluirDetalhe('Validade após abertura', formatarData(lote.validade_abertura));
+  }
+
+  const acoes = document.createElement('div');
+  acoes.className = 'acoes cartao-lote-acoes';
+  acoes.append(acaoDaParte(lote, 'Corrigir validade', 'corrigir', abrirCorrecao));
+  if (!lote.data_abertura && lote.situacao !== 'vencido') {
+    acoes.append(acaoDaParte(lote, 'Registrar abertura', 'abrir', iniciarAbertura));
+  }
+  if (lote.situacao !== 'vencido') {
+    acoes.append(acaoDaParte(lote, 'Registrar uso', 'uso', (parte) => iniciarSaida(parte, 'uso')));
+  }
+  acoes.append(acaoDaParte(lote, 'Registrar descarte', 'descarte', (parte) => iniciarSaida(parte, 'descarte')));
+  cartao.append(cabecalho, detalhes, acoes);
+  return cartao;
+}
+
 function acaoDaParte(lote, rotulo, acao, executar) {
   const botao = document.createElement('button');
   botao.type = 'button';
@@ -276,12 +501,42 @@ function acaoDaParte(lote, rotulo, acao, executar) {
 
 function focarAcao(parte, acao) {
   // A lista é recriada quando o saldo ou a ordem muda, então o foco procura a nova linha.
-  const botao = porId('lotes').querySelector(`[data-parte="${CSS.escape(parte)}"][data-acao="${acao}"]`);
+  const origem = visualizacaoEstoque === 'grade' ? porId('grade-estoque') : porId('lotes');
+  const botao = origem.querySelector(`[data-parte="${CSS.escape(parte)}"][data-acao="${acao}"]`);
   (botao ?? porId('titulo-lista')).focus();
 }
 
+// Atualiza a preferência visual e anuncia o modo selecionado aos leitores de tela.
+function aplicarVisualizacaoEstoque(persistir = true) {
+  const emGrade = visualizacaoEstoque === 'grade';
+  porId('grade-estoque').hidden = !emGrade;
+  porId('tabela-lista-estoque').hidden = emGrade;
+  for (const botao of visualizacaoEstoqueControles.querySelectorAll('[data-visualizacao-estoque]')) {
+    botao.setAttribute('aria-pressed', String(botao.dataset.visualizacaoEstoque === visualizacaoEstoque));
+  }
+  if (persistir) {
+    try {
+      localStorage.setItem(chaveVisualizacaoEstoque, visualizacaoEstoque);
+    } catch {
+      // Mantém a seleção durante esta sessão mesmo se o navegador bloquear o armazenamento local.
+    }
+  }
+}
+
+visualizacaoEstoqueControles?.addEventListener('click', (evento) => {
+  const botao = evento.target.closest('button[data-visualizacao-estoque]');
+  if (!botao) return;
+  visualizacaoEstoque = botao.dataset.visualizacaoEstoque === 'lista' ? 'lista' : 'grade';
+  aplicarVisualizacaoEstoque();
+  if (lotesCarregados.length) aplicarFiltroEstoque();
+});
+aplicarVisualizacaoEstoque(false);
+
 function aplicarFiltroEstoque() {
-  const linhas = [...porId('lotes').querySelectorAll('tr[data-situacao]')];
+  const seletorAtivo = visualizacaoEstoque === 'grade'
+    ? '#grade-estoque [data-situacao]'
+    : '#lotes tr[data-situacao]';
+  const linhas = [...porId('tabela-estoque').querySelectorAll(seletorAtivo)];
   let visiveis = 0;
   for (const linha of linhas) {
     const mostrar = filtroSituacao === 'todos' || linha.dataset.situacao === filtroSituacao;
@@ -322,8 +577,10 @@ async function atualizarEstoque() {
     if (consulta !== versaoConsulta) return;
     lotesCarregados = lotes;
     porId('lotes').replaceChildren(...lotes.map(mostrarLote));
+    porId('grade-estoque').replaceChildren(...lotes.map(mostrarCartaoLote));
+    aplicarVisualizacaoEstoque(false);
     porId('tabela-estoque').hidden = lotes.length === 0;
-    if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = lotes.length === 0;
+    if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = false;
     mensagemLista.textContent = lotes.length === 0 ? 'Nenhum lote cadastrado.' : '';
     if (lotes.length > 0) aplicarFiltroEstoque();
     void atualizarDescartes(restaurante.id, consulta);
@@ -331,6 +588,7 @@ async function atualizarEstoque() {
   } catch (erro) {
     if (consulta !== versaoConsulta) return;
     porId('lotes').replaceChildren();
+    porId('grade-estoque').replaceChildren();
     porId('tabela-estoque').hidden = true;
     if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = true;
     if (erro.status === 401) {
@@ -599,6 +857,7 @@ function erroNoCampo(campo, texto) {
 
 function definirModoCadastro(modo = 'manual') {
   const usarVision = modo === 'vision';
+  painelCadastro.classList.toggle('modo-vision', usarVision);
   if (blocoVision) blocoVision.hidden = !usarVision;
   if (modoVision) modoVision.setAttribute('aria-pressed', String(usarVision));
   if (modoManual) modoManual.setAttribute('aria-pressed', String(!usarVision));
@@ -607,7 +866,7 @@ function definirModoCadastro(modo = 'manual') {
 }
 
 function definirCadastro(aberto, modo = 'manual') {
-  porId('painel-cadastro').hidden = !aberto;
+  painelCadastro.hidden = !aberto;
   abrirCadastro.setAttribute('aria-expanded', String(aberto && modo === 'manual'));
   if (abrirVision) abrirVision.setAttribute('aria-expanded', String(aberto && modo === 'vision'));
   if (aberto) definirModoCadastro(modo);
@@ -974,7 +1233,7 @@ botaoConfirmarEmail.addEventListener('click', async () => {
   feedbackConta.classList.remove('erro');
   try {
     const resultado = await api.solicitarConfirmacaoEmail();
-    feedbackConta.textContent = resultado?.mensagem ?? 'Enviamos um link para o e-mail da sua conta.';
+    feedbackConta.textContent = resultado?.mensagem ?? 'E-mail enviado. Ele costuma chegar em alguns minutos. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações. O link vale por 24 horas.';
     if (resultado?.verificado && api.sessao) {
       sessaoAtual = await api.sessao();
       atualizarPainelConta(sessaoAtual, sessaoAtual?.restaurantes);
@@ -1000,14 +1259,21 @@ async function encerrarSessao(botaoAcionado, escopo = 'local') {
     envioPendente = null;
     envioAbertura = null;
     envioSaida = null;
+    notaFiscalAtual = null;
+    itemNfeAtivoUid = null;
+    notaFiscalDuplicada = false;
     descricaoLote.value = '';
     statusAssistente.textContent = '';
     feedback.textContent = '';
     porId('lotes').replaceChildren();
+    porId('grade-estoque').replaceChildren();
+    renderizarFilaNfe();
+    estadoNfe.textContent = '';
     porId('tabela-estoque').hidden = true;
     if (barraFiltrosEstoque) barraFiltrosEstoque.hidden = true;
     filtroSituacao = 'todos';
-    porId('painel-cadastro').hidden = true;
+    painelCadastro.hidden = true;
+    painelCadastro.classList.remove('modo-vision');
     abrirCadastro.setAttribute('aria-expanded', 'false');
     await mostrarSessao(true);
     if (escopo === 'global') {
@@ -1034,10 +1300,6 @@ abrirVision?.addEventListener('click', () => {
 });
 modoVision?.addEventListener('click', () => definirModoCadastro('vision'));
 modoManual?.addEventListener('click', () => definirModoCadastro('manual'));
-exemploVision?.addEventListener('click', () => {
-  descricaoLote.value = 'Creme de leite, lote A12, 2 caixas, validade 30/11/2026, freezer';
-  preencherComAssistente();
-});
 porId('cancelar-cadastro').addEventListener('click', () => {
   formLote.reset();
   limparErros();
@@ -1069,6 +1331,7 @@ formLote.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const botao = formLote.querySelector('[type="submit"]');
   if (!restaurante || botao.disabled) return;
+  const itemNfeSubmetido = notaFiscalAtual?.itens.find((item) => item.uid === itemNfeAtivoUid) ?? null;
   limparErros();
   const dados = Object.fromEntries(new FormData(formLote));
   const quantidade = normalizarQuantidade(dados.quantidade, dados.medida);
@@ -1116,14 +1379,38 @@ formLote.addEventListener('submit', async (evento) => {
   try {
     await api.cadastrar({ ...lote, p_operacao_id: envioPendente.id });
     envioPendente = null;
+    let proximoItemNfe = null;
+    if (itemNfeSubmetido) {
+      // A fila só avança após o servidor confirmar este lote no estoque.
+      itemNfeSubmetido.conferido = true;
+      salvarChaveNfeImportada(notaFiscalAtual.chaveAcesso);
+      proximoItemNfe = notaFiscalAtual.itens.find((item) => !item.conferido) ?? null;
+    }
+    itemNfeAtivoUid = null;
     formLote.reset();
     descricaoLote.value = '';
     statusAssistente.textContent = '';
-    formLote.querySelectorAll('.sugestao').forEach((campo) => campo.classList.remove('sugestao'));
-    feedback.textContent = 'Lote cadastrado.';
+    formLote.querySelectorAll('.sugestao').forEach((campo) => {
+      campo.classList.remove('sugestao');
+      delete campo.dataset.fonteNfe;
+    });
     abrirCadastro.disabled = false;
-    definirCadastro(false);
     await atualizarEstoque();
+    if (itemNfeSubmetido) {
+      renderizarFilaNfe();
+      if (proximoItemNfe) {
+        feedback.textContent = 'Lote da NF-e cadastrado. Confira o próximo item da fila.';
+        definirCadastro(true, 'vision');
+        selecionarItemNfe(proximoItemNfe.uid);
+      } else {
+        estadoNfe.textContent = `Todos os ${notaFiscalAtual.itens.length} itens da NF-e foram conferidos e salvos no estoque.`;
+        estadoNfe.dataset.estado = 'ok';
+        feedback.textContent = 'Importação da NF-e concluída.';
+      }
+    } else {
+      feedback.textContent = 'Lote cadastrado.';
+      definirCadastro(false);
+    }
   } catch (erro) {
     erroCadastro.textContent = mensagem(erro, 'Não foi possível salvar. Tente novamente.');
   } finally {
@@ -1144,15 +1431,20 @@ function preencherComAssistente() {
     const sugestao = interpretarLote(descricaoLote.value);
     // Trocar a descrição remove apenas sugestões antigas. Uma data ambígua exige nova conferência.
     for (const campo of formLote.querySelectorAll('.sugestao')) {
+      if (campo.dataset.fonteNfe === 'true') {
+        campo.classList.remove('sugestao');
+        continue;
+      }
       campo.value = campo.defaultValue ?? 'un';
       campo.classList.remove('sugestao');
     }
-    campos.validade.value = '';
+    if (!itemNfeAtivoUid) campos.validade.value = '';
     for (const [nome, valor] of Object.entries(sugestao)) {
       const campo = campos[nome];
       if (!valor) continue;
       campo.value = campo.maxLength > 0 ? valor.slice(0, campo.maxLength) : valor;
       campo.classList.add('sugestao');
+      delete campo.dataset.fonteNfe;
     }
     if (!sugestao.validade) {
       statusAssistente.textContent = 'Vision: informe uma data completa e válida antes de salvar.';
@@ -1170,7 +1462,50 @@ function preencherComAssistente() {
 porId('sugerir-lote').addEventListener('click', preencherComAssistente);
 formLote.addEventListener('input', (evento) => {
   evento.target.classList.remove('sugestao');
+  delete evento.target.dataset.fonteNfe;
   duplicadoConfirmado = null;
+});
+
+// Lê o XML local no navegador, com limite de tamanho e tratamento de erro para não enviar a nota ao servidor.
+arquivoNfe?.addEventListener('change', async (evento) => {
+  const arquivo = evento.target.files?.[0];
+  evento.target.value = '';
+  if (!arquivo) return;
+  if (arquivo.size > 5 * 1024 * 1024) {
+    estadoNfe.textContent = 'O XML deve ter até 5 MB.';
+    estadoNfe.dataset.estado = 'erro';
+    return;
+  }
+  try {
+    importarXmlNfe(await arquivo.text());
+  } catch {
+    estadoNfe.textContent = 'Não foi possível ler o arquivo selecionado.';
+    estadoNfe.dataset.estado = 'erro';
+  }
+});
+
+// A seleção na fila preenche o mesmo formulário manual para validação antes do cadastro.
+itensFilaNfe?.addEventListener('click', (evento) => {
+  const botao = evento.target.closest('button[data-item-nfe]');
+  if (botao) selecionarItemNfe(botao.dataset.itemNfe);
+});
+
+// Limpar a fila remove apenas a nota ainda em conferência; itens salvos continuam no estoque.
+limparNfe?.addEventListener('click', () => {
+  notaFiscalAtual = null;
+  itemNfeAtivoUid = null;
+  notaFiscalDuplicada = false;
+  formLote.reset();
+  limparErros();
+  formLote.querySelectorAll('[data-fonte-nfe]').forEach((campo) => {
+    campo.classList.remove('sugestao');
+    delete campo.dataset.fonteNfe;
+  });
+  descricaoLote.value = '';
+  statusAssistente.textContent = '';
+  renderizarFilaNfe();
+  estadoNfe.textContent = 'Fila limpa. Os lotes já salvos continuam no estoque.';
+  estadoNfe.dataset.estado = 'ok';
 });
 
 // Quando disponível, o navegador transforma a fala em texto para o assistente Vision conferir.

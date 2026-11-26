@@ -191,7 +191,9 @@
       flex-direction: column;
       gap: .45rem;
     }
+    .simulations-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .4rem .65rem; }
     .simulations-title { font-size: .92rem; font-weight: 700; color: var(--primaria); }
+    .simulations-heading .botao { min-height: 36px; padding: 6px 10px; font-size: .8rem; }
     .simulations-hint { font-size: .84rem; opacity: .86; }
     .simulations-grid { display: grid; grid-template-columns: 1fr; gap: .4rem; }
     .sim-btn {
@@ -466,7 +468,11 @@
         <p id="assistant-status" role="status"></p>
 
         <div class="simulations-box" aria-label="Simulações rápidas para teste">
-          <p class="simulations-title">Simulações rápidas para testar</p>
+          <div class="simulations-heading">
+            <p class="simulations-title">Simulações rápidas para testar</p>
+            <!-- A limpeza atua somente nos dados locais desta demonstração, nunca no estoque online. -->
+            <button type="button" id="reset-demo-btn" class="botao botao-secundario">Reiniciar teste e apagar inclusões</button>
+          </div>
           <p class="simulations-hint">Escolha um cenário real da cozinha para testar o preenchimento ou ver como o sistema avisa erros:</p>
           <div class="simulations-grid">
             <button type="button" class="sim-btn" data-sim="hoje">
@@ -855,6 +861,36 @@
       const phrase = scenarios[kind];
       if (!phrase) return;
       window.fillExample(phrase);
+    }
+
+    // Reinicia apenas a demonstração local da landing page e remove inclusões e descartes de teste.
+    function resetDemo() {
+      const confirmado = window.confirm(
+        'Apagar todos os lotes, descartes e notas de teste salvos neste navegador? O estoque online não será alterado.'
+      );
+      if (!confirmado) return;
+
+      lots = [];
+      discards = [];
+      importedNfeKeys = [];
+      currentNfe = null;
+      activeNfeItemUid = null;
+      pendingDuplicate = null;
+      editingId = null;
+      form.reset();
+      resetForm();
+      nlInput.value = '';
+      refDateInput.value = getLocalTodayIso();
+      el('nfe-file-input').value = '';
+      setNfeStatus('');
+      setAssistantStatus('', 'ok');
+      hideDuplicateWarning();
+      renderNfeQueue();
+      saveState();
+      render();
+      showFeedback('');
+      el('stock-notice').textContent = 'Teste reiniciado. As inclusões locais foram apagadas.';
+      el('reset-demo-btn').focus();
     }
 
     /* -------------------------------------------------------------------------
@@ -1414,6 +1450,7 @@
     document.querySelectorAll('.sim-btn[data-sim]').forEach(btn => {
       btn.addEventListener('click', () => runSimulation(btn.dataset.sim));
     });
+    el('reset-demo-btn').addEventListener('click', resetDemo);
     el('nfe-demo-btn').addEventListener('click', () => {
       const refIso = refDateInput.value || getLocalTodayIso();
       loadNfeFromXml(buildDemoNfeXml(refIso));

@@ -140,10 +140,12 @@
         <div class="cabecalho-estoque">
           <div>
             <h1 id="titulo-estoque" tabindex="-1">Estoque</h1>
-            <p class="subtitulo-modulo">Lotes ordenados por vencimento (PVPS). Cadastre manualmente ou com o assistente <strong>Vision</strong>.</p>
+            <p class="subtitulo-modulo">Lotes ordenados por vencimento (PVPS).</p>
+            <!-- Explica que o assistente de IA sugere os campos e deixa a conferência e o salvamento com a pessoa. -->
+            <p class="subtitulo-modulo" id="ajuda-cadastro-vision">O Vision é o assistente de IA: descreva ou dite o lote, revise os campos preenchidos e salve quando estiverem corretos.</p>
           </div>
           <div class="acoes">
-            <button class="botao botao-primario" id="abrir-vision" type="button" aria-expanded="false" aria-controls="painel-cadastro">Cadastrar com Vision</button>
+            <button class="botao botao-primario" id="abrir-vision" type="button" aria-expanded="false" aria-controls="painel-cadastro" aria-describedby="ajuda-cadastro-vision">Cadastrar com Vision · Assistente IA</button>
             <button class="botao botao-secundario" id="abrir-cadastro" type="button" aria-expanded="false" aria-controls="painel-cadastro">Cadastrar manual</button>
           </div>
         </div>
@@ -159,33 +161,11 @@
             </div>
           </div>
 
-          <!-- O assistente Vision interpreta texto ou voz e preenche o formulário para conferência antes de salvar. -->
-          <div class="bloco-vision" id="assistente-lote" hidden>
-            <div class="vision-cabecalho">
-              <span class="vision-badge">Vision</span>
-              <div>
-                <h3>Assistente Vision · Texto ou voz</h3>
-                <p>Descreva o insumo como na rotina da cozinha. O <strong>Vision</strong> preenche os campos abaixo para você conferir e salvar.</p>
-              </div>
-            </div>
-            <div class="formulario">
-              <label>Descreva o lote para o Vision
-                <textarea id="descricao-lote" rows="3" maxlength="600" placeholder="Ex.: Creme de leite, lote A12, 2 caixas, validade 30/11/2026, freezer"></textarea>
-              </label>
-              <div class="acoes">
-                <button class="botao botao-primario" type="button" id="sugerir-lote">Preencher com Vision</button>
-                <button class="botao botao-secundario" type="button" id="ditar-lote" aria-describedby="aviso-ditado">Ditar para o Vision</button>
-                <button class="botao botao-secundario" type="button" id="exemplo-vision">Usar exemplo</button>
-              </div>
-              <p id="aviso-ditado" class="aviso-vision">O ditado usa o microfone do aparelho e pode envolver o serviço de voz do navegador. Você também pode digitar.</p>
-              <p class="mensagem" id="status-assistente" role="status"></p>
-            </div>
-          </div>
-
+          <!-- O formulário fica primeiro na ordem do documento; no modo Vision ele aparece ao lado do assistente. -->
           <form id="form-lote" class="formulario">
             <div class="grade-formulario">
               <label>Insumo <input name="insumo" maxlength="120" required></label>
-              <label>Código do fabricante <span>(opcional)</span> <input name="codigo" maxlength="80"></label>
+              <label>Lote / código do fabricante <span>(opcional)</span> <input name="codigo" maxlength="80"></label>
               <!-- O teclado decimal atende quilos e litros. O JavaScript valida a quantidade conforme a medida. -->
               <label>Quantidade <input name="quantidade" inputmode="decimal" required></label>
               <label>Medida
@@ -202,10 +182,65 @@
               <button type="button" class="botao botao-secundario" id="cancelar-cadastro">Cancelar</button>
             </div>
           </form>
+
+          <!-- O Vision sugere os campos por texto ou voz e deixa a conferência e o salvamento com a pessoa. -->
+          <div class="bloco-vision" id="assistente-lote" hidden>
+            <div class="vision-cabecalho">
+              <span class="vision-badge">Vision</span>
+              <div>
+                <h3>Vision · Assistente IA</h3>
+                <p>Descreva o lote. O Vision preenche o formulário para você revisar antes de salvar.</p>
+              </div>
+            </div>
+            <div class="formulario">
+              <label>Descreva o lote para o Vision
+                <textarea id="descricao-lote" rows="3" maxlength="600" placeholder="Ex.: Queijo, lote A12, 2 caixas, validade 30/11/2026"></textarea>
+              </label>
+              <div class="vision-acoes">
+                <button class="botao botao-primario" type="button" id="sugerir-lote">Preencher com Vision</button>
+                <button class="botao botao-primario vision-microfone" type="button" id="ditar-lote" aria-label="Ditar lote por voz" title="Ditar lote por voz" aria-describedby="aviso-ditado">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="2.5" width="6" height="12" rx="3"></rect><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"></path></svg>
+                </button>
+              </div>
+              <p id="aviso-ditado" class="aviso-vision">Toque no microfone e fale o insumo, a quantidade e a validade. Você também pode digitar.</p>
+              <p class="mensagem" id="status-assistente" role="status"></p>
+              <!-- A NF-e real é importada neste estoque; a simulação continua exclusiva da demonstração da landing page. -->
+              <section class="nfe-box" aria-labelledby="titulo-nfe">
+                <div class="nfe-cabecalho">
+                  <h4 id="titulo-nfe">Nota Fiscal (NF-e XML)</h4>
+                  <span class="nfe-fase">Importação local</span>
+                </div>
+                <p>Envie o XML da nota. O Vision aproveita lote e validade quando o arquivo traz <code>&lt;rastro&gt;</code>; cada item precisa ser conferido antes de salvar.</p>
+                <div class="nfe-acoes">
+                  <label class="botao botao-secundario" for="arquivo-nfe">Enviar XML (.xml)</label>
+                  <input id="arquivo-nfe" type="file" accept=".xml,text/xml,application/xml" hidden>
+                </div>
+                <p id="estado-nfe" class="mensagem" role="status" aria-live="polite"></p>
+                <div id="fila-nfe" class="fila-nfe" hidden>
+                  <div class="fila-nfe-cabecalho">
+                    <div>
+                      <strong id="titulo-fila-nfe"></strong>
+                      <p id="resumo-fila-nfe"></p>
+                    </div>
+                    <button type="button" class="botao botao-secundario" id="limpar-nfe">Limpar fila</button>
+                  </div>
+                  <ul id="itens-fila-nfe" aria-label="Itens extraídos da nota fiscal"></ul>
+                </div>
+              </section>
+            </div>
+          </div>
         </section>
 
         <section class="painel painel-lista" aria-labelledby="titulo-lista">
-          <h2 id="titulo-lista" tabindex="-1">Lotes por validade</h2>
+          <div class="cabecalho-lista-estoque">
+            <h2 id="titulo-lista" tabindex="-1">Lotes por validade</h2>
+            <!-- A preferência visual fica neste navegador e não altera os dados do estoque. -->
+            <div class="visualizacao-estoque" id="visualizacao-estoque" role="group" aria-label="Forma de visualizar os lotes">
+              <span>Visualização</span>
+              <button type="button" class="botao botao-secundario" data-visualizacao-estoque="grade" aria-pressed="true">Grade</button>
+              <button type="button" class="botao botao-secundario" data-visualizacao-estoque="lista" aria-pressed="false">Lista</button>
+            </div>
+          </div>
           <div class="barra-filtros-estoque" id="barra-filtros-estoque" hidden>
             <div class="filtros-estoque" id="filtros-estoque" role="group" aria-label="Filtrar lotes por validade">
               <button type="button" class="botao botao-secundario" data-filtro-estoque="todos" aria-pressed="true">Todos</button>
@@ -219,8 +254,10 @@
           <p id="mensagem-lista" class="mensagem" role="status"></p>
           <button type="button" class="botao botao-secundario" id="recarregar" hidden>Tentar novamente</button>
           <div id="tabela-estoque" hidden>
+            <!-- A grade complementa a tabela e reaproveita as mesmas ações de cada lote. -->
+            <div id="grade-estoque" class="grade-estoque" role="list" aria-label="Lotes em cartões" hidden></div>
             <!-- Os papéis mantêm a semântica de tabela quando o CSS empilha os lotes no celular. -->
-            <table role="table" aria-labelledby="titulo-lista">
+            <table id="tabela-lista-estoque" role="table" aria-labelledby="titulo-lista">
               <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Insumo</th><th role="columnheader" scope="col">Saldo</th><th role="columnheader" scope="col">Validade</th><th role="columnheader" scope="col">Situação</th><th role="columnheader" scope="col">Ações</th></tr></thead>
               <tbody id="lotes" role="rowgroup"></tbody>
             </table>

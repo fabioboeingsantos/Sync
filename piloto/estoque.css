@@ -383,6 +383,26 @@ summary { font-weight: 700; cursor: pointer; }
 .cabecalho-estoque { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.4rem; }
 .restaurante { color: var(--est-muted); font-weight: 700; margin-bottom: .35rem; }
 .painel-cadastro { margin-bottom: 1rem; }
+/* No cadastro assistido, mantém os campos compactos ao lado da área do Vision. */
+.painel-cadastro.modo-vision {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(18rem, .95fr);
+  grid-template-areas: "cabecalho cabecalho" "formulario vision";
+  align-items: start;
+  gap: .85rem 1rem;
+}
+.painel-cadastro[hidden], .bloco-vision[hidden], .grade-estoque[hidden], .fila-nfe[hidden], #tabela-lista-estoque[hidden] { display: none !important; }
+.painel-cadastro.modo-vision .cabecalho-cadastro { grid-area: cabecalho; margin-bottom: 0; }
+.painel-cadastro.modo-vision #form-lote { grid-area: formulario; margin: 0; }
+.painel-cadastro.modo-vision #assistente-lote { grid-area: vision; align-self: stretch; margin: 0; }
+#form-lote .grade-formulario { gap: .65rem .75rem; }
+#form-lote label { font-size: .88rem; }
+#form-lote input, #form-lote select {
+  min-height: 2.55rem;
+  margin-top: .25rem;
+  padding: .45rem .6rem;
+  font-size: .94rem;
+}
 .dialogo-validade { width: min(100% - 2rem, 27rem); color: var(--est-text); background: var(--est-surface); }
 .dialogo-validade::backdrop { background: var(--est-backdrop); }
 #lote-em-correcao, #lote-em-abertura { margin-top: .75rem; overflow-wrap: anywhere; }
@@ -401,6 +421,44 @@ summary { font-weight: 700; cursor: pointer; }
 .mensagem:not(:empty) { padding-block: .7rem; }
 .mensagem.erro { color: var(--est-erro); }
 .painel-lista h2 { margin-bottom: .75rem; }
+.cabecalho-lista-estoque {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem 1rem;
+}
+.cabecalho-lista-estoque h2 { margin: 0; }
+.visualizacao-estoque { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.visualizacao-estoque > span { margin-inline-end: .2rem; color: var(--est-muted); font-size: .88rem; }
+.visualizacao-estoque .botao { min-height: 40px; padding: 7px 13px; font-size: .9rem; }
+.visualizacao-estoque .botao[aria-pressed="true"] { --btn-secundario-fundo: #a8d5dd; --btn-secundario-texto: #0f4c5c; }
+.grade-estoque {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  align-items: start;
+  gap: .75rem;
+}
+.cartao-lote {
+  display: grid;
+  gap: .7rem;
+  min-width: 0;
+  padding: .9rem;
+  border: 1px solid var(--st-prazo-borda);
+  border-left: 4px solid var(--st-prazo-cor);
+  border-radius: .85rem;
+  background: var(--st-prazo-fundo);
+}
+.cartao-lote[data-situacao="vencido"] { border-color: var(--st-vencido-borda); border-left-color: var(--st-vencido-cor); background: var(--st-vencido-fundo); }
+.cartao-lote[data-situacao="hoje"] { border-color: var(--st-hoje-borda); border-left-color: var(--st-hoje-cor); background: var(--st-hoje-fundo); animation: alerta-vence-hoje-card 1.15s ease-in-out infinite; }
+.cartao-lote[data-situacao="breve"] { border-color: var(--st-breve-borda); border-left-color: var(--st-breve-cor); background: var(--st-breve-fundo); }
+.cartao-lote[data-situacao="em_dia"] { border-color: var(--st-prazo-borda); border-left-color: var(--st-prazo-cor); background: var(--st-prazo-fundo); }
+.cartao-lote-cabecalho { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.cartao-lote-cabecalho h3 { min-width: 0; margin: 0; color: var(--est-heading); font-size: 1rem; overflow-wrap: anywhere; }
+.cartao-lote-detalhes { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .25rem .65rem; margin: 0; font-size: .9rem; }
+.cartao-lote-detalhes dt { color: var(--est-muted); }
+.cartao-lote-detalhes dd { min-width: 0; margin: 0; color: var(--est-text); overflow-wrap: anywhere; }
+.cartao-lote-acoes .botao { min-height: 38px; padding: 7px 10px; font-size: .84rem; }
 
 /* Barra de filtros semânticos por validade no sistema de estoque */
 .barra-filtros-estoque {
@@ -856,8 +914,7 @@ td small { display: block; color: var(--est-muted); font-size: .875rem; font-wei
   font-size: .9rem;
 }
 .bloco-vision {
-  margin-top: .5rem;
-  margin-bottom: 1.25rem;
+  min-width: 0;
   padding: 1rem 1.15rem;
   border-radius: .9rem;
   border: 1.5px solid #2a7f8e;
@@ -895,4 +952,37 @@ td small { display: block; color: var(--est-muted); font-size: .875rem; font-wei
 .aviso-vision {
   color: var(--est-muted);
   font-size: .86rem;
+}
+.vision-acoes { display: grid; grid-template-columns: minmax(0, 1fr) 3rem; align-items: center; gap: .5rem; }
+.vision-acoes .botao { min-height: 3rem; }
+.vision-microfone { display: inline-grid; place-items: center; width: 3rem; height: 3rem; padding: .7rem; border-radius: 50%; }
+.vision-microfone svg { width: 1.45rem; height: 1.45rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#assistente-lote .formulario { gap: .65rem; margin-top: .85rem; }
+#assistente-lote textarea { min-height: 6rem; resize: vertical; }
+.nfe-box { display: grid; gap: .55rem; min-width: 0; margin-top: .25rem; padding-top: .75rem; border-top: 1px solid var(--est-divider); }
+.nfe-cabecalho, .fila-nfe-cabecalho { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .45rem; }
+.nfe-cabecalho h4 { margin: 0; color: var(--est-heading); font-size: .96rem; }
+.nfe-fase { padding: .15rem .5rem; border: 1px solid var(--est-border); border-radius: 999px; color: var(--est-muted); font-size: .75rem; }
+.nfe-box > p { color: var(--est-muted); font-size: .84rem; }
+.nfe-acoes { display: flex; flex-wrap: wrap; gap: .45rem; }
+.nfe-acoes .botao, .fila-nfe-cabecalho .botao { min-height: 38px; padding: 7px 11px; font-size: .85rem; }
+.nfe-box #estado-nfe { margin: 0; font-size: .84rem; }
+.nfe-box #estado-nfe[data-estado="erro"] { color: var(--est-erro); }
+.nfe-box #estado-nfe[data-estado="aviso"] { color: var(--st-breve-cor); }
+.fila-nfe { display: grid; gap: .5rem; }
+.fila-nfe-cabecalho { align-items: flex-start; }
+.fila-nfe-cabecalho p { margin-top: .2rem; color: var(--est-muted); font-size: .78rem; }
+.fila-nfe ul { display: grid; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.fila-nfe-item { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem; border: 1px solid var(--est-divider); border-radius: .65rem; background: var(--est-surface-soft); }
+.fila-nfe-item[aria-current="true"] { border-color: var(--est-heading); box-shadow: 0 0 0 2px rgba(42, 127, 142, .28); }
+.fila-nfe-item-info { min-width: 0; overflow-wrap: anywhere; }
+.fila-nfe-item-info strong, .fila-nfe-item-info small { display: block; }
+.fila-nfe-item-info small { margin-top: .15rem; color: var(--est-muted); font-size: .76rem; }
+.fila-nfe-item .botao { flex: none; min-height: 34px; padding: 5px 9px; font-size: .78rem; }
+
+@media (max-width: 860px) {
+  .painel-cadastro.modo-vision {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "cabecalho" "formulario" "vision";
+  }
 }

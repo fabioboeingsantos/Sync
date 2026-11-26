@@ -1071,6 +1071,60 @@ body:has(#inicio.hero) section[id] {
 .dialogo-acesso-sync .mensagem-acesso { margin: 0; padding: .8rem .95rem; color: #182327; font-weight: 600; background: #e6f3f6; border: 1px solid #2a7f8e; border-radius: 12px; font-size: .92rem; text-align: center; }
 .acoes-acesso { display: grid; gap: .75rem; }
 .acoes-acesso-dupla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Mantém login e cadastro visíveis por inteiro, reduzindo apenas os espaços desses dois fluxos. */
+.dialogo-acesso-sync.acesso-inicial {
+  box-sizing: border-box;
+  max-height: min(calc(100dvh - 1rem), 52rem);
+  overflow: hidden;
+}
+.dialogo-acesso-sync.acesso-inicial .cartao-acesso {
+  gap: clamp(.35rem, .9dvh, .55rem);
+  padding: clamp(.55rem, 1.4dvh, .8rem) clamp(1rem, 4vw, 1.5rem);
+}
+.dialogo-acesso-sync.acesso-inicial .marca-acesso { padding-top: 0; }
+.dialogo-acesso-sync.acesso-inicial .vc-pictorica-modal {
+  width: 4.5rem;
+  margin-bottom: .2rem;
+}
+.dialogo-acesso-sync.acesso-inicial .marca-acesso-titulo { font-size: 1.35rem; }
+.dialogo-acesso-sync.acesso-inicial .divisor-acesso { margin: 0; }
+.dialogo-acesso-sync.acesso-inicial .cabecalho-acesso h2 {
+  margin: .15rem 0 .2rem;
+  font-size: clamp(1.5rem, 3.8vw, 1.8rem);
+}
+.dialogo-acesso-sync.acesso-inicial .subtitulo-acesso {
+  font-size: .9rem;
+  line-height: 1.3;
+}
+.dialogo-acesso-sync.acesso-inicial .formulario-acesso { gap: .55rem; }
+.dialogo-acesso-sync.acesso-inicial .formulario-acesso label {
+  gap: .25rem;
+  font-size: .88rem;
+}
+.dialogo-acesso-sync.acesso-inicial .formulario-acesso input { min-height: 46px; }
+.dialogo-acesso-sync.acesso-inicial .acoes-acesso { gap: .4rem; }
+
+/* Em telas baixas, organiza os campos em duas colunas e oculta a marca decorativa. */
+@media (max-height: 40rem) {
+  .dialogo-acesso-sync.acesso-inicial .cartao-acesso {
+    gap: .4rem;
+    padding: .55rem .85rem;
+  }
+  .dialogo-acesso-sync.acesso-inicial .marca-acesso,
+  .dialogo-acesso-sync.acesso-inicial .divisor-acesso { display: none; }
+  .dialogo-acesso-sync.acesso-inicial .formulario-acesso {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .4rem .6rem;
+  }
+  .dialogo-acesso-sync.acesso-inicial .formulario-acesso label { min-width: 0; }
+  .dialogo-acesso-sync.acesso-inicial .formulario-acesso input {
+    min-height: 42px;
+    padding: .45rem .65rem;
+    font-size: .88rem;
+  }
+  .dialogo-acesso-sync.acesso-inicial .formulario-acesso > .glass-botao-wrap,
+  .dialogo-acesso-sync.acesso-inicial .acoes-acesso { grid-column: 1 / -1; }
+}
 /* Botões auxiliares subordinados ao Entrar: 42px de altura e sempre em uma única linha. */
 .acao-link-acesso { min-height: 42px; padding: 8px 10px; text-decoration: underline; text-underline-offset: 3px; font-size: .86rem; white-space: nowrap; }
 @media (max-width: 440px) {

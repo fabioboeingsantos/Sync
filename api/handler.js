@@ -220,16 +220,15 @@ async function enviarConfirmacao(cfg, destinatario, token, origem) {
     socketTimeout: 15000,
   });
   const link = `${origem}/#confirmar-email=${token}`;
-  // Garante nome de exibição institucional mesmo quando SMTP_FROM guarda apenas o endereço puro.
-  const remetente = cfg.smtpRemetente.includes('<')
-    ? cfg.smtpRemetente
-    : { name: 'VisionChef · Sync', address: cfg.smtpRemetente };
+  // Preserva o endereço autorizado pelo SMTP, usando sempre um nome de exibição institucional.
+  const enderecoRemetente = cfg.smtpRemetente.match(/<([^<>]+)>/)?.[1] ?? cfg.smtpRemetente;
+  const remetente = { name: 'Equipe VisionChef', address: enderecoRemetente.trim() };
   // Envia versão em texto e HTML com identidade Aço Inox, preheader limpo e tom profissional cordial.
   const resultado = await transporter.sendMail({
     from: remetente,
     to: destinatario,
     subject: 'Confirme seu e-mail no VisionChef',
-    text: `Olá,\n\nRecebemos sua solicitação para confirmar este endereço na sua conta do VisionChef.\n\nAcesse o link abaixo para concluir a verificação:\n${link}\n\nEste link é válido por 24 horas e pode ser utilizado uma única vez. Caso você não tenha feito esta solicitação, basta ignorar esta mensagem.\n\nAtenciosamente,\nEquipe VisionChef · Sync`,
+    text: `Olá,\n\nRecebemos sua solicitação para confirmar este endereço na sua conta do VisionChef.\n\nAcesse o link abaixo para concluir a verificação:\n${link}\n\nEste link é válido por 24 horas e pode ser utilizado uma única vez. Caso você não tenha feito esta solicitação, basta ignorar esta mensagem.\n\nAtenciosamente,\nEquipe VisionChef`,
     html: `<!doctype html><html lang="pt-BR"><body style="margin:0;padding:24px;background:#f4f6f7;font-family:Arial,sans-serif;color:#182327;"><span style="display:none;max-height:0;overflow:hidden;opacity:0;">Conclua a confirmação do seu endereço na conta VisionChef (link válido por 24 horas).</span><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #2a7f8e;border-radius:14px;overflow:hidden;"><tr><td style="background:#0f4c5c;padding:20px 24px;color:#ffffff;"><p style="margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a8d5dd;font-weight:700;">Sync · VisionChef</p><h1 style="margin:6px 0 0;font-size:20px;line-height:1.25;">Confirme seu e-mail</h1></td></tr><tr><td style="padding:24px;"><p style="margin:0 0 14px;font-size:15px;line-height:1.55;">Olá,</p><p style="margin:0 0 20px;font-size:15px;line-height:1.55;">Recebemos sua solicitação para confirmar este endereço na sua conta do <strong>VisionChef</strong>. Clique no botão abaixo para concluir:</p><p style="margin:0 0 22px;"><a href="${link}" style="display:inline-block;padding:13px 22px;background:#0f4c5c;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">Confirmar e-mail</a></p><p style="margin:0 0 12px;font-size:13px;line-height:1.5;color:#2a7f8e;">Este link é válido por 24 horas e pode ser utilizado uma única vez. Caso não tenha feito esta solicitação, basta ignorar esta mensagem.</p><p style="margin:0;font-size:12px;line-height:1.5;color:#2a7f8e;word-break:break-all;">Se o botão não abrir, copie este endereço no navegador:<br>${link}</p></td></tr></table></body></html>`,
   });
   const aceitos = Array.isArray(resultado?.accepted) ? resultado.accepted.length : 0;
@@ -472,8 +471,8 @@ export async function tratarApi(requisicao) {
       return resposta({
         enviada: true,
         mensagem: verificadoExiste === true
-          ? 'Enviamos um link de recuperação para o seu e-mail. A entrega pode levar alguns minutos.'
-          : 'Se houver uma conta para esse e-mail, enviaremos um link de recuperação.',
+          ? 'Enviamos um link de recuperação. Ele costuma chegar em alguns minutos. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações.'
+          : 'Se houver uma conta para esse e-mail, enviaremos um link de recuperação. A entrega costuma levar alguns minutos; confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações.',
       });
     }
 
@@ -574,7 +573,10 @@ export async function tratarApi(requisicao) {
         });
         return resposta({ erro: 'Não foi possível enviar a confirmação agora. Tente novamente mais tarde.' }, 503, cookieAtualizado);
       }
-      return resposta({ enviado: true, mensagem: 'Enviamos um link para o e-mail da sua conta.' }, 200, cookieAtualizado);
+      return resposta({
+        enviado: true,
+        mensagem: 'E-mail enviado. Ele costuma chegar em alguns minutos. Confira a caixa de entrada e também Spam/Lixo eletrônico, Promoções ou Atualizações. O link vale por 24 horas.',
+      }, 200, cookieAtualizado);
     }
 
     if (caminho === 'restaurantes' && requisicao.method === 'GET') {
