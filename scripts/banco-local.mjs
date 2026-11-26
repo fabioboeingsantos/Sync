@@ -208,6 +208,12 @@ export async function listarRestaurantes(tx) {
   return rows;
 }
 
+// Executa no piloto local a mesma criação atômica disponível no Supabase.
+export async function criarRestauranteInicial(tx, nome) {
+  const { rows: [resultado] } = await tx.query('select public.criar_restaurante_inicial($1) as restaurante', [nome]);
+  return resultado.restaurante;
+}
+
 export async function listarEstoque(tx, restaurante) {
   // A data como texto mantém o formato de calendário que a API do Supabase envia ao navegador.
   const { rows } = await tx.query(`

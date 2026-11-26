@@ -38,6 +38,12 @@ test('dono gerencia equipe em /equipe e revogação bloqueia imediatamente uma s
   assert.match(htmlEquipe, /id="form-vincular"/);
   assert.match(htmlEquipe, /id="dialogo-remover"/);
   assert.match(htmlEquipe, /class="botao botao-primario"/);
+  // A versão servida oferece os dois caminhos no diálogo e um atalho para quem entrou pelo estoque.
+  const entrada = await (await fetch(`${origem}/entrada.js`)).text();
+  assert.match(entrada, /Criar meu restaurante/);
+  assert.match(entrada, /Entrar em uma equipe/);
+  const paginaEstoque = await (await fetch(`${origem}/estoque/`)).text();
+  assert.match(paginaEstoque, /href="\.\.\/#configurar-restaurante"/);
 
   async function chamada(caminho, { cookie, dados } = {}) {
     const headers = {};
@@ -66,7 +72,11 @@ test('dono gerencia equipe em /equipe e revogação bloqueia imediatamente uma s
   });
   assert.equal(cadastro.status, 201);
 
-  const cookieNova = await entrar('nova.cozinha', senhaNova);
+  // O cadastro inicia a sessão e deixa a pessoa escolher como entrar no estoque.
+  assert.equal((await cadastro.json()).autenticado, true);
+  const cookieNova = cadastro.headers.get('set-cookie').split(';')[0];
+  const sessaoNova = await chamada('sessao', { cookie: cookieNova });
+  assert.equal((await sessaoNova.json()).user.email, 'nova@piloto.test');
   assert.deepEqual(await (await chamada('restaurantes', { cookie: cookieNova })).json(), []);
   assert.equal((await chamada('lotes', {
     cookie: cookieNova,
@@ -85,6 +95,33 @@ test('dono gerencia equipe em /equipe e revogação bloqueia imediatamente uma s
   const cookieDono = await entrar('dono@piloto.test');
   const cookieFuncionario = await entrar('funcionario@piloto.test');
   const cookieOutroDono = await entrar('dono@outro.test');
+
+  // Uma pessoa pode criar um estoque novo, com vínculo próprio e sem alterar um restaurante existente.
+  assert.equal((await chamada('restaurantes', { dados: { nome: 'Cozinha sem sessão' } })).status, 401);
+  assert.equal((await chamada('restaurantes', { cookie: cookieFuncionario, dados: { nome: 'Cadastro indevido' } })).status, 409);
+  const cadastroDona = await chamada('cadastrar', {
+    dados: { nomeUsuario: 'dona.nova', email: 'dona.nova@piloto.test', senha: senhaNova },
+  });
+  assert.equal(cadastroDona.status, 201);
+  const cookieDona = cadastroDona.headers.get('set-cookie').split(';')[0];
+  assert.equal((await chamada('restaurantes', { cookie: cookieDona, dados: { nome: ' ' } })).status, 400);
+  const criar = () => chamada('restaurantes', {
+    cookie: cookieDona,
+    dados: { nome: ' Cozinha Nova ', restaurante_id: restaurantePiloto, papel: 'funcionario' },
+  });
+  const criacoes = await Promise.all([criar(), criar()]);
+  assert.deepEqual(criacoes.map(resposta => resposta.status), [200, 200]);
+  const [criado, repetido] = await Promise.all(criacoes.map(resposta => resposta.json()));
+  assert.deepEqual(criado, repetido);
+  assert.notEqual(criado.id, restaurantePiloto);
+  assert.equal(criado.nome, 'Cozinha Nova');
+  assert.deepEqual(await (await chamada('restaurantes', { cookie: cookieDona })).json(), [criado]);
+  const estoqueNovo = await chamada(`lotes?restaurante=${criado.id}`, { cookie: cookieDona });
+  assert.equal(estoqueNovo.status, 200);
+  assert.deepEqual(await estoqueNovo.json(), []);
+  const equipeNova = await chamada(`equipe?restaurante=${criado.id}`, { cookie: cookieDona });
+  assert.deepEqual((await equipeNova.json()).map(membro => membro.papel), ['dono']);
+  assert.equal((await chamada(`equipe?restaurante=${restaurantePiloto}`, { cookie: cookieDona })).status, 403);
 
   assert.equal((await chamada(`equipe?restaurante=${restaurantePiloto}`, { cookie: cookieFuncionario })).status, 403);
   assert.equal((await chamada(`equipe?restaurante=${restaurantePiloto}`, { cookie: cookieOutroDono })).status, 403);
@@ -118,6 +155,8 @@ test('dono gerencia equipe em /equipe e revogação bloqueia imediatamente uma s
   const restaurantesLiberados = await (await chamada('restaurantes', { cookie: cookieNova })).json();
   assert.equal(restaurantesLiberados.length, 1);
   assert.equal(restaurantesLiberados[0].id, restaurantePiloto);
+  const sessaoLiberada = await (await chamada('sessao', { cookie: cookieNova })).json();
+  assert.deepEqual(sessaoLiberada.restaurantes, restaurantesLiberados);
 
   const cadastroLote = await chamada('lotes', {
     cookie: cookieNova,

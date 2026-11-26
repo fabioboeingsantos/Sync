@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { arquivosPublicos, montarPiloto, raiz } from './build.mjs';
 import {
   abrirBancoLocal, alterarStatusFornecedor, autenticarContaLocal, cadastrarLote, comoUsuario, corrigirValidade,
-  criarContaLocal, listarEquipe, listarEstoque, listarFornecedores, listarRestaurantes, listarDescartes,
+  criarContaLocal, criarRestauranteInicial, listarEquipe, listarEstoque, listarFornecedores, listarRestaurantes, listarDescartes,
   redefinirSenhaLocal, registrarAbertura, registrarSaida, removerMembro, salvarFornecedor, vincularMembro,
 } from './banco-local.mjs';
 
@@ -49,6 +49,14 @@ function json(res, status, dados) {
 export function criarServidorLocal(banco, pastaPublica) {
   // As sessões fictícias ficam em memória e expiram independentemente dos dados do estoque.
   const sessoes = new Map();
+  // O cadastro local reproduz a sessão iniciada pela versão online depois da criação da conta.
+  function abrirSessao(res, anterior, id) {
+    sessoes.delete(anterior);
+    const token = randomBytes(32).toString('hex');
+    sessoes.set(token, { id, expira: Date.now() + 7 * 86_400_000 });
+    res.setHeader('Set-Cookie', `visionchef_demo=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`);
+  }
+
   return createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -87,10 +95,7 @@ export function criarServidorLocal(banco, pastaPublica) {
           json(res, 401, { erro: 'Confira o usuário ou e-mail e a senha de teste.' });
           return;
         }
-        sessoes.delete(sessao);
-        const token = randomBytes(32).toString('hex');
-        sessoes.set(token, { id: identidade.id, expira: Date.now() + 7 * 86_400_000 });
-        res.setHeader('Set-Cookie', `visionchef_demo=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`);
+        abrirSessao(res, sessao, identidade.id);
         json(res, 200, { autenticado: true });
         return;
       }
@@ -99,7 +104,8 @@ export function criarServidorLocal(banco, pastaPublica) {
         const { nomeUsuario, email, senha } = (await lerJson(req)) ?? {};
         try {
           const criada = await criarContaLocal(banco, { nomeUsuario, email, senha });
-          json(res, 201, { criada: true, usuario: criada.nome });
+          abrirSessao(res, sessao, criada.id);
+          json(res, 201, { criada: true, autenticado: true, usuario: criada.nome });
         } catch (erroCadastro) {
           const status = erroCadastro.status ?? (erroCadastro.code === '23505' ? 409 : 400);
           json(res, status, { erro: status === 409 ? 'Usuário ou e-mail já cadastrado.' : 'Confira o usuário, o e-mail e a senha.' });
@@ -153,7 +159,16 @@ export function criarServidorLocal(banco, pastaPublica) {
         return;
       }
 
-      if (req.method === 'GET' && url.pathname === '/demo/restaurantes') {
+      if (req.method === 'GET' && url.pathname === '/demo/sessao') {
+        // Devolve só os dados da conta atual e os restaurantes permitidos pela RLS.
+        const { rows: [user] } = await banco.query('select id, email from auth.users where id = $1', [conta.id]);
+        const restaurantes = await comoUsuario(banco, conta.id, listarRestaurantes);
+        json(res, 200, { user, restaurantes });
+      } else if (req.method === 'POST' && url.pathname === '/demo/restaurantes') {
+        const dados = await lerJson(req);
+        const nome = typeof dados?.nome === 'string' ? dados.nome : null;
+        json(res, 200, await comoUsuario(banco, conta.id, (tx) => criarRestauranteInicial(tx, nome)));
+      } else if (req.method === 'GET' && url.pathname === '/demo/restaurantes') {
         json(res, 200, await comoUsuario(banco, conta.id, listarRestaurantes));
       } else if (req.method === 'GET' && url.pathname === '/demo/lotes') {
         const restaurante = url.searchParams.get('restaurante');
@@ -200,6 +215,9 @@ export function criarServidorLocal(banco, pastaPublica) {
       } else if (erro.code === 'PT409' || erro.code === 'PT404') {
         // Reproduz os códigos de conflito e item ausente que a API integrada retorna.
         json(res, Number(erro.code.slice(2)), { erro: erro.message, codigo: erro.code });
+      } else if (erro.code === '22023') {
+        // As RPCs usam 22023 para orientar a correção dos campos de entrada.
+        json(res, 400, { erro: erro.message, codigo: erro.code });
       } else if (erro.code === '23505') {
         json(res, 409, { erro: 'Este cadastro já foi enviado com outros dados.' });
       } else if (erro.code?.startsWith('22') || erro.code?.startsWith('23') || erro instanceof SyntaxError || erro instanceof RangeError) {

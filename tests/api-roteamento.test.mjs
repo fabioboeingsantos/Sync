@@ -88,6 +88,36 @@ test('vercel.json reescreve /api/* para /api/index e redireciona /estoque e /equ
   ]);
 });
 
+test('a criação de restaurante na API exige sessão e usa o token individual', async (t) => {
+  // O cliente pode fornecer o nome. O token da sessão define quem recebe o papel de dono.
+  const restaurante = { id: '10000000-0000-4000-8000-000000000099', nome: 'Cozinha Nova' };
+  t.mock.method(globalThis, 'fetch', async (url, opcoes) => {
+    if (url.pathname === '/functions/v1/limitar-autenticacao') return Response.json({ permitido: true });
+    if (url.pathname === '/auth/v1/token') return Response.json({
+      access_token: 'token-autenticado', refresh_token: 'token-renovacao', expires_in: 3600,
+      user: { id: '20000000-0000-4000-8000-000000000099', email: 'dona@piloto.test' },
+    });
+    assert.equal(url.pathname, '/rest/v1/rpc/criar_restaurante_inicial');
+    assert.equal(opcoes.headers.Authorization, 'Bearer token-autenticado');
+    assert.deepEqual(JSON.parse(opcoes.body), { p_nome: restaurante.nome });
+    return Response.json(restaurante);
+  });
+  await comAmbienteApi({}, async () => {
+    const post = (rota, corpo, cookie = '') => tratarApi(new Request(`https://sync.test/api/${rota}`, {
+      method: 'POST', headers: { Origin: 'https://sync.test', 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify(corpo),
+    }));
+    const dados = { nome: restaurante.nome, usuario_id: 'outro', papel: 'funcionario' };
+    assert.equal((await post('restaurantes', dados)).status, 401);
+    const login = await post('auth/login', { identificador: 'dona@piloto.test', senha: 'senha-teste' });
+    assert.equal(login.status, 200);
+    const cookie = login.headers.get('set-cookie').split(';')[0];
+    const criacao = await post('restaurantes', dados, cookie);
+    assert.equal(criacao.status, 200);
+    assert.deepEqual(await criacao.json(), restaurante);
+  });
+});
+
 test('tratarApi resolve rotas diretas, com barra final e reescritas via /api/index?__rota', async () => {
   await comAmbienteApi({}, async () => {
     // Sessão sem cookie deve retornar 200 com user null nos três formatos de URL.

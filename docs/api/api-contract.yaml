@@ -255,6 +255,33 @@ paths:
                 items: { $ref: "#/components/schemas/Restaurante" }
         "401":
           description: Sessão necessária
+    post:
+      summary: Criar o primeiro restaurante com vínculo de dono
+      description: A conta vem da sessão. Se repetir o envio, a API retorna o restaurante que a conta já criou e administra.
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome]
+              properties:
+                nome: { type: string, minLength: 2, maxLength: 120 }
+      responses:
+        "200":
+          description: Restaurante disponível para a conta
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Restaurante"
+        "400":
+          description: Nome de restaurante inválido
+        "401":
+          description: Sessão necessária
+        "409":
+          description: A conta já tem vínculo ativo ou perdeu o acesso ao restaurante que criou
 
   /api/estoque:
     get:

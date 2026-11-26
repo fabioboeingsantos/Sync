@@ -139,9 +139,9 @@
     .vision-controls { align-items: center; }
     .vision-controls .voice-pill { margin-inline-start: auto; }
     /* Os atalhos de exemplo são controles compactos com o acabamento global Aço Inox. */
-    .vision-examples { margin-top: .75rem; }
-    .vision-example-buttons { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .3rem; }
-    .vision-example-buttons .botao { min-height: 36px; padding: 6px 10px; font-size: .875rem; }
+    .lot-examples { margin-top: .75rem; }
+    .lot-example-buttons { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .3rem; }
+    .lot-example-buttons .botao { min-height: 36px; padding: 6px 10px; font-size: .875rem; }
     #vision-status:not(:empty) { margin-top: .5rem; font-weight: 700; }
     #vision-status[data-error="true"] { color: var(--cor-alerta); }
 
@@ -350,7 +350,7 @@
         <fieldset class="mode-picker">
           <legend>Modo de cadastro</legend>
           <div class="actions">
-            <button id="manual-mode" class="botao botao-secundario" type="button" aria-controls="vision-panel" aria-pressed="true">Manual</button>
+            <button id="manual-mode" class="botao botao-secundario" type="button" aria-controls="manual-examples vision-panel" aria-pressed="true">Manual</button>
             <button id="vision-mode" class="botao botao-secundario" type="button" aria-controls="vision-panel" aria-pressed="false">Vision - Assistente IA</button>
           </div>
         </fieldset>
@@ -397,15 +397,24 @@
             </button>
           </div>
           <!-- Os três exemplos mudam só a descrição para testar a interpretação pelo fluxo normal. -->
-          <div class="vision-examples" role="group" aria-labelledby="vision-examples-title">
+          <div class="lot-examples" role="group" aria-labelledby="vision-examples-title">
             <p id="vision-examples-title"><strong>Exemplos</strong></p>
-            <div class="vision-example-buttons">
+            <div class="lot-example-buttons">
               <button id="vision-example-valid" class="botao botao-secundario" type="button">Válido</button>
               <button id="vision-example-error" class="botao botao-secundario" type="button">Com erro</button>
               <button id="vision-example-random" class="botao botao-secundario" type="button">Aleatório</button>
             </div>
           </div>
           <p id="vision-status" role="status"></p>
+        </div>
+        <!-- No modo manual, os exemplos carregam os próprios campos do formulário. -->
+        <div id="manual-examples" class="lot-examples" role="group" aria-labelledby="manual-examples-title">
+          <p id="manual-examples-title"><strong>Exemplos</strong></p>
+          <div class="lot-example-buttons">
+            <button id="manual-example-valid" class="botao botao-secundario" type="button">Válido</button>
+            <button id="manual-example-error" class="botao botao-secundario" type="button">Com erro</button>
+            <button id="manual-example-random" class="botao botao-secundario" type="button">Aleatório</button>
+          </div>
         </div>
         <!-- novalidate permite exibir mensagem padronizada de erro dentro do layout -->
         <p id="lot-simulation">Use um nome de insumo e uma validade fictícios para testar.</p>
@@ -773,6 +782,7 @@
       el('manual-mode').setAttribute('aria-pressed', String(!useVision));
       el('vision-mode').setAttribute('aria-pressed', String(useVision));
       el('vision-panel').hidden = !useVision;
+      el('manual-examples').hidden = useVision;
       if (!useVision) {
         voiceControl.cancel();
         showVisionStatus('');
@@ -785,6 +795,17 @@
       status.dataset.error = String(isError);
     }
 
+    // Preencher os campos limpa avisos do lote anterior. O salvamento continua a cargo do formulário.
+    function fillLotFields({ name, expiry, qty, location }) {
+      hideDuplicateWarning();
+      nameInput.value = name;
+      expiryInput.value = expiry;
+      qtyInput.value = qty;
+      locInput.value = location;
+      nameInput.removeAttribute('aria-invalid');
+      expiryInput.removeAttribute('aria-invalid');
+    }
+
     // As sugestões precisam passar pela conferência e pelo mesmo salvamento do modo manual.
     function fillWithVision() {
       if (!visionInput.value.trim()) {
@@ -793,13 +814,7 @@
         return;
       }
       const fields = interpretNaturalText(visionInput.value);
-      hideDuplicateWarning();
-      nameInput.value = fields.name;
-      expiryInput.value = fields.expiry;
-      qtyInput.value = fields.qty;
-      locInput.value = fields.location;
-      nameInput.removeAttribute('aria-invalid');
-      expiryInput.removeAttribute('aria-invalid');
+      fillLotFields(fields);
       showFeedback('');
       if (fields.ambiguousDateTerm) {
         showVisionStatus(`A validade “${fields.ambiguousDateTerm}” é ambígua. Informe dia, mês e ano.`, true);
@@ -824,34 +839,51 @@
       }
     });
     // Os exemplos usam datas relativas à sessão para funcionar em qualquer dia de teste.
+    const validExample = { name: 'Molho de tomate', days: 1, qty: '2 potes', location: 'prateleira de cima' };
+    const errorExample = { name: 'Frango resfriado', qty: '2 bandejas', location: 'prateleira de baixo' };
     const randomExamples = [
-      { name: 'Manteiga', days: 3, details: '2 pacotes, gaveta de frios' },
-      { name: 'Ervilha', days: 6, details: '3 sacos, freezer' },
-      { name: 'Leite integral', days: 2, details: '4 caixas, prateleira de baixo' },
-      { name: 'Palmito', days: 8, details: '2 potes, prateleira do meio' }
+      { name: 'Manteiga', days: 3, qty: '2 pacotes', location: 'gaveta de frios' },
+      { name: 'Ervilha', days: 6, qty: '3 sacos', location: 'freezer' },
+      { name: 'Leite integral', days: 2, qty: '4 caixas', location: 'prateleira de baixo' },
+      { name: 'Palmito', days: 8, qty: '2 potes', location: 'prateleira do meio' }
     ];
     let lastRandomExample;
 
-    function loadVisionExample(description) {
+    function loadVisionExample({ name, days, qty, location }) {
       voiceControl.cancel();
-      visionInput.value = description;
+      const dateText = days === undefined ? 'vence amanhã' : `validade ${formatDateBr(getScenarioDate(days))}`;
+      visionInput.value = `${name}, ${dateText}, ${qty}, ${location}`;
       showVisionStatus('Exemplo inserido. Clique em Preencher com a Vision.');
       visionInput.focus();
     }
 
-    el('vision-example-valid').addEventListener('click', () => {
-      loadVisionExample(`Molho de tomate, validade ${formatDateBr(getScenarioDate(1))}, 2 potes, prateleira de cima`);
-    });
-    el('vision-example-error').addEventListener('click', () => {
-      loadVisionExample('Frango resfriado, vence amanhã, 2 bandejas, prateleira de baixo');
-    });
-    el('vision-example-random').addEventListener('click', () => {
+    // O exemplo com erro deixa a data em branco para exercitar a validação do cadastro manual.
+    function loadManualExample({ name, days, qty, location }) {
+      const expiry = days === undefined ? '' : getScenarioDate(days);
+      fillLotFields({ name, expiry, qty, location });
+      if (expiry) {
+        showFeedback('Exemplo carregado. Confira os campos antes de salvar.');
+        nameInput.focus();
+        return;
+      }
+      showFeedback('Exemplo sem validade. Tente salvar para testar o aviso ou informe a data.');
+      expiryInput.focus();
+    }
+
+    function pickRandomExample() {
       // Evita repetir o mesmo cenário em dois cliques seguidos.
       const options = randomExamples.filter(example => example !== lastRandomExample);
       const example = options[Math.floor(Math.random() * options.length)];
       lastRandomExample = example;
-      loadVisionExample(`${example.name}, validade ${formatDateBr(getScenarioDate(example.days))}, ${example.details}`);
-    });
+      return example;
+    }
+
+    el('vision-example-valid').addEventListener('click', () => loadVisionExample(validExample));
+    el('vision-example-error').addEventListener('click', () => loadVisionExample(errorExample));
+    el('vision-example-random').addEventListener('click', () => loadVisionExample(pickRandomExample()));
+    el('manual-example-valid').addEventListener('click', () => loadManualExample(validExample));
+    el('manual-example-error').addEventListener('click', () => loadManualExample(errorExample));
+    el('manual-example-random').addEventListener('click', () => loadManualExample(pickRandomExample()));
 
     // O relatório usa o mês da sessão. O estoque inicial é recriado a cada teste.
     el('report-month').textContent = new Intl.DateTimeFormat('pt-BR', {

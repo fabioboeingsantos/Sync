@@ -40,6 +40,8 @@ export const api = {
   },
   sair: (escopo = 'local') => solicitar('auth/logout', { metodo: 'POST', corpo: { escopo } }),
   restaurantes,
+  // O servidor vincula a conta atual como dona durante a criação do primeiro restaurante.
+  criarRestaurante: (nome) => solicitar('restaurantes', { metodo: 'POST', corpo: { nome } }),
   estoque: (restaurante) => solicitar(`estoque?restaurante=${encodeURIComponent(restaurante)}`),
   cadastrar: (lote) => solicitar('estoque/cadastrar', { metodo: 'POST', corpo: lote }),
   corrigirValidade: (correcao) => solicitar('estoque/corrigir-validade', { metodo: 'POST', corpo: correcao }),

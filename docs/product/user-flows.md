@@ -4,8 +4,9 @@
 
 | Tela ou ação | Quem usa | Caminho principal e estados a revisar |
 | --- | --- | --- |
-| Landing e cadastro | Pessoa interessada | Criar conta individual com usuário, e-mail e senha. O cadastro não concede papel nem acesso ao estoque. Com sessão válida, abrir a área da conta mesmo antes de existir vínculo com restaurante. |
-| Entrar | Dono e funcionário | Entrar com usuário ou e-mail e senha. A tela oferece recuperação de senha como ação secundária. Se a sessão expirar, orientar a entrar novamente. Se a conta não tiver vínculo, manter a área da conta acessível e informar que o estoque aguarda a autorização do dono. |
+| Landing e cadastro | Pessoa interessada | Criar conta individual com usuário, e-mail e senha. Com sessão válida, escolher **Criar meu restaurante** ou **Entrar em uma equipe**. |
+| Primeiro acesso | Dono e funcionário | O dono informa o nome do novo restaurante e vai ao estoque com o vínculo criado. Para entrar em equipe existente, pedir ao dono que use **Equipe → Liberar acesso** com o e-mail da conta. Depois, selecionar **Verificar meu acesso** para consultar a liberação e abrir o estoque. |
+| Entrar | Dono e funcionário | Entrar com usuário ou e-mail e senha. Contas com vínculo ativo vão ao estoque. Contas que aguardam vínculo voltam à configuração de acesso. A tela oferece recuperação de senha como ação secundária. |
 | Minha conta | Pessoa autenticada | Consultar e-mail e estado de confirmação opcional; solicitar o e-mail de confirmação somente nesta área; confirmar por link de uso único. Permitir sair da conta. A confirmação não substitui o vínculo com restaurante. |
 | Recuperar senha | Pessoa sem sessão | Informar o e-mail e receber resposta genérica. O link abre o formulário para escolher nova senha. Não oferecer reenvio de confirmação nesta tela. |
 | Estoque | Dono e funcionário | Consultar o saldo e a validade aplicável. Identificar as partes abertas e fechadas pelo texto. Se estiver vazio, oferecer o cadastro do primeiro lote. Se houver falha de conexão, permitir nova tentativa. |

@@ -12,6 +12,13 @@ async function solicitar(caminho, corpo) {
 export const api = {
   modoLocal: true,
   entrar: (identificador, senha) => solicitar('entrar', { identificador, senha }),
+  // O fluxo inicial fica testável com contas e restaurantes fictícios no servidor local.
+  criarConta: (dados) => solicitar('cadastrar', dados),
+  criarRestaurante: (nome) => solicitar('restaurantes', { nome }),
+  async sessao() {
+    try { return await solicitar('sessao'); }
+    catch (erro) { if (erro.status === 401) return null; throw erro; }
+  },
   sair: (escopo = 'local') => solicitar('sair', { escopo }),
   restaurantes: async () => {
     try {

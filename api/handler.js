@@ -553,6 +553,15 @@ export async function tratarApi(requisicao) {
       return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
     }
 
+    if (caminho === 'restaurantes' && requisicao.method === 'POST') {
+      const dados = await jsonEntrada(requisicao, 2048);
+      // O banco identifica a pessoa pelo JWT da sessão e cria somente um restaurante novo.
+      const remoto = await supabase(cfg, '/rest/v1/rpc/criar_restaurante_inicial', {
+        metodo: 'POST', token, corpo: { p_nome: typeof dados?.nome === 'string' ? dados.nome : null },
+      });
+      return remoto.ok ? resposta(remoto.dados, 200, cookieAtualizado) : erroBanco(remoto);
+    }
+
     if (caminho === 'estoque' && requisicao.method === 'GET') {
       const restaurante = url.searchParams.get('restaurante') ?? '';
       if (!/^[0-9a-f-]{36}$/i.test(restaurante)) return resposta({ erro: 'Restaurante inválido.' }, 400);

@@ -88,8 +88,9 @@ function AcessoVisionChef({ destino }) {
   const [conta, definirConta] = useState(null);
   const [modo, definirModo] = useState(modoInicialHash);
   const [dialogoAberto, definirDialogoAberto] = useState(
-    Boolean(tokenConfirmacao) || hash.get('type') === 'recovery' || hashBruto === '#cadastro' || hashBruto === '#recuperar',
+    Boolean(tokenConfirmacao) || hash.get('type') === 'recovery' || ['#cadastro', '#recuperar', '#configurar-restaurante'].includes(hashBruto),
   );
+  const configurandoRestaurante = ['restaurante', 'criar-restaurante', 'entrar-equipe'].includes(modo);
   const [senhaVisivel, definirSenhaVisivel] = useState(false);
   const envioEmCurso = useRef(false);
   const formulario = useRef(null);
@@ -98,16 +99,20 @@ function AcessoVisionChef({ destino }) {
   useEffect(() => {
     let paginaAtiva = true;
     (async () => {
-      // A sessão libera o estoque quando há vínculo; sem vínculo ou via #minha-conta, abre a área da conta.
+      // A configuração só abre para uma sessão autenticada que ainda não tem restaurante.
       const sessao = api.sessao ? await api.sessao() : null;
       const restaurantes = sessao?.restaurantes ?? await api.restaurantes();
       if (!paginaAtiva || envioEmCurso.current || formulario.current?.contains(document.activeElement)) return;
       if (sessao?.user) definirConta(sessao);
       if (restaurantes?.length) definirAcesso(true);
-      const abrirConta = window.location.hash === '#minha-conta';
-      if (sessao?.user && (!restaurantes?.length || abrirConta)) {
-        definirModo('conta');
+      const hashAtual = window.location.hash;
+      const abrirConta = hashAtual === '#minha-conta';
+      const abrirConfiguracao = !restaurantes?.length && !tokenConfirmacao && hash.get('type') !== 'recovery';
+      if (sessao?.user && (abrirConta || abrirConfiguracao)) {
+        definirModo(abrirConta ? 'conta' : 'restaurante');
         definirDialogoAberto(true);
+      } else if (restaurantes?.length && hashAtual === '#configurar-restaurante') {
+        window.location.assign(destino);
       }
     })().catch(() => {
       // O formulário continua disponível se a consulta de sessão falhar.
@@ -135,7 +140,7 @@ function AcessoVisionChef({ destino }) {
       }
       definirMensagem('');
       // Cada CTA pode abrir o mesmo diálogo diretamente no fluxo de entrada ou cadastro.
-      definirModo(querCadastro ? 'cadastro' : conta ? 'conta' : 'entrar');
+      definirModo(conta ? (temAcesso ? 'conta' : 'restaurante') : querCadastro ? 'cadastro' : 'entrar');
       definirDialogoAberto(true);
     };
     links.forEach((link) => link.addEventListener('click', abrir));
@@ -143,16 +148,20 @@ function AcessoVisionChef({ destino }) {
   }, [temAcesso, conta, destino]);
 
   useEffect(() => {
-    // Permite abrir cadastro, recuperação ou conta via hash (#cadastro, #recuperar, #minha-conta) sem recarregar.
+    // Preserva os atalhos para a conta e para o primeiro acesso ao estoque.
     const aoMudarHash = () => {
       const atual = window.location.hash;
       if (atual === '#cadastro') { definirMensagem(''); definirModo('cadastro'); definirDialogoAberto(true); }
       else if (atual === '#recuperar') { definirMensagem(''); definirModo('recuperar'); definirDialogoAberto(true); }
       else if (atual === '#minha-conta' && conta) { definirMensagem(''); definirModo('conta'); definirDialogoAberto(true); }
+      else if (atual === '#configurar-restaurante') {
+        if (temAcesso) { window.location.assign(destino); return; }
+        definirMensagem(''); definirModo(conta ? 'restaurante' : 'entrar'); definirDialogoAberto(true);
+      }
     };
     window.addEventListener('hashchange', aoMudarHash);
     return () => window.removeEventListener('hashchange', aoMudarHash);
-  }, [conta]);
+  }, [conta, destino, temAcesso]);
 
   useEffect(() => {
     // O elemento nativo fornece foco contido, Escape e semântica de diálogo acessível.
@@ -163,6 +172,11 @@ function AcessoVisionChef({ destino }) {
       if (dialogo.current.open) dialogo.current.close();
     }
   }, [dialogoAberto]);
+
+  useEffect(() => {
+    // Anuncia o novo passo quando o diálogo troca de tela sem recarregar a página.
+    if (dialogoAberto && configurandoRestaurante) dialogo.current?.querySelector('#titulo-acesso')?.focus();
+  }, [dialogoAberto, configurandoRestaurante, modo]);
 
   // Mantém a sessão ativa e encaminha ao estoque somente quando existe vínculo autorizado.
   async function entrar(evento) {
@@ -178,10 +192,10 @@ function AcessoVisionChef({ destino }) {
       const sessao = api.sessao ? await api.sessao() : null;
       const restaurantes = sessao?.restaurantes ?? await api.restaurantes();
       if (!restaurantes?.length) {
-        // Uma conta sem vínculo pode usar a área da conta, mas continua sem acesso ao estoque.
+        // O primeiro acesso oferece ações concretas para criar o restaurante ou receber o vínculo.
         if (sessao?.user) definirConta(sessao);
-        definirMensagem('Sua conta está ativa. O acesso ao estoque será liberado quando o dono vincular você ao restaurante.');
-        definirModo(sessao?.user ? 'conta' : 'resultado');
+        definirMensagem(sessao?.user ? '' : 'Entre novamente para configurar o acesso ao estoque.');
+        definirModo(sessao?.user ? 'restaurante' : 'resultado');
         return;
       }
       window.location.assign(destino);
@@ -214,31 +228,75 @@ function AcessoVisionChef({ destino }) {
       definirMensagem('Use uma senha com pelo menos 6 caracteres.');
       return;
     }
-    if (api.modoLocal) {
-      definirMensagem('O cadastro real fica disponível na versão online. Nesta demonstração local, use as contas de teste exibidas na tela de estoque.');
+    envioEmCurso.current = true;
+    definirEnvio(true);
+    definirMensagem('');
+    try {
+      // Só oferece a configuração de restaurante depois de confirmar que a sessão foi aberta.
+      const resultado = await api.criarConta({ nomeUsuario: dados.nomeUsuario, email: dados.email, senha: dados.senha });
+      if (resultado.autenticado && api.sessao) {
+        const sessao = await api.sessao();
+        if (sessao?.user) {
+          definirConta(sessao);
+          definirMensagem('Conta criada. Escolha como você quer acessar o estoque.');
+          definirModo('restaurante');
+          return;
+        }
+      }
+      definirMensagem(resultado.mensagem ?? 'Conta criada. Entre para configurar seu acesso ao estoque.');
       definirModo('resultado');
+    } catch (erro) {
+      // Mostra a orientação retornada pela API para senha, domínio e limite de tentativas.
+      definirMensagem(erro.status === 400 || erro.status === 429 || erro.code === 'consulta_email_indisponivel'
+        ? erro.message
+        : 'Não foi possível criar a conta. Confira os dados ou tente outro usuário e e-mail.');
+    } finally {
+      envioEmCurso.current = false;
+      definirEnvio(false);
+    }
+  }
+
+  // Os dois caminhos só enviam ao estoque após a criação do vínculo ou a leitura de um vínculo ativo.
+  async function configurarRestaurante(evento) {
+    evento.preventDefault();
+    if (envioEmCurso.current) return;
+    const nome = new FormData(evento.currentTarget).get('nome')?.trim();
+    if (!nome || nome.length < 2) {
+      definirMensagem('Informe o nome do restaurante com pelo menos 2 caracteres.');
       return;
     }
     envioEmCurso.current = true;
     definirEnvio(true);
     definirMensagem('');
     try {
-      // O cadastro abre a própria conta quando a configuração do Supabase permite login sem confirmação obrigatória.
-      const resultado = await api.criarConta({ nomeUsuario: dados.nomeUsuario, email: dados.email, senha: dados.senha });
-      if (resultado.autenticado && api.sessao) {
-        const sessao = await api.sessao();
-        definirConta(sessao);
-        definirMensagem('Conta criada. A confirmação de e-mail é opcional; o acesso ao estoque depende do vínculo do dono.');
-        definirModo('conta');
-      } else {
-        definirMensagem(resultado.mensagem ?? 'Conta criada. Entre para acessar sua área da conta.');
-        definirModo('resultado');
-      }
+      await api.criarRestaurante(nome);
+      window.location.assign(destino);
     } catch (erro) {
-      // Mostra a orientação retornada pela API para senha, domínio e limite de tentativas.
-      definirMensagem(erro.status === 400 || erro.status === 429 || erro.code === 'consulta_email_indisponivel'
-        ? erro.message
-        : 'Não foi possível criar a conta. Confira os dados ou tente outro usuário e e-mail.');
+      definirMensagem(erro.status === 400 || erro.status === 409 ? erro.message : 'Não foi possível criar o restaurante agora. Tente novamente.');
+    } finally {
+      envioEmCurso.current = false;
+      definirEnvio(false);
+    }
+  }
+
+  async function verificarVinculo() {
+    if (envioEmCurso.current) return;
+    envioEmCurso.current = true;
+    definirEnvio(true);
+    definirMensagem('');
+    try {
+      const sessao = await api.sessao();
+      if (!sessao?.user) {
+        definirConta(null);
+        definirModo('entrar');
+        definirMensagem('Sua sessão expirou. Entre novamente.');
+      } else if (sessao.restaurantes?.length) {
+        window.location.assign(destino);
+      } else {
+        definirMensagem('O acesso ainda aguarda liberação na seção Equipe do restaurante.');
+      }
+    } catch {
+      definirMensagem('Não foi possível verificar o acesso agora. Tente novamente.');
     } finally {
       envioEmCurso.current = false;
       definirEnvio(false);
@@ -352,6 +410,18 @@ function AcessoVisionChef({ destino }) {
     }
   }
 
+  const [titulo, subtitulo] = {
+    entrar: ['Entre na sua conta', 'Acesse com seu usuário ou e-mail e sua senha.'],
+    cadastro: ['Crie sua conta', api.modoLocal ? 'Use dados fictícios para testar o cadastro local.' : 'Depois do cadastro, escolha como acessar o estoque.'],
+    restaurante: ['Como você quer acessar o estoque?', 'Escolha entre cadastrar seu restaurante e participar de uma equipe existente.'],
+    'criar-restaurante': ['Criar meu restaurante', 'Você será o dono do novo restaurante e poderá liberar acesso à sua equipe.'],
+    'entrar-equipe': ['Entrar em uma equipe', 'O dono do restaurante precisa liberar seu acesso usando o e-mail da sua conta.'],
+    recuperar: ['Recupere sua senha', 'Informe o e-mail da sua conta para receber o link de redefinição.'],
+    redefinir: ['Escolha uma nova senha', 'Informe e confirme a nova senha da sua conta.'],
+    conta: ['Minha conta', 'Consulte seu e-mail e gerencie sua sessão.'],
+    confirmar: ['Confirme seu e-mail', 'Abra esta página a partir do link enviado e confirme abaixo para concluir.'],
+  }[modo] ?? ['Acesso ao VisionChef', ''];
+
   return (
     <>
       {temAcesso ? <>
@@ -366,9 +436,9 @@ function AcessoVisionChef({ destino }) {
         }}>Minha conta</button>
       </> : <>
         <a className="botao botao-primario" id="acesso-estoque" href="#prototipos"
-          onClick={() => { definirMensagem(''); definirModo(conta ? 'conta' : 'entrar'); definirDialogoAberto(true); }}>{conta ? 'Minha conta' : 'Entrar no VisionChef'}</a>
-        <button className="botao botao-secundario botao-criar-conta" type="button"
-          onClick={() => { definirMensagem(''); definirModo('cadastro'); definirDialogoAberto(true); }}>Criar conta</button>
+          onClick={() => { definirMensagem(''); definirModo(conta ? 'restaurante' : 'entrar'); definirDialogoAberto(true); }}>{conta ? 'Configurar acesso' : 'Entrar no VisionChef'}</a>
+        {!conta && <button className="botao botao-secundario botao-criar-conta" type="button"
+          onClick={() => { definirMensagem(''); definirModo('cadastro'); definirDialogoAberto(true); }}>Criar conta</button>}
       </>}
       <dialog className="dialogo-acesso-sync" ref={dialogo} aria-labelledby="titulo-acesso"
         onCancel={(evento) => { evento.preventDefault(); definirDialogoAberto(false); }}
@@ -387,8 +457,8 @@ function AcessoVisionChef({ destino }) {
           <hr className="divisor-acesso" />
           <header className="cabecalho-acesso">
             <p className="rotulo-acesso">Acesso ao sistema</p>
-            <h2 id="titulo-acesso">{modo === 'entrar' ? 'Entre na sua conta' : modo === 'cadastro' ? 'Crie sua conta' : modo === 'recuperar' ? 'Recupere sua senha' : modo === 'redefinir' ? 'Escolha uma nova senha' : modo === 'conta' ? 'Minha conta' : modo === 'confirmar' ? 'Confirme seu e-mail' : 'Acesso ao VisionChef'}</h2>
-            <p className="subtitulo-acesso">{modo === 'entrar' ? 'Acesse com seu usuário ou e-mail e sua senha.' : modo === 'cadastro' ? 'A confirmação do e-mail é opcional. O acesso ao estoque depende do vínculo do dono do restaurante.' : modo === 'recuperar' ? 'Informe o e-mail da sua conta para receber o link de redefinição.' : modo === 'conta' ? 'Gerencie a confirmação facultativa do seu endereço. Isso não concede acesso ao estoque.' : modo === 'confirmar' ? 'Abra esta página a partir do link enviado e confirme abaixo para concluir.' : 'A demonstração pública continua disponível na página.'}</p>
+            <h2 id="titulo-acesso" tabIndex={-1}>{titulo}</h2>
+            {subtitulo && <p className="subtitulo-acesso">{subtitulo}</p>}
           </header>
           {modo === 'entrar' && <form className="formulario-acesso" method="post" autoComplete="on" ref={formulario} onSubmit={entrar}>
             <label>Usuário ou e-mail<input name="identificador" type="text" placeholder="Digite seu usuário ou e-mail" autoComplete="username" autoCapitalize="none" spellCheck={false} required /></label>
@@ -402,6 +472,20 @@ function AcessoVisionChef({ destino }) {
             <CampoSenha rotulo="Confirmar senha" name="confirmarSenha" placeholder="Repita sua senha" autoComplete="new-password" minLength="6" maxLength="128" required visivel={senhaVisivel} aoAlternar={() => definirSenhaVisivel(!senhaVisivel)} />
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Criando…' : 'Criar conta'}</BotaoGlass>
           </form>}
+          {/* O primeiro acesso diferencia a criação de um restaurante da autorização de um funcionário. */}
+          {modo === 'restaurante' && <div className="acoes-acesso">
+            <BotaoGlass className="botao-primario" type="button" onClick={() => { definirMensagem(''); definirModo('criar-restaurante'); }}>Criar meu restaurante</BotaoGlass>
+            <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('entrar-equipe'); }}>Entrar em uma equipe</BotaoGlass>
+            <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('conta'); }}>Minha conta</BotaoGlass>
+          </div>}
+          {modo === 'criar-restaurante' && <form className="formulario-acesso" onSubmit={configurarRestaurante}>
+            <label>Nome do restaurante<input name="nome" type="text" autoComplete="organization" minLength={2} maxLength={120} required /></label>
+            <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>{enviando ? 'Criando…' : 'Criar restaurante e abrir estoque'}</BotaoGlass>
+          </form>}
+          {modo === 'entrar-equipe' && <div className="formulario-acesso">
+            <p>Peça ao dono para abrir <strong>Equipe → Liberar acesso</strong> e informar <strong>{conta?.user?.email ?? 'o e-mail usado no seu cadastro'}</strong>.</p>
+            <BotaoGlass className="botao-primario" type="button" disabled={enviando} aria-busy={enviando || undefined} onClick={verificarVinculo}>{enviando ? 'Verificando…' : 'Verificar meu acesso'}</BotaoGlass>
+          </div>}
           {modo === 'recuperar' && <form className="formulario-acesso" onSubmit={recuperarSenha}>
             <label>E-mail da conta<input name="email" type="email" placeholder="Digite o e-mail da sua conta" autoComplete="email" required /></label>
             <BotaoGlass className="botao-primario" type="submit" disabled={enviando} aria-busy={enviando || undefined}>Enviar link de recuperação</BotaoGlass>
@@ -415,9 +499,9 @@ function AcessoVisionChef({ destino }) {
           {/* A confirmação facultativa só aparece após autenticação, dentro da conta. */}
           {modo === 'conta' && <section className="formulario-acesso" aria-label="Dados da conta">
             <p><strong>E-mail:</strong> {conta?.user?.email ?? 'Não disponível'}</p>
-            <p><strong>Confirmação:</strong> {conta?.email_verificado_app ? 'Confirmado' : 'Opcional · ainda não solicitado'}</p>
-            {!conta?.email_verificado_app && <BotaoGlass className="botao-primario" type="button" disabled={enviando} aria-busy={enviando || undefined} onClick={solicitarConfirmacaoEmail}>{enviando ? 'Enviando…' : 'Solicitar confirmação de e-mail'}</BotaoGlass>}
-            {!conta?.restaurantes?.length && <p>Sua conta está ativa, mas o estoque ficará indisponível até o dono vincular você ao restaurante.</p>}
+            {!api.modoLocal && <p><strong>Confirmação:</strong> {conta?.email_verificado_app ? 'Confirmado' : 'Opcional · ainda não solicitado'}</p>}
+            {!api.modoLocal && !conta?.email_verificado_app && <BotaoGlass className="botao-primario" type="button" disabled={enviando} aria-busy={enviando || undefined} onClick={solicitarConfirmacaoEmail}>{enviando ? 'Enviando…' : 'Solicitar confirmação de e-mail'}</BotaoGlass>}
+            {!conta?.restaurantes?.length && <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('restaurante'); }}>Configurar acesso ao estoque</BotaoGlass>}
             <BotaoGlass className="botao-secundario" type="button" onClick={() => sairDaConta('local')}>Sair da conta</BotaoGlass>
             <BotaoGlass className="botao-secundario danger" type="button" onClick={() => sairDaConta('global')}>Sair de todos os dispositivos</BotaoGlass>
           </section>}
@@ -431,7 +515,10 @@ function AcessoVisionChef({ destino }) {
             <BotaoGlass height={42} className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('cadastro'); }}>Criar conta</BotaoGlass>
             <BotaoGlass height={42} className="botao-primario acao-link-acesso" type="button" onClick={() => { definirMensagem(''); definirModo('recuperar'); }}>Esqueci minha senha</BotaoGlass>
           </nav>}
-          {modo !== 'entrar' && modo !== 'conta' && <nav className="acoes-acesso" aria-label="Ações de acesso">
+          {configurandoRestaurante && modo !== 'restaurante' && <nav className="acoes-acesso" aria-label="Opções de restaurante">
+            <BotaoGlass className="botao-secundario" type="button" disabled={enviando} onClick={() => { definirMensagem(''); definirModo('restaurante'); }}>Voltar às opções</BotaoGlass>
+          </nav>}
+          {!configurandoRestaurante && modo !== 'entrar' && modo !== 'conta' && <nav className="acoes-acesso" aria-label="Ações de acesso">
             <BotaoGlass className="botao-secundario" type="button" onClick={() => { definirMensagem(''); definirModo('entrar'); }}>Voltar para entrar</BotaoGlass>
           </nav>}
         </section>
